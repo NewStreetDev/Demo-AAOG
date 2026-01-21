@@ -5,6 +5,10 @@ import ActivityChart from '../components/common/Cards/ActivityChart';
 import WorkerList from '../components/common/Cards/WorkerList';
 import TaskList from '../components/common/Cards/TaskList';
 import WeatherWidget from '../components/common/Cards/WeatherWidget';
+import StatCardSkeleton from '../components/common/Skeletons/StatCardSkeleton';
+import ProductionCardSkeleton from '../components/common/Skeletons/ProductionCardSkeleton';
+import ChartSkeleton from '../components/common/Skeletons/ChartSkeleton';
+import ListCardSkeleton from '../components/common/Skeletons/ListCardSkeleton';
 import {
   useDashboardMetrics,
   useProductionSummary,
@@ -37,10 +41,7 @@ export default function Home() {
         {metricsLoading ? (
           <>
             {[...Array(4)].map((_, i) => (
-              <div key={i} className="bg-white rounded-lg shadow p-6 h-32 animate-pulse">
-                <div className="h-4 bg-gray-200 rounded w-2/3 mb-3"></div>
-                <div className="h-8 bg-gray-200 rounded w-1/2"></div>
-              </div>
+              <StatCardSkeleton key={i} />
             ))}
           </>
         ) : (
@@ -55,27 +56,13 @@ export default function Home() {
         {/* Left Column - Production & Inventory */}
         <div className="space-y-6">
           {productionLoading ? (
-            <div className="bg-white rounded-lg shadow p-6 h-64 animate-pulse">
-              <div className="h-6 bg-gray-200 rounded w-1/2 mb-4"></div>
-              <div className="space-y-3">
-                {[...Array(4)].map((_, i) => (
-                  <div key={i} className="h-16 bg-gray-200 rounded"></div>
-                ))}
-              </div>
-            </div>
+            <ProductionCardSkeleton />
           ) : production ? (
             <ProductionCard production={production} />
           ) : null}
 
           {inventoryLoading ? (
-            <div className="bg-white rounded-lg shadow p-6 h-64 animate-pulse">
-              <div className="h-6 bg-gray-200 rounded w-1/2 mb-4"></div>
-              <div className="space-y-3">
-                {[...Array(3)].map((_, i) => (
-                  <div key={i} className="h-16 bg-gray-200 rounded"></div>
-                ))}
-              </div>
-            </div>
+            <ListCardSkeleton itemCount={3} />
           ) : inventory ? (
             <InventoryCard items={inventory} />
           ) : null}
@@ -84,23 +71,13 @@ export default function Home() {
         {/* Middle Column - Activities & Workers */}
         <div className="space-y-6">
           {activitiesLoading ? (
-            <div className="bg-white rounded-lg shadow p-6 h-80 animate-pulse">
-              <div className="h-6 bg-gray-200 rounded w-1/2 mb-4"></div>
-              <div className="h-64 bg-gray-200 rounded"></div>
-            </div>
+            <ChartSkeleton />
           ) : activities ? (
             <ActivityChart activities={activities} />
           ) : null}
 
           {workersLoading ? (
-            <div className="bg-white rounded-lg shadow p-6 h-64 animate-pulse">
-              <div className="h-6 bg-gray-200 rounded w-1/2 mb-4"></div>
-              <div className="space-y-3">
-                {[...Array(3)].map((_, i) => (
-                  <div key={i} className="h-16 bg-gray-200 rounded"></div>
-                ))}
-              </div>
-            </div>
+            <ListCardSkeleton itemCount={3} showAvatar={true} />
           ) : workers ? (
             <WorkerList workers={workers} />
           ) : null}
@@ -109,23 +86,13 @@ export default function Home() {
         {/* Right Column - Tasks & Weather */}
         <div className="space-y-6">
           {tasksLoading ? (
-            <div className="bg-white rounded-lg shadow p-6 h-80 animate-pulse">
-              <div className="h-6 bg-gray-200 rounded w-1/2 mb-4"></div>
-              <div className="space-y-3">
-                {[...Array(3)].map((_, i) => (
-                  <div key={i} className="h-16 bg-gray-200 rounded"></div>
-                ))}
-              </div>
-            </div>
+            <ListCardSkeleton itemCount={3} />
           ) : tasks ? (
             <TaskList tasks={tasks} />
           ) : null}
 
           {weatherLoading ? (
-            <div className="bg-white rounded-lg shadow p-6 h-64 animate-pulse">
-              <div className="h-6 bg-gray-200 rounded w-1/2 mb-4"></div>
-              <div className="h-48 bg-gray-200 rounded"></div>
-            </div>
+            <ListCardSkeleton itemCount={4} />
           ) : weather ? (
             <WeatherWidget weather={weather} />
           ) : null}
