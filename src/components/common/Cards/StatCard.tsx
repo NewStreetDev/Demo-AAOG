@@ -59,10 +59,10 @@ function Sparkline({ data, color }: { data: number[]; color: string }) {
   }).join(' ');
 
   const colorMap: Record<string, string> = {
-    green: '#10b981',
-    blue: '#3b82f6',
-    orange: '#f97316',
-    red: '#ef4444',
+    green: '#22c55e',    // status.success
+    blue: '#3b82f6',     // status.info
+    orange: '#f59e0b',   // status.warning
+    red: '#ef4444',      // status.danger
   };
 
   return (

@@ -131,10 +131,10 @@ export const getMockInventory = async (): Promise<InventoryItem[]> => {
 export const getMockActivities = async (): Promise<Activity[]> => {
   await delay(300);
   return [
-    { name: 'Leche', value: 35, color: '#3b82f6' },
-    { name: 'Huevos', value: 25, color: '#f97316' },
-    { name: 'Miel', value: 20, color: '#eab308' },
-    { name: 'Carne', value: 20, color: '#ef4444' },
+    { name: 'Leche', value: 35, color: '#3b82f6' },    // Blue
+    { name: 'Huevos', value: 25, color: '#f97316' },   // Orange (modules.pecuario)
+    { name: 'Miel', value: 20, color: '#fbbf24' },     // Yellow/Gold (modules.apicultura)
+    { name: 'Carne', value: 20, color: '#ef4444' },    // Red
   ];
 };
 
