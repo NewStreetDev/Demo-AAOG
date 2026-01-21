@@ -65,7 +65,7 @@ export default function ProductionCard({ production }: ProductionCardProps) {
       <div className="mt-5 pt-5 border-t border-gray-100">
         <div className="flex items-center justify-between">
           <span className="text-sm font-medium text-gray-600">Valor Total</span>
-          <span className="text-xl font-bold text-primary">
+          <span className="text-xl font-bold text-green-700">
             ${production.totalValue.toLocaleString()}
           </span>
         </div>

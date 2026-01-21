@@ -50,8 +50,8 @@ export default function MainLayout() {
   return (
     <div className="flex h-screen bg-gray-50">
       {/* Sidebar */}
-      <aside className="w-64 bg-primary text-white">
-        <div className="flex items-center gap-2 h-16 px-6 border-b border-primary-light">
+      <aside className="w-64 bg-[#1e5631] text-white">
+        <div className="flex items-center gap-2 h-16 px-6 border-b border-green-700">
           <Home className="w-6 h-6" />
           <h1 className="text-xl font-bold">Mi Finca</h1>
         </div>
@@ -67,8 +67,8 @@ export default function MainLayout() {
                 to={item.href}
                 className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
                   isActive
-                    ? 'bg-primary-light text-white'
-                    : 'text-green-100 hover:bg-primary-light/50'
+                    ? 'bg-green-700 text-white'
+                    : 'text-green-100 hover:bg-green-700/50'
                 }`}
               >
                 <Icon className="w-5 h-5" />
@@ -81,7 +81,7 @@ export default function MainLayout() {
           <div>
             <button
               onClick={() => setAdminOpen(!adminOpen)}
-              className="flex items-center justify-between w-full px-4 py-3 rounded-lg transition-colors text-green-100 hover:bg-primary-light/50"
+              className="flex items-center justify-between w-full px-4 py-3 rounded-lg transition-colors text-green-100 hover:bg-green-700/50"
               aria-expanded={adminOpen}
               aria-label="Menú de administración"
             >
@@ -103,8 +103,8 @@ export default function MainLayout() {
                       to={item.href}
                       className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors text-sm ${
                         isActive
-                          ? 'bg-primary-light text-white'
-                          : 'text-green-100 hover:bg-primary-light/50'
+                          ? 'bg-green-700 text-white'
+                          : 'text-green-100 hover:bg-green-700/50'
                       }`}
                     >
                       <Icon className="w-4 h-4" />

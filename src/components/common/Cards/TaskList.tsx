@@ -16,7 +16,7 @@ export default function TaskList({ tasks }: TaskListProps) {
     <div className="bg-white rounded-lg shadow p-6">
       <div className="flex items-center justify-between mb-5">
         <h3 className="text-lg font-semibold text-gray-900">Tareas Pendientes</h3>
-        <button className="text-sm text-primary hover:text-primary-dark font-medium flex items-center gap-1 px-3 py-2 -mr-3 rounded-lg hover:bg-gray-50 transition-colors">
+        <button className="text-sm text-green-700 hover:text-green-700-dark font-medium flex items-center gap-1 px-3 py-2 -mr-3 rounded-lg hover:bg-gray-50 transition-colors">
           Ver Todas
           <ChevronRight className="w-4 h-4" />
         </button>

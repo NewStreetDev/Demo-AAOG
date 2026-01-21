@@ -29,7 +29,7 @@ export default function FincaSelector() {
         aria-expanded={isOpen}
         aria-haspopup="listbox"
       >
-        <MapPin className="w-4 h-4 text-primary" />
+        <MapPin className="w-4 h-4 text-green-700" />
         <span>{currentFinca.name}</span>
         <ChevronDown className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
@@ -58,7 +58,7 @@ export default function FincaSelector() {
                 </div>
               </div>
               {currentFinca.id === finca.id && (
-                <Check className="w-4 h-4 text-primary" />
+                <Check className="w-4 h-4 text-green-700" />
               )}
             </button>
           ))}

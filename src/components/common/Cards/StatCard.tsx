@@ -23,15 +23,15 @@ export default function StatCard({ metric }: StatCardProps) {
             <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gray-50">
               {trend > 0 ? (
                 <>
-                  <TrendingUp className="w-4 h-4 text-status-success" />
-                  <span className="text-sm text-status-success font-semibold">
+                  <TrendingUp className="w-4 h-4 text-green-600" />
+                  <span className="text-sm text-green-600 font-semibold">
                     +{trend}%
                   </span>
                 </>
               ) : (
                 <>
-                  <TrendingDown className="w-4 h-4 text-status-danger" />
-                  <span className="text-sm text-status-danger font-semibold">
+                  <TrendingDown className="w-4 h-4 text-red-600" />
+                  <span className="text-sm text-red-600 font-semibold">
                     {trend}%
                   </span>
                 </>
