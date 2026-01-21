@@ -1,11 +1,12 @@
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { Home, Sprout, Beef, Factory, DollarSign, FileText, ChevronDown, Users, Building, Package, Box } from 'lucide-react';
+import { Home, Sprout, Beef, Flower2, Factory, DollarSign, FileText, ChevronDown, Users, Building, Package, Box } from 'lucide-react';
 import { useState } from 'react';
 
 const navigation = [
   { name: 'Mi Finca', href: '/', icon: Home },
   { name: 'Agricultura', href: '/agro', icon: Sprout },
   { name: 'Pecuario', href: '/pecuario', icon: Beef },
+  { name: 'Apicultura', href: '/apicultura', icon: Flower2 },
   { name: 'Procesamiento', href: '/procesamiento', icon: Factory },
   { name: 'Finanzas', href: '/finanzas', icon: DollarSign },
   { name: 'Reportes', href: '/reportes', icon: FileText },

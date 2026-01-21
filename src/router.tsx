@@ -68,6 +68,18 @@ export const router = createBrowserRouter([
         ],
       },
       {
+        path: 'apicultura',
+        children: [
+          {
+            index: true,
+            element: <ModulePlaceholder
+              title="Apicultura"
+              description="Gestión de apiarios, colmenas, producción de miel y derivados"
+            />
+          },
+        ],
+      },
+      {
         path: 'procesamiento',
         children: [
           {
