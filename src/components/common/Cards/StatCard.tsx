@@ -9,24 +9,29 @@ export default function StatCard({ metric }: StatCardProps) {
   const { label, value, trend, sparklineData } = metric;
 
   return (
-    <div className="bg-white rounded-lg shadow p-6">
+    <div className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow p-6">
+      {/* Label - Small and subtle */}
+      <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-3">{label}</p>
+
       <div className="flex items-start justify-between">
         <div className="flex-1">
-          <p className="text-sm text-gray-600 mb-1">{label}</p>
-          <p className="text-3xl font-bold text-gray-900">{value}</p>
+          {/* Value - Large and prominent */}
+          <p className="text-4xl font-bold text-gray-900 mb-3">{value}</p>
+
+          {/* Trend - Clear visual indicator */}
           {trend !== undefined && (
-            <div className="flex items-center gap-1 mt-2">
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gray-50">
               {trend > 0 ? (
                 <>
-                  <TrendingUp className="w-4 h-4 text-green-600" />
-                  <span className="text-sm text-green-600 font-medium">
+                  <TrendingUp className="w-4 h-4 text-status-success" />
+                  <span className="text-sm text-status-success font-semibold">
                     +{trend}%
                   </span>
                 </>
               ) : (
                 <>
-                  <TrendingDown className="w-4 h-4 text-red-600" />
-                  <span className="text-sm text-red-600 font-medium">
+                  <TrendingDown className="w-4 h-4 text-status-danger" />
+                  <span className="text-sm text-status-danger font-semibold">
                     {trend}%
                   </span>
                 </>
@@ -34,8 +39,10 @@ export default function StatCard({ metric }: StatCardProps) {
             </div>
           )}
         </div>
+
+        {/* Sparkline - Visual context */}
         {sparklineData && sparklineData.length > 0 && (
-          <div className="ml-4">
+          <div className="ml-6 flex items-center">
             <Sparkline data={sparklineData} color={metric.color || 'green'} />
           </div>
         )}
@@ -49,8 +56,8 @@ function Sparkline({ data, color }: { data: number[]; color: string }) {
   const max = Math.max(...data);
   const min = Math.min(...data);
   const range = max - min;
-  const width = 80;
-  const height = 30;
+  const width = 100;
+  const height = 40;
 
   const points = data.map((value, index) => {
     const x = (index / (data.length - 1)) * width;

@@ -11,4 +11,12 @@
     --accent: 45 93% 47%;
     --accent-foreground: 0 0% 0%;
   }
+
+  /* Better text rendering and readability */
+  body {
+    background-color: #f9fafb; /* gray-50 */
+    color: #111827; /* gray-900 */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
 }
