@@ -25,8 +25,8 @@ export default function MainLayout() {
   return (
     <div className="flex h-screen bg-gray-50">
       {/* Sidebar */}
-      <aside className="w-64 bg-[#1e5631] text-white">
-        <div className="flex items-center gap-2 h-16 px-6 border-b border-green-700">
+      <aside className="w-64 bg-primary text-white">
+        <div className="flex items-center gap-2 h-16 px-6 border-b border-primary-light">
           <Home className="w-6 h-6" />
           <h1 className="text-xl font-bold">Mi Finca</h1>
         </div>
@@ -42,8 +42,8 @@ export default function MainLayout() {
                 to={item.href}
                 className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
                   isActive
-                    ? 'bg-green-700 text-white'
-                    : 'text-green-100 hover:bg-green-700/50'
+                    ? 'bg-primary-light text-white'
+                    : 'text-green-100 hover:bg-primary-light/50'
                 }`}
               >
                 <Icon className="w-5 h-5" />
@@ -56,7 +56,7 @@ export default function MainLayout() {
           <div>
             <button
               onClick={() => setAdminOpen(!adminOpen)}
-              className="flex items-center justify-between w-full px-4 py-3 rounded-lg transition-colors text-green-100 hover:bg-green-700/50"
+              className="flex items-center justify-between w-full px-4 py-3 rounded-lg transition-colors text-green-100 hover:bg-primary-light/50"
             >
               <div className="flex items-center gap-3">
                 <ChevronDown className={`w-5 h-5 transition-transform ${adminOpen ? 'rotate-180' : ''}`} />
@@ -75,8 +75,8 @@ export default function MainLayout() {
                       to={item.href}
                       className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors text-sm ${
                         isActive
-                          ? 'bg-green-700 text-white'
-                          : 'text-green-100 hover:bg-green-700/50'
+                          ? 'bg-primary-light text-white'
+                          : 'text-green-100 hover:bg-primary-light/50'
                       }`}
                     >
                       <Icon className="w-4 h-4" />

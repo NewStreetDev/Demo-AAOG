@@ -7,23 +7,46 @@ export default {
   theme: {
     extend: {
       colors: {
+        // Brand colors - Verde AAOG principal
+        brand: {
+          DEFAULT: '#1e5631',
+          light: '#2d7a4a',
+          dark: '#163f24',
+          foreground: '#ffffff',
+        },
         primary: {
-          DEFAULT: 'hsl(142, 76%, 36%)',
-          foreground: 'hsl(0, 0%, 100%)',
+          DEFAULT: '#1e5631',
+          light: '#2d7a4a',
+          dark: '#163f24',
+          foreground: '#ffffff',
         },
-        secondary: {
-          DEFAULT: 'hsl(30, 25%, 45%)',
-          foreground: 'hsl(0, 0%, 100%)',
+        // Module colors
+        modules: {
+          agricultura: '#10b981',
+          pecuario: '#f97316',
+          apicultura: '#fbbf24',
+          procesamiento: '#7c3aed',
+          finanzas: '#3b82f6',
         },
-        accent: {
-          DEFAULT: 'hsl(45, 93%, 47%)',
-          foreground: 'hsl(0, 0%, 0%)',
+        // Status colors
+        status: {
+          success: '#22c55e',
+          warning: '#f59e0b',
+          danger: '#ef4444',
+          info: '#3b82f6',
         },
-        apicultura: 'hsl(45, 93%, 47%)',
-        agro: 'hsl(142, 76%, 36%)',
-        pecuario: 'hsl(25, 75%, 47%)',
-        finca: 'hsl(200, 18%, 46%)',
-        finanzas: 'hsl(217, 91%, 60%)',
+        // Inventory status
+        inventory: {
+          stock: '#10b981',
+          low: '#f59e0b',
+          critical: '#ef4444',
+        },
+        // Legacy support (mantener compatibilidad)
+        apicultura: '#fbbf24',
+        agro: '#10b981',
+        pecuario: '#f97316',
+        finca: '#1e5631',
+        finanzas: '#3b82f6',
       },
     },
   },
