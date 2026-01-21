@@ -1,6 +1,7 @@
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { Home, Sprout, Beef, Flower2, Factory, DollarSign, FileText, ChevronDown, Users, Building, Package, Box } from 'lucide-react';
+import { Home, Sprout, Beef, Flower2, Factory, DollarSign, FileText, ChevronDown, Users, Building, Package, Box, Bell } from 'lucide-react';
 import { useState } from 'react';
+import Breadcrumbs from '../Breadcrumbs';
 
 const navigation = [
   { name: 'Mi Finca', href: '/', icon: Home },
@@ -95,10 +96,12 @@ export default function MainLayout() {
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Header */}
         <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6">
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-500">OneDrive images as 34,265,24 GB of 49 BPNG</span>
-          </div>
+          <Breadcrumbs />
           <div className="flex items-center gap-4">
+            <button className="relative p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors">
+              <Bell className="w-5 h-5" />
+              <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+            </button>
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white font-semibold">
                 M
