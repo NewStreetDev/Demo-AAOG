@@ -14,10 +14,10 @@ const priorityColors: Record<string, string> = {
 export default function TaskList({ tasks }: TaskListProps) {
   return (
     <div className="bg-white rounded-lg shadow p-6">
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-5">
         <h3 className="text-lg font-semibold text-gray-900">Tareas Pendientes</h3>
-        <button className="text-sm text-green-600 hover:text-green-700 font-medium flex items-center gap-1">
-          Ver Todas las Tareas
+        <button className="text-sm text-primary hover:text-primary-dark font-medium flex items-center gap-1 px-3 py-2 -mr-3 rounded-lg hover:bg-gray-50 transition-colors">
+          Ver Todas
           <ChevronRight className="w-4 h-4" />
         </button>
       </div>
@@ -27,11 +27,14 @@ export default function TaskList({ tasks }: TaskListProps) {
             key={task.id}
             className="flex items-start gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer group"
           >
-            <button className="mt-0.5 text-gray-400 hover:text-green-600 transition-colors">
+            <button
+              className="flex-shrink-0 p-2 -m-2 text-gray-400 hover:text-green-600 transition-colors rounded-lg hover:bg-gray-100"
+              aria-label={task.status === 'completed' ? 'Marcar como pendiente' : 'Marcar como completada'}
+            >
               {task.status === 'completed' ? (
-                <CheckCircle2 className="w-5 h-5 text-green-600" />
+                <CheckCircle2 className="w-6 h-6 text-green-600" />
               ) : (
-                <Circle className="w-5 h-5" />
+                <Circle className="w-6 h-6" />
               )}
             </button>
             <div className="flex-1 min-w-0">
