@@ -29,11 +29,11 @@ export default function Home() {
   const { data: weather, isLoading: weatherLoading } = useWeather();
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div>
+    <div className="space-y-8">
+      {/* Header - Increased spacing below for visual separation */}
+      <div className="space-y-1">
         <h1 className="text-3xl font-bold text-gray-900">Mi Finca</h1>
-        <p className="text-gray-600 mt-2">Vista general de tu finca</p>
+        <p className="text-sm text-gray-600">Vista general de tu finca</p>
       </div>
 
       {/* Metrics Grid - Responsive: 1 col mobile, 2 cols tablet, 4 cols desktop */}
