@@ -1,6 +1,6 @@
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { Home, Sprout, Beef, Flower2, Factory, DollarSign, FileText, ChevronDown, Users, Building, Package, Box, Bell } from 'lucide-react';
-import { useState } from 'react';
+import { Home, Sprout, Beef, Flower2, Factory, DollarSign, FileText, ChevronDown, Users, Building, Package, Box, Bell, Settings } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import Breadcrumbs from '../Breadcrumbs';
 
 const navigation = [
@@ -22,7 +22,29 @@ const administrationItems = [
 
 export default function MainLayout() {
   const location = useLocation();
-  const [adminOpen, setAdminOpen] = useState(false);
+
+  // Check if any administration route is active
+  const isAdminRouteActive = administrationItems.some(
+    item => location.pathname === item.href
+  );
+
+  // Initialize state from localStorage or auto-open if admin route is active
+  const [adminOpen, setAdminOpen] = useState(() => {
+    const stored = localStorage.getItem('adminMenuOpen');
+    return stored ? JSON.parse(stored) : isAdminRouteActive;
+  });
+
+  // Auto-expand if admin route becomes active
+  useEffect(() => {
+    if (isAdminRouteActive && !adminOpen) {
+      setAdminOpen(true);
+    }
+  }, [isAdminRouteActive, adminOpen]);
+
+  // Persist state to localStorage
+  useEffect(() => {
+    localStorage.setItem('adminMenuOpen', JSON.stringify(adminOpen));
+  }, [adminOpen]);
 
   return (
     <div className="flex h-screen bg-gray-50">
@@ -59,11 +81,14 @@ export default function MainLayout() {
             <button
               onClick={() => setAdminOpen(!adminOpen)}
               className="flex items-center justify-between w-full px-4 py-3 rounded-lg transition-colors text-green-100 hover:bg-primary-light/50"
+              aria-expanded={adminOpen}
+              aria-label="Menú de administración"
             >
               <div className="flex items-center gap-3">
-                <ChevronDown className={`w-5 h-5 transition-transform ${adminOpen ? 'rotate-180' : ''}`} />
+                <Settings className="w-5 h-5" />
                 <span className="font-medium">Administración</span>
               </div>
+              <ChevronDown className={`w-5 h-5 transition-transform ${adminOpen ? 'rotate-180' : ''}`} />
             </button>
             {adminOpen && (
               <div className="mt-1 ml-4 space-y-1">
