@@ -75,6 +75,7 @@ export interface Potrero extends BaseEntity {
   grassType?: string;
   lastRotation?: Date;
   nextRotation?: Date;
+  notes?: string;
 }
 
 // Reproducción

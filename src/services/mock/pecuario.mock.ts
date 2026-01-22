@@ -8,13 +8,16 @@ import type {
   CategoryDistribution,
   GroupHealthAction,
 } from '../../types/pecuario.types';
+import type { LivestockFormData, PotreroFormData } from '../../schemas/pecuario.schema';
 
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
-// Livestock mock data
-export const getMockLivestock = async (): Promise<Livestock[]> => {
-  await delay(300);
-  return [
+// In-memory stores
+let livestockStore: Livestock[] = [];
+let potrerosStore: Potrero[] = [];
+
+// Initial Livestock Data
+const initialLivestock: Livestock[] = [
     {
       id: '1',
       tag: 'BOV-001',
@@ -152,6 +155,232 @@ export const getMockLivestock = async (): Promise<Livestock[]> => {
       updatedAt: new Date('2026-01-16'),
     },
   ];
+
+// Initial Potreros Data
+const initialPotreros: Potrero[] = [
+  {
+    id: '1',
+    name: 'Potrero Norte',
+    area: 5.5,
+    capacity: 25,
+    currentOccupancy: 18,
+    status: 'active',
+    grassType: 'Brachiaria',
+    lastRotation: new Date('2026-01-10'),
+    nextRotation: new Date('2026-02-10'),
+    createdAt: new Date('2020-01-01'),
+    updatedAt: new Date('2026-01-10'),
+  },
+  {
+    id: '2',
+    name: 'Potrero Central',
+    area: 8.0,
+    capacity: 35,
+    currentOccupancy: 22,
+    status: 'active',
+    grassType: 'Estrella',
+    lastRotation: new Date('2026-01-05'),
+    nextRotation: new Date('2026-02-05'),
+    createdAt: new Date('2020-01-01'),
+    updatedAt: new Date('2026-01-05'),
+  },
+  {
+    id: '3',
+    name: 'Potrero Sur',
+    area: 4.2,
+    capacity: 18,
+    currentOccupancy: 12,
+    status: 'active',
+    grassType: 'Brachiaria',
+    lastRotation: new Date('2025-12-20'),
+    nextRotation: new Date('2026-01-25'),
+    createdAt: new Date('2020-01-01'),
+    updatedAt: new Date('2025-12-20'),
+  },
+  {
+    id: '4',
+    name: 'Potrero Este',
+    area: 3.8,
+    capacity: 15,
+    currentOccupancy: 0,
+    status: 'resting',
+    grassType: 'Estrella',
+    lastRotation: new Date('2025-12-01'),
+    nextRotation: new Date('2026-02-01'),
+    createdAt: new Date('2020-01-01'),
+    updatedAt: new Date('2025-12-01'),
+  },
+];
+
+// Initialize stores
+export const initializeLivestockStore = () => {
+  if (livestockStore.length === 0) {
+    livestockStore = [...initialLivestock];
+  }
+};
+
+export const initializePotrerosStore = () => {
+  if (potrerosStore.length === 0) {
+    potrerosStore = [...initialPotreros];
+  }
+};
+
+// Get Livestock
+export const getMockLivestock = async (): Promise<Livestock[]> => {
+  await delay(300);
+  initializeLivestockStore();
+  return [...livestockStore].sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime());
+};
+
+// Get single Livestock
+export const getMockLivestockById = async (id: string): Promise<Livestock | undefined> => {
+  await delay(200);
+  initializeLivestockStore();
+  return livestockStore.find(l => l.id === id);
+};
+
+// Create Livestock
+export const createMockLivestock = async (data: LivestockFormData): Promise<Livestock> => {
+  await delay(400);
+  initializeLivestockStore();
+  const newLivestock: Livestock = {
+    id: String(Date.now()),
+    tag: data.tag,
+    name: data.name,
+    category: data.category,
+    breed: data.breed,
+    birthDate: new Date(data.birthDate),
+    gender: data.gender,
+    weight: parseFloat(data.weight),
+    status: data.status,
+    location: data.location,
+    motherId: data.motherId,
+    motherTag: data.motherTag,
+    fatherId: data.fatherId,
+    fatherTag: data.fatherTag,
+    entryDate: new Date(data.entryDate),
+    entryReason: data.entryReason,
+    exitDate: data.exitDate ? new Date(data.exitDate) : undefined,
+    exitReason: data.exitReason,
+    notes: data.notes,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
+  livestockStore.push(newLivestock);
+  return newLivestock;
+};
+
+// Update Livestock
+export const updateMockLivestock = async (id: string, data: LivestockFormData): Promise<Livestock> => {
+  await delay(400);
+  initializeLivestockStore();
+  const index = livestockStore.findIndex(l => l.id === id);
+  if (index === -1) throw new Error('Livestock not found');
+
+  const existingLivestock = livestockStore[index];
+  const updatedLivestock: Livestock = {
+    ...existingLivestock,
+    tag: data.tag,
+    name: data.name,
+    category: data.category,
+    breed: data.breed,
+    birthDate: new Date(data.birthDate),
+    gender: data.gender,
+    weight: parseFloat(data.weight),
+    status: data.status,
+    location: data.location,
+    motherId: data.motherId,
+    motherTag: data.motherTag,
+    fatherId: data.fatherId,
+    fatherTag: data.fatherTag,
+    entryDate: new Date(data.entryDate),
+    entryReason: data.entryReason,
+    exitDate: data.exitDate ? new Date(data.exitDate) : undefined,
+    exitReason: data.exitReason,
+    notes: data.notes,
+    updatedAt: new Date(),
+  };
+  livestockStore[index] = updatedLivestock;
+  return updatedLivestock;
+};
+
+// Delete Livestock
+export const deleteMockLivestock = async (id: string): Promise<void> => {
+  await delay(300);
+  initializeLivestockStore();
+  const index = livestockStore.findIndex(l => l.id === id);
+  if (index === -1) throw new Error('Livestock not found');
+  livestockStore.splice(index, 1);
+};
+
+// Get Potreros
+export const getMockPotreros = async (): Promise<Potrero[]> => {
+  await delay(300);
+  initializePotrerosStore();
+  return [...potrerosStore].sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime());
+};
+
+// Get single Potrero
+export const getMockPotreroById = async (id: string): Promise<Potrero | undefined> => {
+  await delay(200);
+  initializePotrerosStore();
+  return potrerosStore.find(p => p.id === id);
+};
+
+// Create Potrero
+export const createMockPotrero = async (data: PotreroFormData): Promise<Potrero> => {
+  await delay(400);
+  initializePotrerosStore();
+  const newPotrero: Potrero = {
+    id: String(Date.now()),
+    name: data.name,
+    area: parseFloat(data.area),
+    capacity: parseInt(data.capacity),
+    currentOccupancy: parseInt(data.currentOccupancy),
+    status: data.status,
+    grassType: data.grassType,
+    lastRotation: data.lastRotation ? new Date(data.lastRotation) : undefined,
+    nextRotation: data.nextRotation ? new Date(data.nextRotation) : undefined,
+    notes: data.notes,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
+  potrerosStore.push(newPotrero);
+  return newPotrero;
+};
+
+// Update Potrero
+export const updateMockPotrero = async (id: string, data: PotreroFormData): Promise<Potrero> => {
+  await delay(400);
+  initializePotrerosStore();
+  const index = potrerosStore.findIndex(p => p.id === id);
+  if (index === -1) throw new Error('Potrero not found');
+
+  const existingPotrero = potrerosStore[index];
+  const updatedPotrero: Potrero = {
+    ...existingPotrero,
+    name: data.name,
+    area: parseFloat(data.area),
+    capacity: parseInt(data.capacity),
+    currentOccupancy: parseInt(data.currentOccupancy),
+    status: data.status,
+    grassType: data.grassType,
+    lastRotation: data.lastRotation ? new Date(data.lastRotation) : undefined,
+    nextRotation: data.nextRotation ? new Date(data.nextRotation) : undefined,
+    notes: data.notes,
+    updatedAt: new Date(),
+  };
+  potrerosStore[index] = updatedPotrero;
+  return updatedPotrero;
+};
+
+// Delete Potrero
+export const deleteMockPotrero = async (id: string): Promise<void> => {
+  await delay(300);
+  initializePotrerosStore();
+  const index = potrerosStore.findIndex(p => p.id === id);
+  if (index === -1) throw new Error('Potrero not found');
+  potrerosStore.splice(index, 1);
 };
 
 // Health records mock data
@@ -211,65 +440,6 @@ export const getMockHealthRecords = async (): Promise<HealthRecord[]> => {
       notes: 'Mejoría notable después de 3 días',
       createdAt: new Date('2026-01-05'),
       updatedAt: new Date('2026-01-05'),
-    },
-  ];
-};
-
-// Potreros mock data
-export const getMockPotreros = async (): Promise<Potrero[]> => {
-  await delay(300);
-  return [
-    {
-      id: '1',
-      name: 'Potrero Norte',
-      area: 5.5,
-      capacity: 25,
-      currentOccupancy: 18,
-      status: 'active',
-      grassType: 'Brachiaria',
-      lastRotation: new Date('2026-01-10'),
-      nextRotation: new Date('2026-02-10'),
-      createdAt: new Date('2020-01-01'),
-      updatedAt: new Date('2026-01-10'),
-    },
-    {
-      id: '2',
-      name: 'Potrero Central',
-      area: 8.0,
-      capacity: 35,
-      currentOccupancy: 22,
-      status: 'active',
-      grassType: 'Estrella',
-      lastRotation: new Date('2026-01-05'),
-      nextRotation: new Date('2026-02-05'),
-      createdAt: new Date('2020-01-01'),
-      updatedAt: new Date('2026-01-05'),
-    },
-    {
-      id: '3',
-      name: 'Potrero Sur',
-      area: 4.2,
-      capacity: 18,
-      currentOccupancy: 12,
-      status: 'active',
-      grassType: 'Brachiaria',
-      lastRotation: new Date('2025-12-20'),
-      nextRotation: new Date('2026-01-25'),
-      createdAt: new Date('2020-01-01'),
-      updatedAt: new Date('2025-12-20'),
-    },
-    {
-      id: '4',
-      name: 'Potrero Este',
-      area: 3.8,
-      capacity: 15,
-      currentOccupancy: 0,
-      status: 'resting',
-      grassType: 'Estrella',
-      lastRotation: new Date('2025-12-01'),
-      nextRotation: new Date('2026-02-01'),
-      createdAt: new Date('2020-01-01'),
-      updatedAt: new Date('2025-12-01'),
     },
   ];
 };
