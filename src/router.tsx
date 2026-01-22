@@ -6,6 +6,7 @@ import Pecuario from './pages/Pecuario';
 import Agro from './pages/Agro';
 import Insumos from './pages/Insumos';
 import Finanzas from './pages/Finanzas';
+import Procesamiento from './pages/Procesamiento';
 
 // Placeholder component for module dashboards
 function ModulePlaceholder({ title, description }: { title: string; description: string }) {
@@ -73,10 +74,7 @@ export const router = createBrowserRouter([
         children: [
           {
             index: true,
-            element: <ModulePlaceholder
-              title="Procesamiento"
-              description="Gestión de procesamiento de productos de la finca"
-            />
+            element: <Procesamiento />,
           },
         ],
       },
