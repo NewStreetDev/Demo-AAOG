@@ -21,6 +21,7 @@ export interface Apiario extends BaseEntity {
   // Costos operativos
   costPerHour?: number;  // Costo por hora de trabajo
   costPerKm?: number;    // Costo por kilómetro de desplazamiento
+  notes?: string;
 }
 
 // Colmena - Individual hive

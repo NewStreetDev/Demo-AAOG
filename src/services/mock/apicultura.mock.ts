@@ -7,13 +7,16 @@ import type {
   HealthDistribution,
   AccionApicultura,
 } from '../../types/apicultura.types';
+import type { ApiarioFormData, ColmenaFormData } from '../../schemas/apicultura.schema';
 
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
-// Apiarios mock data
-export const getMockApiarios = async (): Promise<Apiario[]> => {
-  await delay(300);
-  return [
+// In-memory stores
+let apiariosStore: Apiario[] = [];
+let colmenasStore: Colmena[] = [];
+
+// Initial Apiarios Data
+const initialApiarios: Apiario[] = [
     {
       id: '1',
       name: 'Apiario El Roble',
@@ -54,12 +57,9 @@ export const getMockApiarios = async (): Promise<Apiario[]> => {
       updatedAt: new Date('2026-01-10'),
     },
   ];
-};
 
-// Colmenas mock data
-export const getMockColmenas = async (): Promise<Colmena[]> => {
-  await delay(300);
-  return [
+// Initial Colmenas Data
+const initialColmenas: Colmena[] = [
     {
       id: '1',
       code: 'COL-001',
@@ -142,6 +142,204 @@ export const getMockColmenas = async (): Promise<Colmena[]> => {
       updatedAt: new Date('2026-01-10'),
     },
   ];
+
+// Initialize stores
+export const initializeApiariosStore = () => {
+  if (apiariosStore.length === 0) {
+    apiariosStore = [...initialApiarios];
+  }
+};
+
+export const initializeColmenasStore = () => {
+  if (colmenasStore.length === 0) {
+    colmenasStore = [...initialColmenas];
+  }
+};
+
+// Get Apiarios
+export const getMockApiarios = async (): Promise<Apiario[]> => {
+  await delay(300);
+  initializeApiariosStore();
+  return [...apiariosStore].sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime());
+};
+
+// Get single Apiario
+export const getMockApiarioById = async (id: string): Promise<Apiario | undefined> => {
+  await delay(200);
+  initializeApiariosStore();
+  return apiariosStore.find(a => a.id === id);
+};
+
+// Create Apiario
+export const createMockApiario = async (data: ApiarioFormData): Promise<Apiario> => {
+  await delay(400);
+  initializeApiariosStore();
+  const newApiario: Apiario = {
+    id: String(Date.now()),
+    name: data.name,
+    location: {
+      lat: data.lat ? parseFloat(data.lat) : 0,
+      lng: data.lng ? parseFloat(data.lng) : 0,
+      address: data.address,
+    },
+    colmenasCount: 0,
+    activeColmenas: 0,
+    healthAverage: 0,
+    status: data.status,
+    production: { honey: 0, wax: 0, pollen: 0 },
+    costPerHour: data.costPerHour ? parseFloat(data.costPerHour) : undefined,
+    costPerKm: data.costPerKm ? parseFloat(data.costPerKm) : undefined,
+    notes: data.notes,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
+  apiariosStore.push(newApiario);
+  return newApiario;
+};
+
+// Update Apiario
+export const updateMockApiario = async (id: string, data: ApiarioFormData): Promise<Apiario> => {
+  await delay(400);
+  initializeApiariosStore();
+  const index = apiariosStore.findIndex(a => a.id === id);
+  if (index === -1) throw new Error('Apiario not found');
+
+  const existingApiario = apiariosStore[index];
+  const updatedApiario: Apiario = {
+    ...existingApiario,
+    name: data.name,
+    location: {
+      lat: data.lat ? parseFloat(data.lat) : existingApiario.location.lat,
+      lng: data.lng ? parseFloat(data.lng) : existingApiario.location.lng,
+      address: data.address,
+    },
+    status: data.status,
+    costPerHour: data.costPerHour ? parseFloat(data.costPerHour) : undefined,
+    costPerKm: data.costPerKm ? parseFloat(data.costPerKm) : undefined,
+    notes: data.notes,
+    updatedAt: new Date(),
+  };
+  apiariosStore[index] = updatedApiario;
+  return updatedApiario;
+};
+
+// Delete Apiario
+export const deleteMockApiario = async (id: string): Promise<void> => {
+  await delay(300);
+  initializeApiariosStore();
+  const index = apiariosStore.findIndex(a => a.id === id);
+  if (index === -1) throw new Error('Apiario not found');
+  apiariosStore.splice(index, 1);
+};
+
+// Get Colmenas
+export const getMockColmenas = async (): Promise<Colmena[]> => {
+  await delay(300);
+  initializeColmenasStore();
+  initializeApiariosStore();
+  return [...colmenasStore].sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime());
+};
+
+// Get single Colmena
+export const getMockColmenaById = async (id: string): Promise<Colmena | undefined> => {
+  await delay(200);
+  initializeColmenasStore();
+  return colmenasStore.find(c => c.id === id);
+};
+
+// Create Colmena
+export const createMockColmena = async (data: ColmenaFormData): Promise<Colmena> => {
+  await delay(400);
+  initializeColmenasStore();
+  initializeApiariosStore();
+
+  const apiario = apiariosStore.find(a => a.id === data.apiarioId);
+  const newColmena: Colmena = {
+    id: String(Date.now()),
+    code: data.code,
+    apiarioId: data.apiarioId,
+    apiarioName: apiario?.name,
+    queenAge: parseInt(data.queenAge),
+    queenStatus: data.queenStatus,
+    population: data.population,
+    health: parseInt(data.health),
+    weight: data.weight,
+    honeyMaturity: parseInt(data.honeyMaturity),
+    status: data.status,
+    notes: data.notes,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
+  colmenasStore.push(newColmena);
+
+  // Update apiario counts
+  if (apiario) {
+    const apiarioIndex = apiariosStore.findIndex(a => a.id === data.apiarioId);
+    apiariosStore[apiarioIndex] = {
+      ...apiario,
+      colmenasCount: apiario.colmenasCount + 1,
+      activeColmenas: data.status !== 'inactive' ? apiario.activeColmenas + 1 : apiario.activeColmenas,
+      updatedAt: new Date(),
+    };
+  }
+
+  return newColmena;
+};
+
+// Update Colmena
+export const updateMockColmena = async (id: string, data: ColmenaFormData): Promise<Colmena> => {
+  await delay(400);
+  initializeColmenasStore();
+  initializeApiariosStore();
+
+  const index = colmenasStore.findIndex(c => c.id === id);
+  if (index === -1) throw new Error('Colmena not found');
+
+  const apiario = apiariosStore.find(a => a.id === data.apiarioId);
+  const existingColmena = colmenasStore[index];
+  const updatedColmena: Colmena = {
+    ...existingColmena,
+    code: data.code,
+    apiarioId: data.apiarioId,
+    apiarioName: apiario?.name,
+    queenAge: parseInt(data.queenAge),
+    queenStatus: data.queenStatus,
+    population: data.population,
+    health: parseInt(data.health),
+    weight: data.weight,
+    honeyMaturity: parseInt(data.honeyMaturity),
+    status: data.status,
+    notes: data.notes,
+    updatedAt: new Date(),
+  };
+  colmenasStore[index] = updatedColmena;
+  return updatedColmena;
+};
+
+// Delete Colmena
+export const deleteMockColmena = async (id: string): Promise<void> => {
+  await delay(300);
+  initializeColmenasStore();
+  initializeApiariosStore();
+
+  const index = colmenasStore.findIndex(c => c.id === id);
+  if (index === -1) throw new Error('Colmena not found');
+
+  const colmena = colmenasStore[index];
+  const apiario = apiariosStore.find(a => a.id === colmena.apiarioId);
+
+  colmenasStore.splice(index, 1);
+
+  // Update apiario counts
+  if (apiario) {
+    const apiarioIndex = apiariosStore.findIndex(a => a.id === colmena.apiarioId);
+    apiariosStore[apiarioIndex] = {
+      ...apiario,
+      colmenasCount: Math.max(0, apiario.colmenasCount - 1),
+      activeColmenas: colmena.status !== 'inactive' ? Math.max(0, apiario.activeColmenas - 1) : apiario.activeColmenas,
+      updatedAt: new Date(),
+    };
+  }
 };
 
 // Dashboard stats
