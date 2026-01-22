@@ -7,6 +7,7 @@ import Agro from './pages/Agro';
 import Insumos from './pages/Insumos';
 import Finanzas from './pages/Finanzas';
 import Procesamiento from './pages/Procesamiento';
+import Reportes from './pages/Reportes';
 
 // Placeholder component for module dashboards
 function ModulePlaceholder({ title, description }: { title: string; description: string }) {
@@ -92,10 +93,7 @@ export const router = createBrowserRouter([
         children: [
           {
             index: true,
-            element: <ModulePlaceholder
-              title="Reportes"
-              description="Generación de reportes y análisis de datos"
-            />
+            element: <Reportes />,
           },
         ],
       },
