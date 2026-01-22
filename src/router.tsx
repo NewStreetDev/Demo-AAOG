@@ -5,6 +5,7 @@ import Apicultura from './pages/Apicultura';
 import Pecuario from './pages/Pecuario';
 import Agro from './pages/Agro';
 import Insumos from './pages/Insumos';
+import Finanzas from './pages/Finanzas';
 
 // Placeholder component for module dashboards
 function ModulePlaceholder({ title, description }: { title: string; description: string }) {
@@ -84,10 +85,7 @@ export const router = createBrowserRouter([
         children: [
           {
             index: true,
-            element: <ModulePlaceholder
-              title="Finanzas"
-              description="Control financiero, ingresos, gastos y reportes contables"
-            />
+            element: <Finanzas />,
           },
         ],
       },
