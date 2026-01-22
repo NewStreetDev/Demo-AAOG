@@ -1,100 +1,120 @@
 import StatCard from '../components/common/Cards/StatCard';
-import ProductionCard from '../components/common/Cards/ProductionCard';
-import InventoryCard from '../components/common/Cards/InventoryCard';
-import ActivityChart from '../components/common/Cards/ActivityChart';
-import WorkerList from '../components/common/Cards/WorkerList';
+import MapCard from '../components/common/Cards/MapCard';
+import FincaOverview from '../components/common/Cards/FincaOverview';
 import TaskList from '../components/common/Cards/TaskList';
-import WeatherWidget from '../components/common/Cards/WeatherWidget';
+import StatsChart from '../components/common/Cards/StatsChart';
+import DocumentsCard from '../components/common/Cards/DocumentsCard';
 import StatCardSkeleton from '../components/common/Skeletons/StatCardSkeleton';
-import ProductionCardSkeleton from '../components/common/Skeletons/ProductionCardSkeleton';
 import ChartSkeleton from '../components/common/Skeletons/ChartSkeleton';
 import ListCardSkeleton from '../components/common/Skeletons/ListCardSkeleton';
 import {
-  useDashboardMetrics,
-  useProductionSummary,
-  useInventory,
-  useActivities,
-  useWorkers,
+  useGeneralStats,
+  useFarmSummaries,
   useTasks,
-  useWeather,
+  useStatsChartData,
+  useAuditSummary,
 } from '../hooks/useDashboard';
 
 export default function Home() {
-  const { data: metrics, isLoading: metricsLoading } = useDashboardMetrics();
-  const { data: production, isLoading: productionLoading } = useProductionSummary();
-  const { data: inventory, isLoading: inventoryLoading } = useInventory();
-  const { data: activities, isLoading: activitiesLoading } = useActivities();
-  const { data: workers, isLoading: workersLoading } = useWorkers();
+  const { data: stats, isLoading: statsLoading } = useGeneralStats();
+  const { data: farms, isLoading: farmsLoading } = useFarmSummaries();
   const { data: tasks, isLoading: tasksLoading } = useTasks();
-  const { data: weather, isLoading: weatherLoading } = useWeather();
+  const { data: chartData, isLoading: chartLoading } = useStatsChartData();
+  const { data: auditSummary, isLoading: auditLoading } = useAuditSummary();
 
   return (
-    <div className="space-y-8">
-      {/* Header - Increased spacing below for visual separation */}
-      <div className="space-y-1">
-        <h1 className="text-3xl font-bold text-gray-900">Mi Finca</h1>
-        <p className="text-sm text-gray-600">Vista general de tu finca</p>
+    <div className="space-y-6 max-w-[1600px] mx-auto">
+      {/* Page header */}
+      <div className="space-y-1 animate-fade-in">
+        <h1 className="text-3xl font-bold text-gray-900 tracking-tight">
+          Panel General
+        </h1>
+        <p className="text-sm text-gray-600">
+          Resumen administrativo de todas las fincas asociadas
+        </p>
       </div>
 
-      {/* Metrics Grid - Responsive: 1 col mobile, 2 cols tablet, 4 cols desktop */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-        {metricsLoading ? (
+      {/* Stats Grid - 4 columns */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-5">
+        {statsLoading ? (
           <>
             {[...Array(4)].map((_, i) => (
               <StatCardSkeleton key={i} />
             ))}
           </>
-        ) : (
-          metrics?.map((metric, index) => (
-            <StatCard key={index} metric={metric} />
-          ))
-        )}
+        ) : stats ? (
+          <>
+            <StatCard
+              label="Fincas Registradas"
+              value={stats.registeredFarms}
+              icon="farms"
+            />
+            <StatCard
+              label="Trabajadores Activos"
+              value={stats.activeWorkers}
+              icon="workers"
+            />
+            <StatCard
+              label="Producción del Mes"
+              value={`${stats.monthlyProduction.value.toLocaleString()} ${stats.monthlyProduction.unit}`}
+              icon="production"
+            />
+            <StatCard
+              label="Ingresos del Mes"
+              value={`$${stats.monthlyIncome.toLocaleString()}`}
+              icon="income"
+            />
+          </>
+        ) : null}
       </div>
 
-      {/* Main Content Grid - Responsive: 1 col mobile, 2 cols tablet, 3 cols desktop */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-        {/* Left Column - Production & Inventory */}
-        <div className="space-y-6">
-          {productionLoading ? (
-            <ProductionCardSkeleton />
-          ) : production ? (
-            <ProductionCard production={production} />
-          ) : null}
-
-          {inventoryLoading ? (
-            <ListCardSkeleton itemCount={3} />
-          ) : inventory ? (
-            <InventoryCard items={inventory} />
-          ) : null}
-        </div>
-
-        {/* Middle Column - Activities & Workers */}
-        <div className="space-y-6">
-          {activitiesLoading ? (
+      {/* Map and Vision General - 2 columns */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-5">
+        {/* Map - takes 2/3 of space */}
+        <div className="lg:col-span-2">
+          {farmsLoading ? (
             <ChartSkeleton />
-          ) : activities ? (
-            <ActivityChart activities={activities} />
-          ) : null}
-
-          {workersLoading ? (
-            <ListCardSkeleton itemCount={3} showAvatar={true} />
-          ) : workers ? (
-            <WorkerList workers={workers} />
+          ) : farms ? (
+            <MapCard farms={farms} />
           ) : null}
         </div>
 
-        {/* Right Column - Tasks & Weather */}
-        <div className="space-y-6">
+        {/* Vision General - takes 1/3 of space */}
+        <div>
+          {farmsLoading ? (
+            <ListCardSkeleton itemCount={5} />
+          ) : farms ? (
+            <FincaOverview farms={farms} />
+          ) : null}
+        </div>
+      </div>
+
+      {/* Bottom row - 3 columns */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-5">
+        {/* Tasks */}
+        <div>
           {tasksLoading ? (
-            <ListCardSkeleton itemCount={3} />
+            <ListCardSkeleton itemCount={4} />
           ) : tasks ? (
             <TaskList tasks={tasks} />
           ) : null}
+        </div>
 
-          {weatherLoading ? (
-            <ListCardSkeleton itemCount={4} />
-          ) : weather ? (
-            <WeatherWidget weather={weather} />
+        {/* Stats Chart */}
+        <div>
+          {chartLoading ? (
+            <ChartSkeleton />
+          ) : chartData ? (
+            <StatsChart data={chartData} />
+          ) : null}
+        </div>
+
+        {/* Documents Card */}
+        <div>
+          {auditLoading ? (
+            <ListCardSkeleton itemCount={3} />
+          ) : auditSummary ? (
+            <DocumentsCard auditSummary={auditSummary} />
           ) : null}
         </div>
       </div>
