@@ -1,3 +1,5 @@
+import { useState } from 'react';
+import { Plus } from 'lucide-react';
 import {
   AgroStatCard,
   CropCard,
@@ -5,21 +7,75 @@ import {
   AgroProductionChart,
   CropDistributionChart,
   AgroTaskList,
+  LoteFormModal,
+  LoteDetailModal,
+  CropFormModal,
+  CropDetailModal,
 } from '../components/agro';
 import StatCardSkeleton from '../components/common/Skeletons/StatCardSkeleton';
 import ChartSkeleton from '../components/common/Skeletons/ChartSkeleton';
 import ListCardSkeleton from '../components/common/Skeletons/ListCardSkeleton';
 import {
   useLotes,
+  useCrops,
   useAgroStats,
   useAgroProduction,
   useAgroTasks,
   useCropDistribution,
   useCropSummaries,
 } from '../hooks/useAgro';
+import type { Lote, Crop } from '../types/agro.types';
 
 export default function Agro() {
+  // Modal state for Lotes
+  const [selectedLote, setSelectedLote] = useState<Lote | null>(null);
+  const [loteFormModalOpen, setLoteFormModalOpen] = useState(false);
+  const [loteDetailModalOpen, setLoteDetailModalOpen] = useState(false);
+
+  // Modal state for Crops
+  const [selectedCrop, setSelectedCrop] = useState<Crop | null>(null);
+  const [cropFormModalOpen, setCropFormModalOpen] = useState(false);
+  const [cropDetailModalOpen, setCropDetailModalOpen] = useState(false);
+
+  // Lote handlers
+  const handleLoteClick = (lote: Lote) => {
+    setSelectedLote(lote);
+    setLoteDetailModalOpen(true);
+  };
+
+  const handleLoteEdit = (lote: Lote) => {
+    setSelectedLote(lote);
+    setLoteDetailModalOpen(false);
+    setLoteFormModalOpen(true);
+  };
+
+  const handleNewLote = () => {
+    setSelectedLote(null);
+    setLoteFormModalOpen(true);
+  };
+
+  // Crop handlers
+  const handleCropClick = (cropId: string) => {
+    const crop = crops?.find(c => c.id === cropId);
+    if (crop) {
+      setSelectedCrop(crop);
+      setCropDetailModalOpen(true);
+    }
+  };
+
+  const handleCropEdit = (crop: Crop) => {
+    setSelectedCrop(crop);
+    setCropDetailModalOpen(false);
+    setCropFormModalOpen(true);
+  };
+
+  const handleNewCrop = () => {
+    setSelectedCrop(null);
+    setCropFormModalOpen(true);
+  };
+
   const { data: lotes, isLoading: lotesLoading } = useLotes();
+  const { data: crops } = useCrops();
   const { data: stats, isLoading: statsLoading } = useAgroStats();
   const { data: production, isLoading: productionLoading } = useAgroProduction();
   const { data: tasks, isLoading: tasksLoading } = useAgroTasks();
@@ -29,13 +85,31 @@ export default function Agro() {
   return (
     <div className="space-y-6 max-w-[1600px] mx-auto">
       {/* Page header */}
-      <div className="space-y-1 animate-fade-in">
-        <h1 className="text-3xl font-bold text-gray-900 tracking-tight">
-          Agricultura
-        </h1>
-        <p className="text-sm text-gray-600">
-          Gestión de cultivos, lotes, planificación agrícola y cosechas
-        </p>
+      <div className="flex items-start justify-between animate-fade-in">
+        <div className="space-y-1">
+          <h1 className="text-3xl font-bold text-gray-900 tracking-tight">
+            Agricultura
+          </h1>
+          <p className="text-sm text-gray-600">
+            Gestión de cultivos, lotes, planificación agrícola y cosechas
+          </p>
+        </div>
+        <div className="flex gap-2">
+          <button
+            onClick={handleNewLote}
+            className="btn-secondary inline-flex items-center gap-2"
+          >
+            <Plus className="w-4 h-4" />
+            Nuevo Lote
+          </button>
+          <button
+            onClick={handleNewCrop}
+            className="btn-primary inline-flex items-center gap-2"
+          >
+            <Plus className="w-4 h-4" />
+            Nuevo Cultivo
+          </button>
+        </div>
       </div>
 
       {/* Stats Grid - 4 columns */}
@@ -87,7 +161,11 @@ export default function Agro() {
             </>
           ) : cropSummaries ? (
             cropSummaries.map((crop) => (
-              <CropCard key={crop.id} crop={crop} />
+              <CropCard
+                key={crop.id}
+                crop={crop}
+                onClick={() => handleCropClick(crop.id)}
+              />
             ))
           ) : null}
         </div>
@@ -140,13 +218,45 @@ export default function Agro() {
                 </>
               ) : lotes ? (
                 lotes.slice(0, 6).map((lote) => (
-                  <LoteCard key={lote.id} lote={lote} />
+                  <LoteCard
+                    key={lote.id}
+                    lote={lote}
+                    onClick={() => handleLoteClick(lote)}
+                  />
                 ))
               ) : null}
             </div>
           </div>
         </div>
       </div>
+
+      {/* Modals */}
+      <LoteFormModal
+        open={loteFormModalOpen}
+        onOpenChange={setLoteFormModalOpen}
+        lote={selectedLote}
+        onSuccess={() => setSelectedLote(null)}
+      />
+      <LoteDetailModal
+        open={loteDetailModalOpen}
+        onOpenChange={setLoteDetailModalOpen}
+        lote={selectedLote}
+        onEdit={handleLoteEdit}
+        onDeleteSuccess={() => setSelectedLote(null)}
+      />
+      <CropFormModal
+        open={cropFormModalOpen}
+        onOpenChange={setCropFormModalOpen}
+        crop={selectedCrop}
+        onSuccess={() => setSelectedCrop(null)}
+      />
+      <CropDetailModal
+        open={cropDetailModalOpen}
+        onOpenChange={setCropDetailModalOpen}
+        crop={selectedCrop}
+        onEdit={handleCropEdit}
+        onDeleteSuccess={() => setSelectedCrop(null)}
+      />
     </div>
   );
 }
