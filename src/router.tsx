@@ -9,6 +9,7 @@ import Finanzas from './pages/Finanzas';
 import Procesamiento from './pages/Procesamiento';
 import Reportes from './pages/Reportes';
 import Trabajadores from './pages/Trabajadores';
+import Infraestructura from './pages/Infraestructura';
 
 // Placeholder component for module dashboards
 function ModulePlaceholder({ title, description }: { title: string; description: string }) {
@@ -109,10 +110,12 @@ export const router = createBrowserRouter([
       },
       {
         path: 'infraestructura',
-        element: <ModulePlaceholder
-          title="Infraestructura"
-          description="Control de instalaciones y equipamiento de la finca"
-        />,
+        children: [
+          {
+            index: true,
+            element: <Infraestructura />,
+          },
+        ],
       },
       {
         path: 'activos',
