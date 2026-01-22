@@ -19,6 +19,7 @@ export interface Lote extends BaseEntity {
     lat: number;
     lng: number;
   };
+  notes?: string;
 }
 
 // Cultivo

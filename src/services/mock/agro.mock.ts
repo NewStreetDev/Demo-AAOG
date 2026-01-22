@@ -8,78 +8,78 @@ import type {
   CropSummary,
   AgroAction,
 } from '../../types/agro.types';
+import type { LoteFormData, CropFormData } from '../../schemas/agro.schema';
 
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
-// Lotes mock data
-export const getMockLotes = async (): Promise<Lote[]> => {
-  await delay(300);
-  return [
-    {
-      id: '1',
-      name: 'Lote Norte',
-      code: 'LT-001',
-      area: 5.5,
-      soilType: 'Franco arcilloso',
-      irrigationType: 'drip',
-      status: 'active',
-      currentCropId: '1',
-      createdAt: new Date('2020-01-01'),
-      updatedAt: new Date('2026-01-15'),
-    },
-    {
-      id: '2',
-      name: 'Lote Central',
-      code: 'LT-002',
-      area: 8.2,
-      soilType: 'Franco arenoso',
-      irrigationType: 'sprinkler',
-      status: 'active',
-      currentCropId: '2',
-      createdAt: new Date('2020-01-01'),
-      updatedAt: new Date('2026-01-10'),
-    },
-    {
-      id: '3',
-      name: 'Lote Sur',
-      code: 'LT-003',
-      area: 4.0,
-      soilType: 'Franco',
-      irrigationType: 'drip',
-      status: 'active',
-      currentCropId: '3',
-      createdAt: new Date('2020-01-01'),
-      updatedAt: new Date('2026-01-18'),
-    },
-    {
-      id: '4',
-      name: 'Lote Este',
-      code: 'LT-004',
-      area: 3.5,
-      soilType: 'Arcilloso',
-      irrigationType: 'flood',
-      status: 'preparation',
-      createdAt: new Date('2020-01-01'),
-      updatedAt: new Date('2026-01-05'),
-    },
-    {
-      id: '5',
-      name: 'Lote Oeste',
-      code: 'LT-005',
-      area: 2.8,
-      soilType: 'Franco arenoso',
-      irrigationType: 'none',
-      status: 'resting',
-      createdAt: new Date('2020-01-01'),
-      updatedAt: new Date('2025-12-20'),
-    },
-  ];
-};
+// In-memory stores
+let lotesStore: Lote[] = [];
+let cropsStore: Crop[] = [];
 
-// Crops mock data
-export const getMockCrops = async (): Promise<Crop[]> => {
-  await delay(300);
-  return [
+// Initial Lotes Data
+const initialLotes: Lote[] = [
+  {
+    id: '1',
+    name: 'Lote Norte',
+    code: 'LT-001',
+    area: 5.5,
+    soilType: 'Franco arcilloso',
+    irrigationType: 'drip',
+    status: 'active',
+    currentCropId: '1',
+    createdAt: new Date('2020-01-01'),
+    updatedAt: new Date('2026-01-15'),
+  },
+  {
+    id: '2',
+    name: 'Lote Central',
+    code: 'LT-002',
+    area: 8.2,
+    soilType: 'Franco arenoso',
+    irrigationType: 'sprinkler',
+    status: 'active',
+    currentCropId: '2',
+    createdAt: new Date('2020-01-01'),
+    updatedAt: new Date('2026-01-10'),
+  },
+  {
+    id: '3',
+    name: 'Lote Sur',
+    code: 'LT-003',
+    area: 4.0,
+    soilType: 'Franco',
+    irrigationType: 'drip',
+    status: 'active',
+    currentCropId: '3',
+    createdAt: new Date('2020-01-01'),
+    updatedAt: new Date('2026-01-18'),
+  },
+  {
+    id: '4',
+    name: 'Lote Este',
+    code: 'LT-004',
+    area: 3.5,
+    soilType: 'Arcilloso',
+    irrigationType: 'flood',
+    status: 'preparation',
+    createdAt: new Date('2020-01-01'),
+    updatedAt: new Date('2026-01-05'),
+  },
+  {
+    id: '5',
+    name: 'Lote Oeste',
+    code: 'LT-005',
+    area: 2.8,
+    soilType: 'Franco arenoso',
+    irrigationType: 'none',
+    status: 'resting',
+    createdAt: new Date('2020-01-01'),
+    updatedAt: new Date('2025-12-20'),
+  },
+];
+
+// Initial Crops Data
+const initialCrops: Crop[] = [
     {
       id: '1',
       name: 'Tomate',
@@ -145,6 +145,175 @@ export const getMockCrops = async (): Promise<Crop[]> => {
       updatedAt: new Date('2026-01-20'),
     },
   ];
+
+// Initialize stores
+export const initializeLotesStore = () => {
+  if (lotesStore.length === 0) {
+    lotesStore = [...initialLotes];
+  }
+};
+
+export const initializeCropsStore = () => {
+  if (cropsStore.length === 0) {
+    cropsStore = [...initialCrops];
+  }
+};
+
+// Get Lotes
+export const getMockLotes = async (): Promise<Lote[]> => {
+  await delay(300);
+  initializeLotesStore();
+  return [...lotesStore].sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime());
+};
+
+// Get single Lote
+export const getMockLoteById = async (id: string): Promise<Lote | undefined> => {
+  await delay(200);
+  initializeLotesStore();
+  return lotesStore.find(l => l.id === id);
+};
+
+// Create Lote
+export const createMockLote = async (data: LoteFormData): Promise<Lote> => {
+  await delay(400);
+  initializeLotesStore();
+  const newLote: Lote = {
+    id: String(Date.now()),
+    name: data.name,
+    code: data.code,
+    area: parseFloat(data.area),
+    soilType: data.soilType,
+    irrigationType: data.irrigationType,
+    status: data.status,
+    notes: data.notes,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
+  lotesStore.push(newLote);
+  return newLote;
+};
+
+// Update Lote
+export const updateMockLote = async (id: string, data: LoteFormData): Promise<Lote> => {
+  await delay(400);
+  initializeLotesStore();
+  const index = lotesStore.findIndex(l => l.id === id);
+  if (index === -1) throw new Error('Lote not found');
+
+  const existingLote = lotesStore[index];
+  const updatedLote: Lote = {
+    ...existingLote,
+    name: data.name,
+    code: data.code,
+    area: parseFloat(data.area),
+    soilType: data.soilType,
+    irrigationType: data.irrigationType,
+    status: data.status,
+    notes: data.notes,
+    updatedAt: new Date(),
+  };
+  lotesStore[index] = updatedLote;
+  return updatedLote;
+};
+
+// Delete Lote
+export const deleteMockLote = async (id: string): Promise<void> => {
+  await delay(300);
+  initializeLotesStore();
+  const index = lotesStore.findIndex(l => l.id === id);
+  if (index === -1) throw new Error('Lote not found');
+  lotesStore.splice(index, 1);
+};
+
+// Get Crops
+export const getMockCrops = async (): Promise<Crop[]> => {
+  await delay(300);
+  initializeCropsStore();
+  initializeLotesStore();
+  return [...cropsStore].sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime());
+};
+
+// Get single Crop
+export const getMockCropById = async (id: string): Promise<Crop | undefined> => {
+  await delay(200);
+  initializeCropsStore();
+  return cropsStore.find(c => c.id === id);
+};
+
+// Create Crop
+export const createMockCrop = async (data: CropFormData): Promise<Crop> => {
+  await delay(400);
+  initializeCropsStore();
+  initializeLotesStore();
+
+  const lote = lotesStore.find(l => l.id === data.loteId);
+  const newCrop: Crop = {
+    id: String(Date.now()),
+    name: data.name,
+    variety: data.variety,
+    productType: data.productType,
+    loteId: data.loteId,
+    loteName: lote?.name || '',
+    area: parseFloat(data.area),
+    plantingDate: new Date(data.plantingDate),
+    expectedHarvestDate: new Date(data.expectedHarvestDate),
+    actualHarvestDate: data.actualHarvestDate ? new Date(data.actualHarvestDate) : undefined,
+    status: data.status,
+    seedsUsed: data.seedsUsed ? parseFloat(data.seedsUsed) : undefined,
+    seedsUnit: data.seedsUnit,
+    estimatedYield: data.estimatedYield ? parseFloat(data.estimatedYield) : undefined,
+    actualYield: data.actualYield ? parseFloat(data.actualYield) : undefined,
+    yieldUnit: data.yieldUnit,
+    notes: data.notes,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
+  cropsStore.push(newCrop);
+  return newCrop;
+};
+
+// Update Crop
+export const updateMockCrop = async (id: string, data: CropFormData): Promise<Crop> => {
+  await delay(400);
+  initializeCropsStore();
+  initializeLotesStore();
+
+  const index = cropsStore.findIndex(c => c.id === id);
+  if (index === -1) throw new Error('Crop not found');
+
+  const lote = lotesStore.find(l => l.id === data.loteId);
+  const existingCrop = cropsStore[index];
+  const updatedCrop: Crop = {
+    ...existingCrop,
+    name: data.name,
+    variety: data.variety,
+    productType: data.productType,
+    loteId: data.loteId,
+    loteName: lote?.name || '',
+    area: parseFloat(data.area),
+    plantingDate: new Date(data.plantingDate),
+    expectedHarvestDate: new Date(data.expectedHarvestDate),
+    actualHarvestDate: data.actualHarvestDate ? new Date(data.actualHarvestDate) : undefined,
+    status: data.status,
+    seedsUsed: data.seedsUsed ? parseFloat(data.seedsUsed) : undefined,
+    seedsUnit: data.seedsUnit,
+    estimatedYield: data.estimatedYield ? parseFloat(data.estimatedYield) : undefined,
+    actualYield: data.actualYield ? parseFloat(data.actualYield) : undefined,
+    yieldUnit: data.yieldUnit,
+    notes: data.notes,
+    updatedAt: new Date(),
+  };
+  cropsStore[index] = updatedCrop;
+  return updatedCrop;
+};
+
+// Delete Crop
+export const deleteMockCrop = async (id: string): Promise<void> => {
+  await delay(300);
+  initializeCropsStore();
+  const index = cropsStore.findIndex(c => c.id === id);
+  if (index === -1) throw new Error('Crop not found');
+  cropsStore.splice(index, 1);
 };
 
 // Dashboard stats
