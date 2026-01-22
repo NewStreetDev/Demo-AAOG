@@ -9,13 +9,16 @@ import type {
   AccountsReceivable,
   AccountsPayable,
 } from '../../types/finanzas.types';
+import type { SaleRecordFormData, PurchaseRecordFormData } from '../../schemas/finanzas.schema';
 
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
-// Sales Records
-export const getMockSalesRecords = async (): Promise<SaleRecord[]> => {
-  await delay(300);
-  return [
+// In-memory stores
+let salesStore: SaleRecord[] = [];
+let purchasesStore: PurchaseRecord[] = [];
+
+// Initial Sales Data
+const initialSales: SaleRecord[] = [
     {
       id: '1',
       date: new Date('2026-01-20'),
@@ -84,13 +87,10 @@ export const getMockSalesRecords = async (): Promise<SaleRecord[]> => {
       createdAt: new Date('2026-01-12'),
       updatedAt: new Date('2026-01-12'),
     },
-  ];
-};
+];
 
-// Purchase Records
-export const getMockPurchaseRecords = async (): Promise<PurchaseRecord[]> => {
-  await delay(300);
-  return [
+// Initial Purchases Data
+const initialPurchases: PurchaseRecord[] = [
     {
       id: '1',
       date: new Date('2026-01-18'),
@@ -158,7 +158,193 @@ export const getMockPurchaseRecords = async (): Promise<PurchaseRecord[]> => {
       createdAt: new Date('2026-01-10'),
       updatedAt: new Date('2026-01-10'),
     },
-  ];
+];
+
+// Initialize stores
+export const initializeSalesStore = () => {
+  if (salesStore.length === 0) {
+    salesStore = [...initialSales];
+  }
+};
+
+export const initializePurchasesStore = () => {
+  if (purchasesStore.length === 0) {
+    purchasesStore = [...initialPurchases];
+  }
+};
+
+// Get Sales Records
+export const getMockSalesRecords = async (): Promise<SaleRecord[]> => {
+  await delay(300);
+  initializeSalesStore();
+  return [...salesStore].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+};
+
+// Get single Sale Record
+export const getMockSaleRecordById = async (id: string): Promise<SaleRecord | undefined> => {
+  await delay(200);
+  initializeSalesStore();
+  return salesStore.find(s => s.id === id);
+};
+
+// Create Sale Record
+export const createMockSaleRecord = async (data: SaleRecordFormData): Promise<SaleRecord> => {
+  await delay(400);
+  initializeSalesStore();
+  const quantity = parseFloat(data.quantity);
+  const unitPrice = parseFloat(data.unitPrice);
+  const totalAmount = quantity * unitPrice;
+  const amountPaid = data.amountPaid ? parseFloat(data.amountPaid) : (data.paymentStatus === 'paid' ? totalAmount : 0);
+
+  const newSale: SaleRecord = {
+    id: String(Date.now()),
+    date: new Date(data.date),
+    invoiceNumber: data.invoiceNumber,
+    moduleSource: data.moduleSource,
+    productDescription: data.productDescription,
+    quantity,
+    unit: data.unit,
+    unitPrice,
+    totalAmount,
+    buyerName: data.buyerName,
+    paymentStatus: data.paymentStatus,
+    amountPaid,
+    dueDate: data.dueDate ? new Date(data.dueDate) : undefined,
+    notes: data.notes,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
+  salesStore.push(newSale);
+  return newSale;
+};
+
+// Update Sale Record
+export const updateMockSaleRecord = async (id: string, data: SaleRecordFormData): Promise<SaleRecord> => {
+  await delay(400);
+  initializeSalesStore();
+  const index = salesStore.findIndex(s => s.id === id);
+  if (index === -1) throw new Error('Sale record not found');
+
+  const quantity = parseFloat(data.quantity);
+  const unitPrice = parseFloat(data.unitPrice);
+  const totalAmount = quantity * unitPrice;
+  const amountPaid = data.amountPaid ? parseFloat(data.amountPaid) : (data.paymentStatus === 'paid' ? totalAmount : 0);
+
+  const existingSale = salesStore[index];
+  const updatedSale: SaleRecord = {
+    ...existingSale,
+    date: new Date(data.date),
+    invoiceNumber: data.invoiceNumber,
+    moduleSource: data.moduleSource,
+    productDescription: data.productDescription,
+    quantity,
+    unit: data.unit,
+    unitPrice,
+    totalAmount,
+    buyerName: data.buyerName,
+    paymentStatus: data.paymentStatus,
+    amountPaid,
+    dueDate: data.dueDate ? new Date(data.dueDate) : undefined,
+    notes: data.notes,
+    updatedAt: new Date(),
+  };
+  salesStore[index] = updatedSale;
+  return updatedSale;
+};
+
+// Delete Sale Record
+export const deleteMockSaleRecord = async (id: string): Promise<void> => {
+  await delay(300);
+  initializeSalesStore();
+  const index = salesStore.findIndex(s => s.id === id);
+  if (index === -1) throw new Error('Sale record not found');
+  salesStore.splice(index, 1);
+};
+
+// Get Purchase Records
+export const getMockPurchaseRecords = async (): Promise<PurchaseRecord[]> => {
+  await delay(300);
+  initializePurchasesStore();
+  return [...purchasesStore].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+};
+
+// Get single Purchase Record
+export const getMockPurchaseRecordById = async (id: string): Promise<PurchaseRecord | undefined> => {
+  await delay(200);
+  initializePurchasesStore();
+  return purchasesStore.find(p => p.id === id);
+};
+
+// Create Purchase Record
+export const createMockPurchaseRecord = async (data: PurchaseRecordFormData): Promise<PurchaseRecord> => {
+  await delay(400);
+  initializePurchasesStore();
+  const totalAmount = parseFloat(data.totalAmount);
+  const amountPaid = data.amountPaid ? parseFloat(data.amountPaid) : (data.paymentStatus === 'paid' ? totalAmount : 0);
+
+  const newPurchase: PurchaseRecord = {
+    id: String(Date.now()),
+    date: new Date(data.date),
+    invoiceNumber: data.invoiceNumber,
+    supplierName: data.supplierName,
+    category: data.category,
+    description: data.description,
+    quantity: data.quantity ? parseFloat(data.quantity) : undefined,
+    unit: data.unit || undefined,
+    unitCost: data.unitCost ? parseFloat(data.unitCost) : undefined,
+    totalAmount,
+    paymentStatus: data.paymentStatus,
+    amountPaid,
+    dueDate: data.dueDate ? new Date(data.dueDate) : undefined,
+    moduleUsage: data.moduleUsage ? data.moduleUsage as PurchaseRecord['moduleUsage'] : undefined,
+    notes: data.notes,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
+  purchasesStore.push(newPurchase);
+  return newPurchase;
+};
+
+// Update Purchase Record
+export const updateMockPurchaseRecord = async (id: string, data: PurchaseRecordFormData): Promise<PurchaseRecord> => {
+  await delay(400);
+  initializePurchasesStore();
+  const index = purchasesStore.findIndex(p => p.id === id);
+  if (index === -1) throw new Error('Purchase record not found');
+
+  const totalAmount = parseFloat(data.totalAmount);
+  const amountPaid = data.amountPaid ? parseFloat(data.amountPaid) : (data.paymentStatus === 'paid' ? totalAmount : 0);
+
+  const existingPurchase = purchasesStore[index];
+  const updatedPurchase: PurchaseRecord = {
+    ...existingPurchase,
+    date: new Date(data.date),
+    invoiceNumber: data.invoiceNumber,
+    supplierName: data.supplierName,
+    category: data.category,
+    description: data.description,
+    quantity: data.quantity ? parseFloat(data.quantity) : undefined,
+    unit: data.unit || undefined,
+    unitCost: data.unitCost ? parseFloat(data.unitCost) : undefined,
+    totalAmount,
+    paymentStatus: data.paymentStatus,
+    amountPaid,
+    dueDate: data.dueDate ? new Date(data.dueDate) : undefined,
+    moduleUsage: data.moduleUsage ? data.moduleUsage as PurchaseRecord['moduleUsage'] : undefined,
+    notes: data.notes,
+    updatedAt: new Date(),
+  };
+  purchasesStore[index] = updatedPurchase;
+  return updatedPurchase;
+};
+
+// Delete Purchase Record
+export const deleteMockPurchaseRecord = async (id: string): Promise<void> => {
+  await delay(300);
+  initializePurchasesStore();
+  const index = purchasesStore.findIndex(p => p.id === id);
+  if (index === -1) throw new Error('Purchase record not found');
+  purchasesStore.splice(index, 1);
 };
 
 // Dashboard Stats
