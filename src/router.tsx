@@ -8,6 +8,7 @@ import Insumos from './pages/Insumos';
 import Finanzas from './pages/Finanzas';
 import Procesamiento from './pages/Procesamiento';
 import Reportes from './pages/Reportes';
+import Trabajadores from './pages/Trabajadores';
 
 // Placeholder component for module dashboards
 function ModulePlaceholder({ title, description }: { title: string; description: string }) {
@@ -99,10 +100,12 @@ export const router = createBrowserRouter([
       },
       {
         path: 'trabajadores',
-        element: <ModulePlaceholder
-          title="Trabajadores"
-          description="Gestión de personal, roles y asignación de tareas"
-        />,
+        children: [
+          {
+            index: true,
+            element: <Trabajadores />,
+          },
+        ],
       },
       {
         path: 'infraestructura',
