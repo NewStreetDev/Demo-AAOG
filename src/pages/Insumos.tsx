@@ -1,3 +1,5 @@
+import { useState } from 'react';
+import { Plus } from 'lucide-react';
 import {
   InsumosStatCard,
   CategoryStockCard,
@@ -6,6 +8,8 @@ import {
   LowStockAlertList,
   ConsumptionChart,
   StockDistributionChart,
+  InsumoFormModal,
+  InsumoDetailModal,
 } from '../components/insumos';
 import StatCardSkeleton from '../components/common/Skeletons/StatCardSkeleton';
 import ChartSkeleton from '../components/common/Skeletons/ChartSkeleton';
@@ -18,8 +22,31 @@ import {
   useCategorySummaries,
   useConsumptionData,
 } from '../hooks/useInsumos';
+import type { Insumo } from '../types/insumos.types';
 
 export default function Insumos() {
+  // Modal state
+  const [selectedInsumo, setSelectedInsumo] = useState<Insumo | null>(null);
+  const [formModalOpen, setFormModalOpen] = useState(false);
+  const [detailModalOpen, setDetailModalOpen] = useState(false);
+
+  // Handlers
+  const handleInsumoClick = (insumo: Insumo) => {
+    setSelectedInsumo(insumo);
+    setDetailModalOpen(true);
+  };
+
+  const handleInsumoEdit = (insumo: Insumo) => {
+    setSelectedInsumo(insumo);
+    setDetailModalOpen(false);
+    setFormModalOpen(true);
+  };
+
+  const handleNewInsumo = () => {
+    setSelectedInsumo(null);
+    setFormModalOpen(true);
+  };
+
   const { data: insumos, isLoading: insumosLoading } = useInsumos();
   const { data: stats, isLoading: statsLoading } = useInsumosStats();
   const { data: movements, isLoading: movementsLoading } = useMovements();
@@ -30,13 +57,22 @@ export default function Insumos() {
   return (
     <div className="space-y-6 max-w-[1600px] mx-auto">
       {/* Page header */}
-      <div className="space-y-1 animate-fade-in">
-        <h1 className="text-3xl font-bold text-gray-900 tracking-tight">
-          Gestión de Insumos
-        </h1>
-        <p className="text-sm text-gray-600">
-          Control de inventario, stock y movimientos de materiales e insumos
-        </p>
+      <div className="flex items-start justify-between animate-fade-in">
+        <div className="space-y-1">
+          <h1 className="text-3xl font-bold text-gray-900 tracking-tight">
+            Gestión de Insumos
+          </h1>
+          <p className="text-sm text-gray-600">
+            Control de inventario, stock y movimientos de materiales e insumos
+          </p>
+        </div>
+        <button
+          onClick={handleNewInsumo}
+          className="btn-primary inline-flex items-center gap-2"
+        >
+          <Plus className="w-4 h-4" />
+          Nuevo Insumo
+        </button>
       </div>
 
       {/* Stats Grid - 4 columns */}
@@ -129,7 +165,7 @@ export default function Insumos() {
           {insumosLoading ? (
             <ListCardSkeleton itemCount={6} />
           ) : insumos ? (
-            <InsumosList insumos={insumos} />
+            <InsumosList insumos={insumos} onInsumoClick={handleInsumoClick} />
           ) : null}
         </div>
 
@@ -142,6 +178,21 @@ export default function Insumos() {
           ) : null}
         </div>
       </div>
+
+      {/* Modals */}
+      <InsumoFormModal
+        open={formModalOpen}
+        onOpenChange={setFormModalOpen}
+        insumo={selectedInsumo}
+        onSuccess={() => setSelectedInsumo(null)}
+      />
+      <InsumoDetailModal
+        open={detailModalOpen}
+        onOpenChange={setDetailModalOpen}
+        insumo={selectedInsumo}
+        onEdit={handleInsumoEdit}
+        onDeleteSuccess={() => setSelectedInsumo(null)}
+      />
     </div>
   );
 }

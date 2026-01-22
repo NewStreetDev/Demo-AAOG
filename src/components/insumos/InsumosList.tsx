@@ -6,6 +6,7 @@ interface InsumosListProps {
   insumos: Insumo[];
   maxItems?: number;
   onViewAll?: () => void;
+  onInsumoClick?: (insumo: Insumo) => void;
 }
 
 const categoryLabels: Record<InsumoCategoryType, string> = {
@@ -31,7 +32,7 @@ const statusLabels = {
   critico: 'Crítico',
 };
 
-export default function InsumosList({ insumos, maxItems = 8, onViewAll }: InsumosListProps) {
+export default function InsumosList({ insumos, maxItems = 8, onViewAll, onInsumoClick }: InsumosListProps) {
   const [selectedCategory, setSelectedCategory] = useState<InsumoCategoryType | 'all'>('all');
 
   const filteredInsumos = selectedCategory === 'all'
@@ -98,6 +99,7 @@ export default function InsumosList({ insumos, maxItems = 8, onViewAll }: Insumo
               <tr
                 key={insumo.id}
                 className="hover:bg-gray-50 transition-colors cursor-pointer"
+                onClick={() => onInsumoClick?.(insumo)}
               >
                 <td className="py-3">
                   <div className="flex items-center gap-2">
