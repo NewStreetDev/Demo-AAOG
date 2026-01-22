@@ -2,6 +2,7 @@ import { createBrowserRouter } from 'react-router-dom';
 import MainLayout from './components/common/Layout/MainLayout';
 import Home from './pages/Home';
 import Apicultura from './pages/Apicultura';
+import Pecuario from './pages/Pecuario';
 
 // Placeholder component for module dashboards
 function ModulePlaceholder({ title, description }: { title: string; description: string }) {
@@ -54,17 +55,7 @@ export const router = createBrowserRouter([
         children: [
           {
             index: true,
-            element: <ModulePlaceholder
-              title="Pecuario"
-              description="Gestión de ganado, salud animal, reproducción y producción lechera"
-            />
-          },
-          {
-            path: 'inventory',
-            element: <ModulePlaceholder
-              title="Inventario de Ganado"
-              description="Control detallado del inventario pecuario"
-            />
+            element: <Pecuario />,
           },
         ],
       },
