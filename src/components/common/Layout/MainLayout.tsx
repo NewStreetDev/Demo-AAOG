@@ -1,5 +1,5 @@
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { Home, Sprout, Beef, Flower2, Factory, DollarSign, FileText, ChevronDown, Users, Building, Package, Box, Bell, Settings } from 'lucide-react';
+import { Home, Sprout, Beef, Flower2, Factory, DollarSign, FileText, ChevronDown, Users, Building, Package, Box, Bell, Settings, User } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import Breadcrumbs from '../Breadcrumbs';
 import FincaSelector from '../FincaSelector';
@@ -49,13 +49,25 @@ export default function MainLayout() {
 
   return (
     <div className="flex h-screen bg-gray-50">
-      {/* Sidebar */}
-      <aside className="w-64 bg-[#1e5631] text-white">
-        <div className="flex items-center gap-2 h-16 px-6 border-b border-green-700">
-          <Home className="w-6 h-6" />
-          <h1 className="text-xl font-bold">Mi Finca</h1>
+      {/* Premium Sidebar with glass-morphism */}
+      <aside className="w-64 bg-gradient-to-b from-primary via-primary to-primary-dark text-white shadow-2xl relative overflow-hidden">
+        {/* Decorative patterns */}
+        <div className="absolute inset-0 opacity-10 pattern-dots" />
+        <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-white/10 to-transparent rounded-full blur-3xl" />
+
+        {/* Logo header */}
+        <div className="relative flex items-center gap-3 h-16 px-6 border-b border-white/10 backdrop-blur-sm bg-white/5">
+          <div className="w-10 h-10 rounded-xl bg-white/10 backdrop-blur-sm flex items-center justify-center ring-1 ring-white/20">
+            <Home className="w-5 h-5" strokeWidth={2.5} />
+          </div>
+          <div>
+            <h1 className="text-lg font-bold tracking-tight">Mi Finca</h1>
+            <p className="text-xs text-green-100/80 font-medium">AAOG Dashboard</p>
+          </div>
         </div>
-        <nav className="p-4 space-y-1">
+
+        {/* Navigation */}
+        <nav className="relative p-4 space-y-1.5">
           {navigation.map((item) => {
             const Icon = item.icon;
             const isActive = location.pathname === item.href ||
@@ -65,34 +77,41 @@ export default function MainLayout() {
               <Link
                 key={item.name}
                 to={item.href}
-                className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                className={`group flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 text-sm ${
                   isActive
-                    ? 'bg-green-700 text-white'
-                    : 'text-green-100 hover:bg-green-700/50'
+                    ? 'bg-white/15 text-white shadow-lg backdrop-blur-sm ring-1 ring-white/20'
+                    : 'text-green-50 hover:bg-white/10 hover:text-white hover:translate-x-1'
                 }`}
               >
-                <Icon className="w-5 h-5" />
-                <span className="font-medium">{item.name}</span>
+                <Icon className={`w-5 h-5 transition-transform duration-200 ${isActive ? 'scale-110' : 'group-hover:scale-110'}`} strokeWidth={2} />
+                <span className="font-semibold">{item.name}</span>
+                {isActive && (
+                  <div className="ml-auto w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                )}
               </Link>
             );
           })}
 
           {/* Administration Dropdown */}
-          <div>
+          <div className="pt-2">
             <button
               onClick={() => setAdminOpen(!adminOpen)}
-              className="flex items-center justify-between w-full px-4 py-3 rounded-lg transition-colors text-green-100 hover:bg-green-700/50"
+              className={`group flex items-center justify-between w-full px-4 py-3 rounded-xl transition-all duration-200 text-sm ${
+                isAdminRouteActive
+                  ? 'bg-white/15 text-white shadow-lg backdrop-blur-sm ring-1 ring-white/20'
+                  : 'text-green-50 hover:bg-white/10 hover:text-white'
+              }`}
               aria-expanded={adminOpen}
               aria-label="Menú de administración"
             >
               <div className="flex items-center gap-3">
-                <Settings className="w-5 h-5" />
-                <span className="font-medium">Administración</span>
+                <Settings className={`w-5 h-5 transition-transform duration-200 ${isAdminRouteActive ? 'scale-110 rotate-90' : 'group-hover:scale-110 group-hover:rotate-90'}`} strokeWidth={2} />
+                <span className="font-semibold">Administración</span>
               </div>
-              <ChevronDown className={`w-5 h-5 transition-transform ${adminOpen ? 'rotate-180' : ''}`} />
+              <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${adminOpen ? 'rotate-180' : ''}`} strokeWidth={2.5} />
             </button>
             {adminOpen && (
-              <div className="mt-1 ml-4 space-y-1">
+              <div className="mt-2 ml-4 space-y-1 animate-slide-down">
                 {administrationItems.map((item) => {
                   const Icon = item.icon;
                   const isActive = location.pathname === item.href;
@@ -101,14 +120,14 @@ export default function MainLayout() {
                     <Link
                       key={item.name}
                       to={item.href}
-                      className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors text-sm ${
+                      className={`group flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all duration-200 text-sm ${
                         isActive
-                          ? 'bg-green-700 text-white'
-                          : 'text-green-100 hover:bg-green-700/50'
+                          ? 'bg-white/10 text-white shadow-sm'
+                          : 'text-green-100 hover:bg-white/5 hover:text-white hover:translate-x-1'
                       }`}
                     >
-                      <Icon className="w-4 h-4" />
-                      <span>{item.name}</span>
+                      <Icon className="w-4 h-4 transition-transform duration-200 group-hover:scale-110" strokeWidth={2} />
+                      <span className="font-medium">{item.name}</span>
                     </Link>
                   );
                 })}
@@ -116,32 +135,70 @@ export default function MainLayout() {
             )}
           </div>
         </nav>
+
+        {/* Bottom decoration */}
+        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
       </aside>
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Header */}
-        <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6">
+        {/* Premium Header with glass-morphism */}
+        <header className="h-16 bg-white/80 backdrop-blur-xl border-b border-gray-200/80 flex items-center justify-between px-8 shadow-sm relative z-10">
           <Breadcrumbs />
-          <div className="flex items-center gap-4">
-            <FincaSelector />
-            <button className="relative p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors">
-              <Bell className="w-5 h-5" />
-              <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-            </button>
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white font-semibold">
-                M
-              </div>
-              <span className="text-sm font-medium text-gray-700">Miguel</span>
-              <ChevronDown className="w-4 h-4 text-gray-500" />
+
+          {/* Right section */}
+          <div className="flex items-center gap-2">
+            {/* Finca Selector */}
+            <div className="mr-2">
+              <FincaSelector />
             </div>
+
+            {/* Notifications */}
+            <button
+              className="group relative p-2.5 text-gray-600 hover:text-gray-900 hover:bg-gray-100/80 rounded-xl transition-all duration-200 hover:scale-105"
+              aria-label="Notificaciones"
+            >
+              <Bell className="w-5 h-5" strokeWidth={2} />
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full ring-2 ring-white animate-pulse" />
+              {/* Notification badge with animation */}
+              <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center ring-2 ring-white scale-0 group-hover:scale-100 transition-transform">
+                3
+              </span>
+            </button>
+
+            {/* Settings */}
+            <button
+              className="p-2.5 text-gray-600 hover:text-gray-900 hover:bg-gray-100/80 rounded-xl transition-all duration-200 hover:scale-105 hover:rotate-90"
+              aria-label="Configuración"
+            >
+              <User className="w-5 h-5" strokeWidth={2} />
+            </button>
+
+            {/* Divider */}
+            <div className="h-8 w-px bg-gray-200 mx-2" />
+
+            {/* User menu */}
+            <button className="group flex items-center gap-3 hover:bg-gray-50 rounded-xl px-3 py-2 transition-all duration-200 hover:shadow-sm">
+              <div className="relative">
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold text-sm shadow-md ring-2 ring-blue-100 transition-transform duration-200 group-hover:scale-110 group-hover:rotate-3">
+                  M
+                </div>
+                <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full ring-2 ring-white" />
+              </div>
+              <div className="text-left">
+                <p className="text-sm font-bold text-gray-900">Miguel</p>
+                <p className="text-xs text-gray-500">Administrador</p>
+              </div>
+              <ChevronDown className="w-4 h-4 text-gray-400 transition-transform duration-200 group-hover:translate-y-0.5" strokeWidth={2.5} />
+            </button>
           </div>
         </header>
 
-        {/* Content */}
-        <main className="flex-1 overflow-auto p-6 bg-gray-50">
-          <Outlet />
+        {/* Content with premium background */}
+        <main className="flex-1 overflow-auto p-8 bg-gradient-to-br from-gray-50 via-gray-50/50 to-gray-100/50">
+          <div className="animate-fade-in">
+            <Outlet />
+          </div>
         </main>
       </div>
     </div>
