@@ -1,6 +1,7 @@
 import { createBrowserRouter } from 'react-router-dom';
 import MainLayout from './components/common/Layout/MainLayout';
 import Home from './pages/Home';
+import Apicultura from './pages/Apicultura';
 
 // Placeholder component for module dashboards
 function ModulePlaceholder({ title, description }: { title: string; description: string }) {
@@ -72,10 +73,7 @@ export const router = createBrowserRouter([
         children: [
           {
             index: true,
-            element: <ModulePlaceholder
-              title="Apicultura"
-              description="Gestión de apiarios, colmenas, producción de miel y derivados"
-            />
+            element: <Apicultura />,
           },
         ],
       },
