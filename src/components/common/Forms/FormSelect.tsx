@@ -26,8 +26,11 @@ export default function FormSelect({
   disabled,
   className,
 }: FormSelectProps) {
+  // Radix Select doesn't handle empty strings well, use undefined for unselected state
+  const selectValue = value === '' ? undefined : value;
+
   return (
-    <Select.Root value={value} onValueChange={onValueChange} disabled={disabled}>
+    <Select.Root value={selectValue} onValueChange={onValueChange} disabled={disabled}>
       <Select.Trigger
         className={cn(
           'flex h-10 w-full items-center justify-between rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm',

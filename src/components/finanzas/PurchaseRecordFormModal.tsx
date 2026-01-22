@@ -271,10 +271,10 @@ export default function PurchaseRecordFormModal({
               control={control}
               render={({ field }) => (
                 <FormSelect
-                  value={field.value || ''}
+                  value={field.value || undefined}
                   onValueChange={field.onChange}
-                  options={[{ value: '', label: 'Sin asignar' }, ...moduleSourceSelectOptions]}
-                  placeholder="Seleccionar..."
+                  options={moduleSourceSelectOptions}
+                  placeholder="Sin asignar"
                   error={errors.moduleUsage?.message}
                 />
               )}
