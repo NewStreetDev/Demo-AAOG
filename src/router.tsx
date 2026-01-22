@@ -3,6 +3,7 @@ import MainLayout from './components/common/Layout/MainLayout';
 import Home from './pages/Home';
 import Apicultura from './pages/Apicultura';
 import Pecuario from './pages/Pecuario';
+import Agro from './pages/Agro';
 
 // Placeholder component for module dashboards
 function ModulePlaceholder({ title, description }: { title: string; description: string }) {
@@ -43,10 +44,7 @@ export const router = createBrowserRouter([
         children: [
           {
             index: true,
-            element: <ModulePlaceholder
-              title="Agricultura"
-              description="Gestión de cultivos, planificación agrícola y seguimiento de cosechas"
-            />
+            element: <Agro />,
           },
         ],
       },
