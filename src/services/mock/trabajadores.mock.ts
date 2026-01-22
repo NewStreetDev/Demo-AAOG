@@ -8,110 +8,125 @@ import type {
   WorkerPerformance,
   TasksByWorker,
 } from '../../types/trabajadores.types';
+import type { WorkerFormData } from '../../schemas/worker.schema';
 
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+// In-memory store for workers (simulates database)
+let workersStore: Worker[] = [];
+
+// Initial Workers Mock Data
+const initialWorkers: Worker[] = [
+  {
+    id: '1',
+    firstName: 'Juan',
+    lastName: 'García',
+    documentId: '1234567890',
+    role: 'supervisor',
+    moduleAssignment: 'agro',
+    email: 'juan.garcia@finca.com',
+    phone: '8765-4321',
+    hireDate: new Date('2020-03-15'),
+    status: 'active',
+    hourlyRate: 15000,
+    specializations: ['riego', 'fertilización'],
+    createdAt: new Date('2020-03-15'),
+    updatedAt: new Date('2026-01-15'),
+  },
+  {
+    id: '2',
+    firstName: 'María',
+    lastName: 'López',
+    documentId: '0987654321',
+    role: 'trabajador',
+    moduleAssignment: 'pecuario',
+    email: 'maria.lopez@finca.com',
+    phone: '8765-4322',
+    hireDate: new Date('2021-06-20'),
+    status: 'active',
+    hourlyRate: 12000,
+    specializations: ['alimentación', 'ordeño'],
+    createdAt: new Date('2021-06-20'),
+    updatedAt: new Date('2026-01-15'),
+  },
+  {
+    id: '3',
+    firstName: 'Carlos',
+    lastName: 'Rodríguez',
+    documentId: '1122334455',
+    role: 'especialista',
+    moduleAssignment: 'apicultura',
+    email: 'carlos.rodriguez@finca.com',
+    phone: '8765-4323',
+    hireDate: new Date('2019-01-10'),
+    status: 'active',
+    hourlyRate: 18000,
+    specializations: ['manejo de abejas', 'cosecha de miel'],
+    createdAt: new Date('2019-01-10'),
+    updatedAt: new Date('2026-01-15'),
+  },
+  {
+    id: '4',
+    firstName: 'Ana',
+    lastName: 'Martínez',
+    documentId: '5566778899',
+    role: 'trabajador',
+    moduleAssignment: 'procesamiento',
+    email: 'ana.martinez@finca.com',
+    phone: '8765-4324',
+    hireDate: new Date('2022-09-05'),
+    status: 'on_leave',
+    hourlyRate: 11000,
+    specializations: ['empaque', 'etiquetado'],
+    createdAt: new Date('2022-09-05'),
+    updatedAt: new Date('2026-01-15'),
+  },
+  {
+    id: '5',
+    firstName: 'Roberto',
+    lastName: 'Sánchez',
+    documentId: '6677889900',
+    role: 'jefe',
+    moduleAssignment: 'multiple',
+    email: 'roberto.sanchez@finca.com',
+    phone: '8765-4325',
+    hireDate: new Date('2018-02-01'),
+    status: 'active',
+    hourlyRate: 25000,
+    specializations: ['gestión', 'planificación'],
+    createdAt: new Date('2018-02-01'),
+    updatedAt: new Date('2026-01-15'),
+  },
+  {
+    id: '6',
+    firstName: 'Laura',
+    lastName: 'Fernández',
+    documentId: '7788990011',
+    role: 'practicante',
+    moduleAssignment: 'agro',
+    email: 'laura.fernandez@finca.com',
+    phone: '8765-4326',
+    hireDate: new Date('2025-11-01'),
+    status: 'active',
+    hourlyRate: 8000,
+    specializations: ['siembra', 'cosecha'],
+    createdAt: new Date('2025-11-01'),
+    updatedAt: new Date('2026-01-15'),
+  },
+];
+
+// Initialize the store with initial data
+function initializeStore() {
+  if (workersStore.length === 0) {
+    workersStore = [...initialWorkers];
+  }
+}
 
 // Workers Mock Data
 export const getMockWorkers = async (): Promise<Worker[]> => {
   await delay(300);
-  return [
-    {
-      id: '1',
-      firstName: 'Juan',
-      lastName: 'García',
-      documentId: '1234567890',
-      role: 'supervisor',
-      moduleAssignment: 'agro',
-      email: 'juan.garcia@finca.com',
-      phone: '8765-4321',
-      hireDate: new Date('2020-03-15'),
-      status: 'active',
-      hourlyRate: 15000,
-      specializations: ['riego', 'fertilización'],
-      createdAt: new Date('2020-03-15'),
-      updatedAt: new Date('2026-01-15'),
-    },
-    {
-      id: '2',
-      firstName: 'María',
-      lastName: 'López',
-      documentId: '0987654321',
-      role: 'trabajador',
-      moduleAssignment: 'pecuario',
-      email: 'maria.lopez@finca.com',
-      phone: '8765-4322',
-      hireDate: new Date('2021-06-20'),
-      status: 'active',
-      hourlyRate: 12000,
-      specializations: ['alimentación', 'ordeño'],
-      createdAt: new Date('2021-06-20'),
-      updatedAt: new Date('2026-01-15'),
-    },
-    {
-      id: '3',
-      firstName: 'Carlos',
-      lastName: 'Rodríguez',
-      documentId: '1122334455',
-      role: 'especialista',
-      moduleAssignment: 'apicultura',
-      email: 'carlos.rodriguez@finca.com',
-      phone: '8765-4323',
-      hireDate: new Date('2019-01-10'),
-      status: 'active',
-      hourlyRate: 18000,
-      specializations: ['manejo de abejas', 'cosecha de miel'],
-      createdAt: new Date('2019-01-10'),
-      updatedAt: new Date('2026-01-15'),
-    },
-    {
-      id: '4',
-      firstName: 'Ana',
-      lastName: 'Martínez',
-      documentId: '5566778899',
-      role: 'trabajador',
-      moduleAssignment: 'procesamiento',
-      email: 'ana.martinez@finca.com',
-      phone: '8765-4324',
-      hireDate: new Date('2022-09-05'),
-      status: 'on_leave',
-      hourlyRate: 11000,
-      specializations: ['empaque', 'etiquetado'],
-      createdAt: new Date('2022-09-05'),
-      updatedAt: new Date('2026-01-15'),
-    },
-    {
-      id: '5',
-      firstName: 'Roberto',
-      lastName: 'Sánchez',
-      documentId: '6677889900',
-      role: 'jefe',
-      moduleAssignment: 'multiple',
-      email: 'roberto.sanchez@finca.com',
-      phone: '8765-4325',
-      hireDate: new Date('2018-02-01'),
-      status: 'active',
-      hourlyRate: 25000,
-      specializations: ['gestión', 'planificación'],
-      createdAt: new Date('2018-02-01'),
-      updatedAt: new Date('2026-01-15'),
-    },
-    {
-      id: '6',
-      firstName: 'Laura',
-      lastName: 'Fernández',
-      documentId: '7788990011',
-      role: 'practicante',
-      moduleAssignment: 'agro',
-      email: 'laura.fernandez@finca.com',
-      phone: '8765-4326',
-      hireDate: new Date('2025-11-01'),
-      status: 'active',
-      hourlyRate: 8000,
-      specializations: ['siembra', 'cosecha'],
-      createdAt: new Date('2025-11-01'),
-      updatedAt: new Date('2026-01-15'),
-    },
-  ];
+  initializeStore();
+  return [...workersStore];
 };
 
 // Worker Assignments
@@ -350,4 +365,85 @@ export const getMockTasksByWorker = async (): Promise<TasksByWorker[]> => {
     { worker: 'Carlos Rodríguez', pending: 1, inProgress: 0, completed: 8, total: 9 },
     { worker: 'Roberto Sánchez', pending: 1, inProgress: 0, completed: 14, total: 15 },
   ];
+};
+
+// CRUD Operations
+
+// Get single worker by ID
+export const getMockWorkerById = async (id: string): Promise<Worker | null> => {
+  await delay(200);
+  initializeStore();
+  return workersStore.find(w => w.id === id) || null;
+};
+
+// Create new worker
+export const createMockWorker = async (data: WorkerFormData): Promise<Worker> => {
+  await delay(400);
+  initializeStore();
+
+  const now = new Date();
+  const newWorker: Worker = {
+    id: String(Date.now()),
+    firstName: data.firstName,
+    lastName: data.lastName,
+    documentId: data.documentId,
+    role: data.role,
+    moduleAssignment: data.moduleAssignment,
+    status: data.status,
+    hireDate: new Date(data.hireDate),
+    hourlyRate: data.hourlyRate ? parseFloat(data.hourlyRate) : undefined,
+    email: data.email || undefined,
+    phone: data.phone || undefined,
+    notes: data.notes || undefined,
+    specializations: [],
+    createdAt: now,
+    updatedAt: now,
+  };
+
+  workersStore.push(newWorker);
+  return newWorker;
+};
+
+// Update existing worker
+export const updateMockWorker = async (id: string, data: WorkerFormData): Promise<Worker> => {
+  await delay(400);
+  initializeStore();
+
+  const index = workersStore.findIndex(w => w.id === id);
+  if (index === -1) {
+    throw new Error('Trabajador no encontrado');
+  }
+
+  const existing = workersStore[index];
+  const updatedWorker: Worker = {
+    ...existing,
+    firstName: data.firstName,
+    lastName: data.lastName,
+    documentId: data.documentId,
+    role: data.role,
+    moduleAssignment: data.moduleAssignment,
+    status: data.status,
+    hireDate: new Date(data.hireDate),
+    hourlyRate: data.hourlyRate ? parseFloat(data.hourlyRate) : undefined,
+    email: data.email || undefined,
+    phone: data.phone || undefined,
+    notes: data.notes || undefined,
+    updatedAt: new Date(),
+  };
+
+  workersStore[index] = updatedWorker;
+  return updatedWorker;
+};
+
+// Delete worker
+export const deleteMockWorker = async (id: string): Promise<void> => {
+  await delay(300);
+  initializeStore();
+
+  const index = workersStore.findIndex(w => w.id === id);
+  if (index === -1) {
+    throw new Error('Trabajador no encontrado');
+  }
+
+  workersStore.splice(index, 1);
 };

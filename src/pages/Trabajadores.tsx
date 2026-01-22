@@ -1,3 +1,5 @@
+import { useState } from 'react';
+import { Plus } from 'lucide-react';
 import {
   TrabajadoresStatCard,
   WorkerCard,
@@ -5,6 +7,8 @@ import {
   AttendanceChart,
   TasksByWorkerChart,
   WorkerPerformanceList,
+  WorkerFormModal,
+  WorkerDetailModal,
 } from '../components/trabajadores';
 import StatCardSkeleton from '../components/common/Skeletons/StatCardSkeleton';
 import ChartSkeleton from '../components/common/Skeletons/ChartSkeleton';
@@ -17,6 +21,7 @@ import {
   useTasksByWorker,
   useWorkerPerformance,
 } from '../hooks/useTrabajadores';
+import type { Worker } from '../types/trabajadores.types';
 
 export default function Trabajadores() {
   const { data: workers, isLoading: workersLoading } = useWorkers();
@@ -26,16 +31,60 @@ export default function Trabajadores() {
   const { data: tasksByWorker, isLoading: tasksByWorkerLoading } = useTasksByWorker();
   const { data: performance, isLoading: performanceLoading } = useWorkerPerformance();
 
+  // Modal state
+  const [isFormModalOpen, setIsFormModalOpen] = useState(false);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [selectedWorker, setSelectedWorker] = useState<Worker | null>(null);
+  const [editingWorker, setEditingWorker] = useState<Worker | null>(null);
+
+  const handleWorkerClick = (worker: Worker) => {
+    setSelectedWorker(worker);
+    setIsDetailModalOpen(true);
+  };
+
+  const handleEditWorker = (worker: Worker) => {
+    setEditingWorker(worker);
+    setIsFormModalOpen(true);
+  };
+
+  const handleNewWorker = () => {
+    setEditingWorker(null);
+    setIsFormModalOpen(true);
+  };
+
+  const handleFormModalClose = (open: boolean) => {
+    setIsFormModalOpen(open);
+    if (!open) {
+      setEditingWorker(null);
+    }
+  };
+
+  const handleDetailModalClose = (open: boolean) => {
+    setIsDetailModalOpen(open);
+    if (!open) {
+      setSelectedWorker(null);
+    }
+  };
+
   return (
     <div className="space-y-6 max-w-[1600px] mx-auto">
       {/* Page header */}
-      <div className="space-y-1 animate-fade-in">
-        <h1 className="text-3xl font-bold text-gray-900 tracking-tight">
-          Trabajadores
-        </h1>
-        <p className="text-sm text-gray-600">
-          Gestión de personal, asignaciones de tareas y control de asistencia
-        </p>
+      <div className="flex items-start justify-between animate-fade-in">
+        <div className="space-y-1">
+          <h1 className="text-3xl font-bold text-gray-900 tracking-tight">
+            Trabajadores
+          </h1>
+          <p className="text-sm text-gray-600">
+            Gestión de personal, asignaciones de tareas y control de asistencia
+          </p>
+        </div>
+        <button
+          className="btn-primary inline-flex items-center gap-2"
+          onClick={handleNewWorker}
+        >
+          <Plus className="w-4 h-4" />
+          Nuevo Trabajador
+        </button>
       </div>
 
       {/* Stats Grid - 4 columns */}
@@ -88,7 +137,11 @@ export default function Trabajadores() {
             </>
           ) : workers ? (
             workers.map((worker) => (
-              <WorkerCard key={worker.id} worker={worker} />
+              <WorkerCard
+                key={worker.id}
+                worker={worker}
+                onClick={() => handleWorkerClick(worker)}
+              />
             ))
           ) : null}
         </div>
@@ -135,6 +188,19 @@ export default function Trabajadores() {
           ) : null}
         </div>
       </div>
+
+      {/* Modals */}
+      <WorkerFormModal
+        open={isFormModalOpen}
+        onOpenChange={handleFormModalClose}
+        worker={editingWorker}
+      />
+      <WorkerDetailModal
+        open={isDetailModalOpen}
+        onOpenChange={handleDetailModalClose}
+        worker={selectedWorker}
+        onEdit={handleEditWorker}
+      />
     </div>
   );
 }
