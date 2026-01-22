@@ -5,3 +5,7 @@ export { default as MaintenanceList } from './MaintenanceList';
 export { default as MaintenanceTimelineChart } from './MaintenanceTimelineChart';
 export { default as EquipmentStatusChart } from './EquipmentStatusChart';
 export { default as ActivityList } from './ActivityList';
+export { default as FacilityFormModal } from './FacilityFormModal';
+export { default as FacilityDetailModal } from './FacilityDetailModal';
+export { default as EquipmentFormModal } from './EquipmentFormModal';
+export { default as EquipmentDetailModal } from './EquipmentDetailModal';

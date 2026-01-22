@@ -1,3 +1,5 @@
+import { useState } from 'react';
+import { Plus } from 'lucide-react';
 import {
   InfraestructuraStatCard,
   FacilityCard,
@@ -6,6 +8,10 @@ import {
   MaintenanceTimelineChart,
   EquipmentStatusChart,
   ActivityList,
+  FacilityFormModal,
+  FacilityDetailModal,
+  EquipmentFormModal,
+  EquipmentDetailModal,
 } from '../components/infraestructura';
 import StatCardSkeleton from '../components/common/Skeletons/StatCardSkeleton';
 import ChartSkeleton from '../components/common/Skeletons/ChartSkeleton';
@@ -19,8 +25,53 @@ import {
   useMaintenanceTimeline,
   useInfrastructureActivity,
 } from '../hooks/useInfraestructura';
+import type { Facility, Equipment } from '../types/infraestructura.types';
 
 export default function Infraestructura() {
+  // Facility modal state
+  const [selectedFacility, setSelectedFacility] = useState<Facility | null>(null);
+  const [facilityFormOpen, setFacilityFormOpen] = useState(false);
+  const [facilityDetailOpen, setFacilityDetailOpen] = useState(false);
+
+  // Equipment modal state
+  const [selectedEquipment, setSelectedEquipment] = useState<Equipment | null>(null);
+  const [equipmentFormOpen, setEquipmentFormOpen] = useState(false);
+  const [equipmentDetailOpen, setEquipmentDetailOpen] = useState(false);
+
+  // Facility handlers
+  const handleFacilityClick = (facility: Facility) => {
+    setSelectedFacility(facility);
+    setFacilityDetailOpen(true);
+  };
+
+  const handleFacilityEdit = (facility: Facility) => {
+    setSelectedFacility(facility);
+    setFacilityDetailOpen(false);
+    setFacilityFormOpen(true);
+  };
+
+  const handleNewFacility = () => {
+    setSelectedFacility(null);
+    setFacilityFormOpen(true);
+  };
+
+  // Equipment handlers
+  const handleEquipmentClick = (equipment: Equipment) => {
+    setSelectedEquipment(equipment);
+    setEquipmentDetailOpen(true);
+  };
+
+  const handleEquipmentEdit = (equipment: Equipment) => {
+    setSelectedEquipment(equipment);
+    setEquipmentDetailOpen(false);
+    setEquipmentFormOpen(true);
+  };
+
+  const handleNewEquipment = () => {
+    setSelectedEquipment(null);
+    setEquipmentFormOpen(true);
+  };
+
   const { data: facilities, isLoading: facilitiesLoading } = useFacilities();
   const { data: equipment, isLoading: equipmentLoading } = useEquipment();
   const { data: maintenance, isLoading: maintenanceLoading } = useMaintenanceRecords();
@@ -81,7 +132,16 @@ export default function Infraestructura() {
 
       {/* Facilities Section */}
       <div>
-        <h2 className="text-lg font-bold text-gray-900 mb-4">Instalaciones</h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-bold text-gray-900">Instalaciones</h2>
+          <button
+            onClick={handleNewFacility}
+            className="btn-primary inline-flex items-center gap-2"
+          >
+            <Plus className="w-4 h-4" />
+            Nueva Instalación
+          </button>
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-5">
           {facilitiesLoading ? (
             <>
@@ -91,7 +151,11 @@ export default function Infraestructura() {
             </>
           ) : facilities ? (
             facilities.map((facility) => (
-              <FacilityCard key={facility.id} facility={facility} />
+              <FacilityCard
+                key={facility.id}
+                facility={facility}
+                onClick={() => handleFacilityClick(facility)}
+              />
             ))
           ) : null}
         </div>
@@ -120,7 +184,16 @@ export default function Infraestructura() {
 
       {/* Equipment Section */}
       <div>
-        <h2 className="text-lg font-bold text-gray-900 mb-4">Equipamiento</h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-bold text-gray-900">Equipamiento</h2>
+          <button
+            onClick={handleNewEquipment}
+            className="btn-primary inline-flex items-center gap-2"
+          >
+            <Plus className="w-4 h-4" />
+            Nuevo Equipo
+          </button>
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-5">
           {equipmentLoading ? (
             <>
@@ -130,7 +203,11 @@ export default function Infraestructura() {
             </>
           ) : equipment ? (
             equipment.map((item) => (
-              <EquipmentCard key={item.id} equipment={item} />
+              <EquipmentCard
+                key={item.id}
+                equipment={item}
+                onClick={() => handleEquipmentClick(item)}
+              />
             ))
           ) : null}
         </div>
@@ -156,6 +233,36 @@ export default function Infraestructura() {
           ) : null}
         </div>
       </div>
+
+      {/* Facility Modals */}
+      <FacilityFormModal
+        open={facilityFormOpen}
+        onOpenChange={setFacilityFormOpen}
+        facility={selectedFacility}
+        onSuccess={() => setSelectedFacility(null)}
+      />
+      <FacilityDetailModal
+        open={facilityDetailOpen}
+        onOpenChange={setFacilityDetailOpen}
+        facility={selectedFacility}
+        onEdit={handleFacilityEdit}
+        onDeleteSuccess={() => setSelectedFacility(null)}
+      />
+
+      {/* Equipment Modals */}
+      <EquipmentFormModal
+        open={equipmentFormOpen}
+        onOpenChange={setEquipmentFormOpen}
+        equipment={selectedEquipment}
+        onSuccess={() => setSelectedEquipment(null)}
+      />
+      <EquipmentDetailModal
+        open={equipmentDetailOpen}
+        onOpenChange={setEquipmentDetailOpen}
+        equipment={selectedEquipment}
+        onEdit={handleEquipmentEdit}
+        onDeleteSuccess={() => setSelectedEquipment(null)}
+      />
     </div>
   );
 }
