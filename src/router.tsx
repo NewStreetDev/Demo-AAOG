@@ -4,6 +4,7 @@ import Home from './pages/Home';
 import Apicultura from './pages/Apicultura';
 import Pecuario from './pages/Pecuario';
 import Agro from './pages/Agro';
+import Insumos from './pages/Insumos';
 
 // Placeholder component for module dashboards
 function ModulePlaceholder({ title, description }: { title: string; description: string }) {
@@ -125,10 +126,12 @@ export const router = createBrowserRouter([
       },
       {
         path: 'insumos',
-        element: <ModulePlaceholder
-          title="Insumos"
-          description="Control de inventario de insumos y materiales"
-        />,
+        children: [
+          {
+            index: true,
+            element: <Insumos />,
+          },
+        ],
       },
     ],
   },
