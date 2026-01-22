@@ -1,3 +1,5 @@
+import { useState } from 'react';
+import { Plus } from 'lucide-react';
 import {
   ApiarioCard,
   ColmenaList,
@@ -5,6 +7,10 @@ import {
   ApiculturaTaskList,
   HealthDistributionChart,
   ApiculturaStatCard,
+  ApiarioFormModal,
+  ApiarioDetailModal,
+  ColmenaFormModal,
+  ColmenaDetailModal,
 } from '../components/apicultura';
 import StatCardSkeleton from '../components/common/Skeletons/StatCardSkeleton';
 import ChartSkeleton from '../components/common/Skeletons/ChartSkeleton';
@@ -17,6 +23,7 @@ import {
   useApiculturaTasks,
   useHealthDistribution,
 } from '../hooks/useApicultura';
+import type { Apiario, Colmena } from '../types/apicultura.types';
 
 export default function Apicultura() {
   const { data: apiarios, isLoading: apiariosLoading } = useApiarios();
@@ -26,16 +33,76 @@ export default function Apicultura() {
   const { data: tasks, isLoading: tasksLoading } = useApiculturaTasks();
   const { data: healthDist, isLoading: healthLoading } = useHealthDistribution();
 
+  // Apiario modals state
+  const [apiarioFormOpen, setApiarioFormOpen] = useState(false);
+  const [apiarioDetailOpen, setApiarioDetailOpen] = useState(false);
+  const [selectedApiario, setSelectedApiario] = useState<Apiario | null>(null);
+
+  // Colmena modals state
+  const [colmenaFormOpen, setColmenaFormOpen] = useState(false);
+  const [colmenaDetailOpen, setColmenaDetailOpen] = useState(false);
+  const [selectedColmena, setSelectedColmena] = useState<Colmena | null>(null);
+
+  // Apiario handlers
+  const handleApiarioClick = (apiario: Apiario) => {
+    setSelectedApiario(apiario);
+    setApiarioDetailOpen(true);
+  };
+
+  const handleApiarioEdit = (apiario: Apiario) => {
+    setSelectedApiario(apiario);
+    setApiarioFormOpen(true);
+  };
+
+  const handleNewApiario = () => {
+    setSelectedApiario(null);
+    setApiarioFormOpen(true);
+  };
+
+  // Colmena handlers
+  const handleColmenaClick = (colmena: Colmena) => {
+    setSelectedColmena(colmena);
+    setColmenaDetailOpen(true);
+  };
+
+  const handleColmenaEdit = (colmena: Colmena) => {
+    setSelectedColmena(colmena);
+    setColmenaFormOpen(true);
+  };
+
+  const handleNewColmena = () => {
+    setSelectedColmena(null);
+    setColmenaFormOpen(true);
+  };
+
   return (
     <div className="space-y-6 max-w-[1600px] mx-auto">
       {/* Page header */}
-      <div className="space-y-1 animate-fade-in">
-        <h1 className="text-3xl font-bold text-gray-900 tracking-tight">
-          Apicultura
-        </h1>
-        <p className="text-sm text-gray-600">
-          Gestión de apiarios, colmenas y producción apícola
-        </p>
+      <div className="flex items-center justify-between animate-fade-in">
+        <div className="space-y-1">
+          <h1 className="text-3xl font-bold text-gray-900 tracking-tight">
+            Apicultura
+          </h1>
+          <p className="text-sm text-gray-600">
+            Gestión de apiarios, colmenas y producción apícola
+          </p>
+        </div>
+        <div className="flex gap-2">
+          <button
+            onClick={handleNewColmena}
+            className="btn-secondary inline-flex items-center gap-2"
+          >
+            <Plus className="w-4 h-4" />
+            Nueva Colmena
+          </button>
+          <button
+            onClick={handleNewApiario}
+            className="btn-primary inline-flex items-center gap-2"
+          >
+            <Plus className="w-4 h-4" />
+            Nuevo Apiario
+          </button>
+        </div>
       </div>
 
       {/* Stats Grid - 4 columns */}
@@ -87,7 +154,11 @@ export default function Apicultura() {
             </>
           ) : apiarios ? (
             apiarios.map((apiario) => (
-              <ApiarioCard key={apiario.id} apiario={apiario} />
+              <ApiarioCard
+                key={apiario.id}
+                apiario={apiario}
+                onClick={() => handleApiarioClick(apiario)}
+              />
             ))
           ) : null}
         </div>
@@ -130,10 +201,39 @@ export default function Apicultura() {
           {colmenasLoading ? (
             <ListCardSkeleton itemCount={5} />
           ) : colmenas ? (
-            <ColmenaList colmenas={colmenas} />
+            <ColmenaList
+              colmenas={colmenas}
+              onColmenaClick={handleColmenaClick}
+            />
           ) : null}
         </div>
       </div>
+
+      {/* Apiario Modals */}
+      <ApiarioFormModal
+        open={apiarioFormOpen}
+        onOpenChange={setApiarioFormOpen}
+        apiario={selectedApiario}
+      />
+      <ApiarioDetailModal
+        open={apiarioDetailOpen}
+        onOpenChange={setApiarioDetailOpen}
+        apiario={selectedApiario}
+        onEdit={handleApiarioEdit}
+      />
+
+      {/* Colmena Modals */}
+      <ColmenaFormModal
+        open={colmenaFormOpen}
+        onOpenChange={setColmenaFormOpen}
+        colmena={selectedColmena}
+      />
+      <ColmenaDetailModal
+        open={colmenaDetailOpen}
+        onOpenChange={setColmenaDetailOpen}
+        colmena={selectedColmena}
+        onEdit={handleColmenaEdit}
+      />
     </div>
   );
 }

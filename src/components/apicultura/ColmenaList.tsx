@@ -5,6 +5,7 @@ interface ColmenaListProps {
   colmenas: Colmena[];
   maxItems?: number;
   onViewAll?: () => void;
+  onColmenaClick?: (colmena: Colmena) => void;
 }
 
 function getStatusInfo(status: Colmena['status']): { label: string; color: string } {
@@ -30,7 +31,7 @@ function getPopulationLabel(population: Colmena['population']): string {
   return labels[population];
 }
 
-export default function ColmenaList({ colmenas, maxItems = 5, onViewAll }: ColmenaListProps) {
+export default function ColmenaList({ colmenas, maxItems = 5, onViewAll, onColmenaClick }: ColmenaListProps) {
   const displayColmenas = colmenas.slice(0, maxItems);
   const hasMore = colmenas.length > maxItems;
 
@@ -55,6 +56,7 @@ export default function ColmenaList({ colmenas, maxItems = 5, onViewAll }: Colme
             <div
               key={colmena.id}
               className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
+              onClick={() => onColmenaClick?.(colmena)}
             >
               <div className="flex items-center gap-3">
                 {/* Health Indicator */}

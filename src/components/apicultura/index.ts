@@ -4,3 +4,7 @@ export { default as ApiculturaProductionChart } from './ApiculturaProductionChar
 export { default as ApiculturaTaskList } from './ApiculturaTaskList';
 export { default as HealthDistributionChart } from './HealthDistributionChart';
 export { default as ApiculturaStatCard } from './ApiculturaStatCard';
+export { default as ApiarioFormModal } from './ApiarioFormModal';
+export { default as ApiarioDetailModal } from './ApiarioDetailModal';
+export { default as ColmenaFormModal } from './ColmenaFormModal';
+export { default as ColmenaDetailModal } from './ColmenaDetailModal';
