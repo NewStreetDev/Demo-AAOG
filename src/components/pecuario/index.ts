@@ -5,3 +5,7 @@ export { default as PecuarioProductionChart } from './PecuarioProductionChart';
 export { default as CategoryDistributionChart } from './CategoryDistributionChart';
 export { default as PecuarioTaskList } from './PecuarioTaskList';
 export { default as PotreroCard } from './PotreroCard';
+export { default as LivestockFormModal } from './LivestockFormModal';
+export { default as LivestockDetailModal } from './LivestockDetailModal';
+export { default as PotreroFormModal } from './PotreroFormModal';
+export { default as PotreroDetailModal } from './PotreroDetailModal';

@@ -1,3 +1,5 @@
+import { useState } from 'react';
+import { Plus } from 'lucide-react';
 import {
   PecuarioStatCard,
   LivestockTable,
@@ -5,6 +7,10 @@ import {
   CategoryDistributionChart,
   PecuarioTaskList,
   PotreroCard,
+  LivestockFormModal,
+  LivestockDetailModal,
+  PotreroFormModal,
+  PotreroDetailModal,
 } from '../components/pecuario';
 import StatCardSkeleton from '../components/common/Skeletons/StatCardSkeleton';
 import ChartSkeleton from '../components/common/Skeletons/ChartSkeleton';
@@ -17,8 +23,53 @@ import {
   usePecuarioTasks,
   useCategoryDistribution,
 } from '../hooks/usePecuario';
+import type { Livestock, Potrero } from '../types/pecuario.types';
 
 export default function Pecuario() {
+  // Modal state for Livestock
+  const [selectedLivestock, setSelectedLivestock] = useState<Livestock | null>(null);
+  const [livestockFormModalOpen, setLivestockFormModalOpen] = useState(false);
+  const [livestockDetailModalOpen, setLivestockDetailModalOpen] = useState(false);
+
+  // Modal state for Potrero
+  const [selectedPotrero, setSelectedPotrero] = useState<Potrero | null>(null);
+  const [potreroFormModalOpen, setPotreroFormModalOpen] = useState(false);
+  const [potreroDetailModalOpen, setPotreroDetailModalOpen] = useState(false);
+
+  // Livestock handlers
+  const handleLivestockClick = (livestock: Livestock) => {
+    setSelectedLivestock(livestock);
+    setLivestockDetailModalOpen(true);
+  };
+
+  const handleLivestockEdit = (livestock: Livestock) => {
+    setSelectedLivestock(livestock);
+    setLivestockDetailModalOpen(false);
+    setLivestockFormModalOpen(true);
+  };
+
+  const handleNewLivestock = () => {
+    setSelectedLivestock(null);
+    setLivestockFormModalOpen(true);
+  };
+
+  // Potrero handlers
+  const handlePotreroClick = (potrero: Potrero) => {
+    setSelectedPotrero(potrero);
+    setPotreroDetailModalOpen(true);
+  };
+
+  const handlePotreroEdit = (potrero: Potrero) => {
+    setSelectedPotrero(potrero);
+    setPotreroDetailModalOpen(false);
+    setPotreroFormModalOpen(true);
+  };
+
+  const handleNewPotrero = () => {
+    setSelectedPotrero(null);
+    setPotreroFormModalOpen(true);
+  };
+
   const { data: livestock, isLoading: livestockLoading } = useLivestock();
   const { data: potreros, isLoading: potrerosLoading } = usePotreros();
   const { data: stats, isLoading: statsLoading } = usePecuarioStats();
@@ -29,13 +80,31 @@ export default function Pecuario() {
   return (
     <div className="space-y-6 max-w-[1600px] mx-auto">
       {/* Page header */}
-      <div className="space-y-1 animate-fade-in">
-        <h1 className="text-3xl font-bold text-gray-900 tracking-tight">
-          Pecuario
-        </h1>
-        <p className="text-sm text-gray-600">
-          Gestión de ganado, salud animal, reproducción y producción
-        </p>
+      <div className="flex items-start justify-between animate-fade-in">
+        <div className="space-y-1">
+          <h1 className="text-3xl font-bold text-gray-900 tracking-tight">
+            Pecuario
+          </h1>
+          <p className="text-sm text-gray-600">
+            Gestión de ganado, salud animal, reproducción y producción
+          </p>
+        </div>
+        <div className="flex gap-2">
+          <button
+            onClick={handleNewPotrero}
+            className="btn-secondary inline-flex items-center gap-2"
+          >
+            <Plus className="w-4 h-4" />
+            Nuevo Potrero
+          </button>
+          <button
+            onClick={handleNewLivestock}
+            className="btn-primary inline-flex items-center gap-2"
+          >
+            <Plus className="w-4 h-4" />
+            Nuevo Animal
+          </button>
+        </div>
       </div>
 
       {/* Stats Grid - 4 columns */}
@@ -83,7 +152,10 @@ export default function Pecuario() {
           {livestockLoading ? (
             <ListCardSkeleton itemCount={6} />
           ) : livestock ? (
-            <LivestockTable livestock={livestock} />
+            <LivestockTable
+              livestock={livestock}
+              onLivestockClick={handleLivestockClick}
+            />
           ) : null}
         </div>
 
@@ -130,11 +202,43 @@ export default function Pecuario() {
             </>
           ) : potreros ? (
             potreros.map((potrero) => (
-              <PotreroCard key={potrero.id} potrero={potrero} />
+              <PotreroCard
+                key={potrero.id}
+                potrero={potrero}
+                onClick={() => handlePotreroClick(potrero)}
+              />
             ))
           ) : null}
         </div>
       </div>
+
+      {/* Modals */}
+      <LivestockFormModal
+        open={livestockFormModalOpen}
+        onOpenChange={setLivestockFormModalOpen}
+        livestock={selectedLivestock}
+        onSuccess={() => setSelectedLivestock(null)}
+      />
+      <LivestockDetailModal
+        open={livestockDetailModalOpen}
+        onOpenChange={setLivestockDetailModalOpen}
+        livestock={selectedLivestock}
+        onEdit={handleLivestockEdit}
+        onDeleteSuccess={() => setSelectedLivestock(null)}
+      />
+      <PotreroFormModal
+        open={potreroFormModalOpen}
+        onOpenChange={setPotreroFormModalOpen}
+        potrero={selectedPotrero}
+        onSuccess={() => setSelectedPotrero(null)}
+      />
+      <PotreroDetailModal
+        open={potreroDetailModalOpen}
+        onOpenChange={setPotreroDetailModalOpen}
+        potrero={selectedPotrero}
+        onEdit={handlePotreroEdit}
+        onDeleteSuccess={() => setSelectedPotrero(null)}
+      />
     </div>
   );
 }

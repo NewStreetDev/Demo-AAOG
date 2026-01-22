@@ -6,6 +6,7 @@ interface LivestockTableProps {
   livestock: Livestock[];
   maxItems?: number;
   onViewAll?: () => void;
+  onLivestockClick?: (livestock: Livestock) => void;
 }
 
 const categoryLabels: Record<LivestockCategory, string> = {
@@ -26,7 +27,7 @@ const categoryColors: Record<LivestockCategory, string> = {
   toro: 'bg-red-100 text-red-700',
 };
 
-export default function LivestockTable({ livestock, maxItems = 6, onViewAll }: LivestockTableProps) {
+export default function LivestockTable({ livestock, maxItems = 6, onViewAll, onLivestockClick }: LivestockTableProps) {
   const [selectedCategory, setSelectedCategory] = useState<LivestockCategory | 'all'>('all');
 
   const filteredLivestock = selectedCategory === 'all'
@@ -93,6 +94,7 @@ export default function LivestockTable({ livestock, maxItems = 6, onViewAll }: L
               <tr
                 key={animal.id}
                 className="hover:bg-gray-50 transition-colors cursor-pointer"
+                onClick={() => onLivestockClick?.(animal)}
               >
                 <td className="py-3">
                   <div>
