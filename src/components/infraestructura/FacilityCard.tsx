@@ -27,13 +27,18 @@ function getStatusLabel(status: Facility['status']): string {
 }
 
 function getTypeLabel(type: Facility['type']): string {
-  const labels = {
+  const labels: Record<Facility['type'], string> = {
     building: 'Edificio',
     storage: 'Almacén',
     processing: 'Procesamiento',
     housing: 'Vivienda',
     greenhouse: 'Invernadero',
     barn: 'Establo',
+    water_reservoir: 'Reservorio de Agua',
+    tank: 'Tanque',
+    irrigation_system: 'Sistema de Riego',
+    well: 'Pozo',
+    water_intake: 'Captación de Agua',
     other: 'Otro',
   };
   return labels[type];

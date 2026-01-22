@@ -4,7 +4,19 @@ import type { BaseEntity } from './common.types';
 export type FacilityStatus = 'operational' | 'maintenance' | 'out_of_service' | 'under_construction';
 
 // Facility Type
-export type FacilityType = 'building' | 'storage' | 'processing' | 'housing' | 'greenhouse' | 'barn' | 'other';
+export type FacilityType =
+  | 'building'
+  | 'storage'
+  | 'processing'
+  | 'housing'
+  | 'greenhouse'
+  | 'barn'
+  | 'water_reservoir'  // Reservorios de agua
+  | 'tank'             // Tanques
+  | 'irrigation_system' // Sistemas de Riego
+  | 'well'             // Pozos
+  | 'water_intake'     // Captaciones de agua
+  | 'other';
 
 // Equipment Status
 export type EquipmentStatus = 'operational' | 'maintenance' | 'repair' | 'out_of_service';

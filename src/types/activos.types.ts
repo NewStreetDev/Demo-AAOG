@@ -4,7 +4,16 @@ import type { BaseEntity } from './common.types';
 export type AssetStatus = 'active' | 'inactive' | 'disposed' | 'under_maintenance';
 
 // Asset Category
-export type AssetCategory = 'land' | 'building' | 'vehicle' | 'machinery' | 'livestock' | 'equipment' | 'other';
+export type AssetCategory =
+  | 'land'
+  | 'building'
+  | 'vehicle'
+  | 'machinery'
+  | 'livestock'
+  | 'equipment'
+  | 'seeds'           // Semillas criollas y material genético
+  | 'genetic_material' // Material genético (reinas, semen, etc.)
+  | 'other';
 
 // Depreciation Method
 export type DepreciationMethod = 'straight_line' | 'declining_balance' | 'none';

@@ -18,6 +18,9 @@ export interface Apiario extends BaseEntity {
     wax: number;
     pollen: number;
   };
+  // Costos operativos
+  costPerHour?: number;  // Costo por hora de trabajo
+  costPerKm?: number;    // Costo por kilómetro de desplazamiento
 }
 
 // Colmena - Individual hive
@@ -69,6 +72,13 @@ export interface Revision extends BaseEntity {
   comments?: string;
 }
 
+// Tipo de reproducción apícola
+export type ApiculturaReproductionType =
+  | 'free_mating'        // Apareamiento libre
+  | 'insemination'       // Inseminación
+  | 'queen_introduction' // Introducción de reinas con genética mejorada
+  | 'queen_raising';     // Crianza de reinas (Método Do Little)
+
 // Accion - Actions performed on apiario/colmena
 export interface AccionApicultura extends BaseEntity {
   apiarioId: string;
@@ -83,6 +93,7 @@ export interface AccionApicultura extends BaseEntity {
     | 'queen_change'
     | 'reproduction'
     | 'harvest';
+  reproductionType?: ApiculturaReproductionType; // Detalle si type es 'reproduction'
   date: Date;
   description: string;
   insumoUsed?: string;

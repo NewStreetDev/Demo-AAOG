@@ -27,13 +27,15 @@ function getStatusLabel(status: Asset['status']): string {
 }
 
 function getCategoryLabel(category: Asset['category']): string {
-  const labels = {
+  const labels: Record<Asset['category'], string> = {
     land: 'Terreno',
     building: 'Edificación',
     vehicle: 'Vehículo',
     machinery: 'Maquinaria',
     livestock: 'Semoviente',
     equipment: 'Equipo',
+    seeds: 'Semillas',
+    genetic_material: 'Material Genético',
     other: 'Otro',
   };
   return labels[category];
