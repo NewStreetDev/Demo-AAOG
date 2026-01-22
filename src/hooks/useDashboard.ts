@@ -8,6 +8,10 @@ import {
   getMockTasks,
   getMockWeather,
   getMockMonthlyIncome,
+  getMockGeneralStats,
+  getMockFarmSummaries,
+  getMockStatsChartData,
+  getMockAuditSummary,
 } from '../services/mock/dashboard.mock';
 
 // Query keys
@@ -21,6 +25,10 @@ export const dashboardKeys = {
   tasks: () => [...dashboardKeys.all, 'tasks'] as const,
   weather: () => [...dashboardKeys.all, 'weather'] as const,
   income: () => [...dashboardKeys.all, 'income'] as const,
+  generalStats: () => [...dashboardKeys.all, 'generalStats'] as const,
+  farmSummaries: () => [...dashboardKeys.all, 'farmSummaries'] as const,
+  statsChart: () => [...dashboardKeys.all, 'statsChart'] as const,
+  auditSummary: () => [...dashboardKeys.all, 'auditSummary'] as const,
 };
 
 // Hooks
@@ -77,5 +85,33 @@ export const useMonthlyIncome = () => {
   return useQuery({
     queryKey: dashboardKeys.income(),
     queryFn: getMockMonthlyIncome,
+  });
+};
+
+export const useGeneralStats = () => {
+  return useQuery({
+    queryKey: dashboardKeys.generalStats(),
+    queryFn: getMockGeneralStats,
+  });
+};
+
+export const useFarmSummaries = () => {
+  return useQuery({
+    queryKey: dashboardKeys.farmSummaries(),
+    queryFn: getMockFarmSummaries,
+  });
+};
+
+export const useStatsChartData = () => {
+  return useQuery({
+    queryKey: dashboardKeys.statsChart(),
+    queryFn: getMockStatsChartData,
+  });
+};
+
+export const useAuditSummary = () => {
+  return useQuery({
+    queryKey: dashboardKeys.auditSummary(),
+    queryFn: getMockAuditSummary,
   });
 };

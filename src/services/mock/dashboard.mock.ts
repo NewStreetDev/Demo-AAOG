@@ -7,6 +7,10 @@ import type {
   Activity,
   WeatherData,
   MonthlyIncome,
+  GeneralStats,
+  FarmSummary,
+  StatsChartData,
+  AuditSummary,
 } from '../../types/dashboard.types';
 
 // Simular delay de API
@@ -182,21 +186,21 @@ export const getMockTasks = async (): Promise<Task[]> => {
     },
     {
       id: '2',
-      title: 'Comprobación de estado de máquinas',
-      description: 'Verificar estado operativo de equipos',
-      priority: 'medium',
+      title: 'Vacunación de ganado',
+      description: 'Aplicar vacunas programadas al ganado',
+      priority: 'high',
       status: 'pending',
-      category: 'maintenance',
+      category: 'treatment',
       createdAt: new Date(),
       updatedAt: new Date(),
     },
     {
       id: '3',
-      title: 'Mantenimiento de usuario',
-      description: 'Actualización de permisos',
-      priority: 'low',
+      title: 'Mantenimiento de apiario',
+      description: 'Revisión y limpieza de colmenas',
+      priority: 'medium',
       status: 'pending',
-      category: 'other',
+      category: 'maintenance',
       createdAt: new Date(),
       updatedAt: new Date(),
     },
@@ -234,5 +238,84 @@ export const getMockMonthlyIncome = async (): Promise<MonthlyIncome> => {
       { category: 'Venta de miel', amount: 1000 },
       { category: 'Otros', amount: 500 },
     ],
+  };
+};
+
+// Panel General (Admin) Data
+export const getMockGeneralStats = async (): Promise<GeneralStats> => {
+  await delay(300);
+  return {
+    registeredFarms: 24,
+    activeWorkers: 78,
+    monthlyProduction: { value: 15200, unit: 'kg' },
+    monthlyIncome: 28400,
+  };
+};
+
+export const getMockFarmSummaries = async (): Promise<FarmSummary[]> => {
+  await delay(300);
+  return [
+    {
+      id: '1',
+      name: 'Finca El Roble',
+      production: 4500,
+      productionUnit: 'kg',
+      color: '#10b981',
+      location: { lat: 9.9281, lng: -84.0907 },
+    },
+    {
+      id: '2',
+      name: 'Finca Las Brisas',
+      production: 3800,
+      productionUnit: 'kg',
+      color: '#3b82f6',
+      location: { lat: 10.0159, lng: -84.2142 },
+    },
+    {
+      id: '3',
+      name: 'Finca La Esperanza',
+      production: 3200,
+      productionUnit: 'kg',
+      color: '#f59e0b',
+      location: { lat: 9.8614, lng: -83.9214 },
+    },
+    {
+      id: '4',
+      name: 'Finca Monte Verde',
+      production: 2100,
+      productionUnit: 'kg',
+      color: '#8b5cf6',
+      location: { lat: 10.3157, lng: -84.8253 },
+    },
+    {
+      id: '5',
+      name: 'Finca San José',
+      production: 1600,
+      productionUnit: 'kg',
+      color: '#ef4444',
+      location: { lat: 9.7489, lng: -83.7534 },
+    },
+  ];
+};
+
+export const getMockStatsChartData = async (): Promise<StatsChartData[]> => {
+  await delay(300);
+  return [
+    { month: 'Ene', production: 12500, income: 22000 },
+    { month: 'Feb', production: 13200, income: 24500 },
+    { month: 'Mar', production: 14100, income: 25800 },
+    { month: 'Abr', production: 13800, income: 24200 },
+    { month: 'May', production: 15200, income: 28400 },
+    { month: 'Jun', production: 14600, income: 26800 },
+  ];
+};
+
+export const getMockAuditSummary = async (): Promise<AuditSummary> => {
+  await delay(300);
+  return {
+    total: 12,
+    inReview: 5,
+    approved: 6,
+    pending: 1,
   };
 };

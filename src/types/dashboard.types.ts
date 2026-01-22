@@ -93,3 +93,40 @@ export interface MonthlyIncome {
     amount: number;
   }[];
 }
+
+// Panel General (Admin) Types
+export interface GeneralStats {
+  registeredFarms: number;
+  activeWorkers: number;
+  monthlyProduction: { value: number; unit: string };
+  monthlyIncome: number;
+}
+
+export interface FarmSummary {
+  id: string;
+  name: string;
+  production: number;
+  productionUnit: string;
+  color: string;
+  location: { lat: number; lng: number };
+}
+
+export interface Document {
+  id: string;
+  name: string;
+  type: 'certificate' | 'report' | 'audit';
+  status: 'pending' | 'approved' | 'review';
+}
+
+export interface StatsChartData {
+  month: string;
+  production: number;
+  income: number;
+}
+
+export interface AuditSummary {
+  total: number;
+  inReview: number;
+  approved: number;
+  pending: number;
+}
