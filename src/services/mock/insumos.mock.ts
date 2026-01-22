@@ -5,18 +5,28 @@ import type {
   CategorySummary,
   LowStockAlert,
   ConsumptionData,
+  StockStatus,
 } from '../../types/insumos.types';
+import type { InsumoFormData } from '../../schemas/insumo.schema';
 
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
-// Insumos mock data
-export const getMockInsumos = async (): Promise<Insumo[]> => {
-  await delay(300);
-  return [
-    {
-      id: '1',
-      code: 'SEM-001',
-      name: 'Semilla de Tomate Roma',
+// In-memory store
+let insumosStore: Insumo[] = [];
+
+// Calculate stock status based on current and min stock
+function calculateStockStatus(currentStock: number, minStock: number): StockStatus {
+  if (currentStock <= minStock * 0.3) return 'critico';
+  if (currentStock <= minStock) return 'bajo';
+  return 'en_stock';
+}
+
+// Initial Insumos Data
+const initialInsumos: Insumo[] = [
+  {
+    id: '1',
+    code: 'SEM-001',
+    name: 'Semilla de Tomate Roma',
       category: 'semillas',
       description: 'Semilla híbrida de alto rendimiento',
       currentStock: 25,
@@ -244,7 +254,109 @@ export const getMockInsumos = async (): Promise<Insumo[]> => {
       createdAt: new Date('2025-02-01'),
       updatedAt: new Date('2026-01-20'),
     },
-  ];
+];
+
+// Initialize store
+function initializeInsumosStore() {
+  if (insumosStore.length === 0) {
+    insumosStore = [...initialInsumos];
+  }
+}
+
+// Read operation
+export const getMockInsumos = async (): Promise<Insumo[]> => {
+  await delay(300);
+  initializeInsumosStore();
+  return [...insumosStore];
+};
+
+// CRUD Operations
+export const createMockInsumo = async (data: InsumoFormData): Promise<Insumo> => {
+  await delay(400);
+  initializeInsumosStore();
+
+  const currentStock = parseFloat(data.currentStock);
+  const minStock = parseFloat(data.minStock);
+  const costPerUnit = parseFloat(data.costPerUnit);
+
+  const newInsumo: Insumo = {
+    id: String(Date.now()),
+    code: data.code,
+    name: data.name,
+    category: data.category,
+    description: data.description || undefined,
+    currentStock,
+    minStock,
+    maxStock: data.maxStock ? parseFloat(data.maxStock) : undefined,
+    unit: data.unit,
+    costPerUnit,
+    totalValue: currentStock * costPerUnit,
+    supplier: data.supplier || undefined,
+    supplierPhone: data.supplierPhone || undefined,
+    expirationDate: data.expirationDate ? new Date(data.expirationDate) : undefined,
+    batchCode: data.batchCode || undefined,
+    location: data.location || undefined,
+    relatedModule: data.relatedModule || undefined,
+    status: calculateStockStatus(currentStock, minStock),
+    alertEnabled: data.alertEnabled,
+    reorderQuantity: data.reorderQuantity ? parseFloat(data.reorderQuantity) : undefined,
+    notes: data.notes || undefined,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
+
+  insumosStore.push(newInsumo);
+  return newInsumo;
+};
+
+export const updateMockInsumo = async (id: string, data: InsumoFormData): Promise<Insumo> => {
+  await delay(400);
+  initializeInsumosStore();
+
+  const index = insumosStore.findIndex((i) => i.id === id);
+  if (index === -1) throw new Error('Insumo no encontrado');
+
+  const currentStock = parseFloat(data.currentStock);
+  const minStock = parseFloat(data.minStock);
+  const costPerUnit = parseFloat(data.costPerUnit);
+
+  const updated: Insumo = {
+    ...insumosStore[index],
+    code: data.code,
+    name: data.name,
+    category: data.category,
+    description: data.description || undefined,
+    currentStock,
+    minStock,
+    maxStock: data.maxStock ? parseFloat(data.maxStock) : undefined,
+    unit: data.unit,
+    costPerUnit,
+    totalValue: currentStock * costPerUnit,
+    supplier: data.supplier || undefined,
+    supplierPhone: data.supplierPhone || undefined,
+    expirationDate: data.expirationDate ? new Date(data.expirationDate) : undefined,
+    batchCode: data.batchCode || undefined,
+    location: data.location || undefined,
+    relatedModule: data.relatedModule || undefined,
+    status: calculateStockStatus(currentStock, minStock),
+    alertEnabled: data.alertEnabled,
+    reorderQuantity: data.reorderQuantity ? parseFloat(data.reorderQuantity) : undefined,
+    notes: data.notes || undefined,
+    updatedAt: new Date(),
+  };
+
+  insumosStore[index] = updated;
+  return updated;
+};
+
+export const deleteMockInsumo = async (id: string): Promise<void> => {
+  await delay(300);
+  initializeInsumosStore();
+
+  const index = insumosStore.findIndex((i) => i.id === id);
+  if (index === -1) throw new Error('Insumo no encontrado');
+
+  insumosStore.splice(index, 1);
 };
 
 // Dashboard stats
