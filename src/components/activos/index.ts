@@ -5,3 +5,5 @@ export { default as AssetValueTrendChart } from './AssetValueTrendChart';
 export { default as DepreciationChart } from './DepreciationChart';
 export { default as ActivityList } from './ActivityList';
 export { default as DepreciationList } from './DepreciationList';
+export { default as AssetFormModal } from './AssetFormModal';
+export { default as AssetDetailModal } from './AssetDetailModal';

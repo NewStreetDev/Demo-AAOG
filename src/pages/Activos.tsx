@@ -1,3 +1,5 @@
+import { useState } from 'react';
+import { Plus } from 'lucide-react';
 import {
   ActivosStatCard,
   AssetCard,
@@ -6,6 +8,8 @@ import {
   DepreciationChart,
   ActivityList,
   DepreciationList,
+  AssetFormModal,
+  AssetDetailModal,
 } from '../components/activos';
 import StatCardSkeleton from '../components/common/Skeletons/StatCardSkeleton';
 import ChartSkeleton from '../components/common/Skeletons/ChartSkeleton';
@@ -19,6 +23,7 @@ import {
   useAssetActivity,
   useDepreciationRecords,
 } from '../hooks/useActivos';
+import type { Asset } from '../types/activos.types';
 
 function formatCurrency(value: number): string {
   if (value >= 1000000000) {
@@ -39,16 +44,60 @@ export default function Activos() {
   const { data: activity, isLoading: activityLoading } = useAssetActivity();
   const { data: depreciationRecords, isLoading: depreciationRecordsLoading } = useDepreciationRecords();
 
+  // Modal state
+  const [isFormModalOpen, setIsFormModalOpen] = useState(false);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null);
+  const [editingAsset, setEditingAsset] = useState<Asset | null>(null);
+
+  const handleAssetClick = (asset: Asset) => {
+    setSelectedAsset(asset);
+    setIsDetailModalOpen(true);
+  };
+
+  const handleEditAsset = (asset: Asset) => {
+    setEditingAsset(asset);
+    setIsFormModalOpen(true);
+  };
+
+  const handleNewAsset = () => {
+    setEditingAsset(null);
+    setIsFormModalOpen(true);
+  };
+
+  const handleFormModalClose = (open: boolean) => {
+    setIsFormModalOpen(open);
+    if (!open) {
+      setEditingAsset(null);
+    }
+  };
+
+  const handleDetailModalClose = (open: boolean) => {
+    setIsDetailModalOpen(open);
+    if (!open) {
+      setSelectedAsset(null);
+    }
+  };
+
   return (
     <div className="space-y-6 max-w-[1600px] mx-auto">
       {/* Page header */}
-      <div className="space-y-1 animate-fade-in">
-        <h1 className="text-3xl font-bold text-gray-900 tracking-tight">
-          Activos
-        </h1>
-        <p className="text-sm text-gray-600">
-          Registro, seguimiento y valoración de activos de la finca
-        </p>
+      <div className="flex items-start justify-between animate-fade-in">
+        <div className="space-y-1">
+          <h1 className="text-3xl font-bold text-gray-900 tracking-tight">
+            Activos
+          </h1>
+          <p className="text-sm text-gray-600">
+            Registro, seguimiento y valoración de activos de la finca
+          </p>
+        </div>
+        <button
+          className="btn-primary inline-flex items-center gap-2"
+          onClick={handleNewAsset}
+        >
+          <Plus className="w-4 h-4" />
+          Nuevo Activo
+        </button>
       </div>
 
       {/* Stats Grid - 4 columns */}
@@ -122,7 +171,11 @@ export default function Activos() {
             </>
           ) : assets ? (
             assets.map((asset) => (
-              <AssetCard key={asset.id} asset={asset} />
+              <AssetCard
+                key={asset.id}
+                asset={asset}
+                onClick={() => handleAssetClick(asset)}
+              />
             ))
           ) : null}
         </div>
@@ -159,6 +212,19 @@ export default function Activos() {
           ) : null}
         </div>
       </div>
+
+      {/* Modals */}
+      <AssetFormModal
+        open={isFormModalOpen}
+        onOpenChange={handleFormModalClose}
+        asset={editingAsset}
+      />
+      <AssetDetailModal
+        open={isDetailModalOpen}
+        onOpenChange={handleDetailModalClose}
+        asset={selectedAsset}
+        onEdit={handleEditAsset}
+      />
     </div>
   );
 }

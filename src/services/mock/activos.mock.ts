@@ -9,13 +9,15 @@ import type {
   AssetValueTrend,
   AssetActivity,
 } from '../../types/activos.types';
+import type { AssetFormData } from '../../schemas/asset.schema';
 
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
-// Assets Mock Data
-export const getMockAssets = async (): Promise<Asset[]> => {
-  await delay(300);
-  return [
+// In-memory store for assets
+let assetsStore: Asset[] = [];
+
+// Initial Assets Mock Data
+const initialAssets: Asset[] = [
     {
       id: '1',
       code: 'ACT-001',
@@ -172,7 +174,20 @@ export const getMockAssets = async (): Promise<Asset[]> => {
       createdAt: new Date('2020-01-01'),
       updatedAt: new Date('2026-01-15'),
     },
-  ];
+];
+
+// Initialize store
+function initializeStore() {
+  if (assetsStore.length === 0) {
+    assetsStore = [...initialAssets];
+  }
+}
+
+// Assets Mock Data
+export const getMockAssets = async (): Promise<Asset[]> => {
+  await delay(300);
+  initializeStore();
+  return [...assetsStore];
 };
 
 // Asset Movements
@@ -368,4 +383,96 @@ export const getMockAssetActivity = async (): Promise<AssetActivity[]> => {
       updatedAt: new Date('2025-12-31'),
     },
   ];
+};
+
+// CRUD Operations
+
+// Get asset by ID
+export const getMockAssetById = async (id: string): Promise<Asset | null> => {
+  await delay(200);
+  initializeStore();
+  return assetsStore.find(a => a.id === id) || null;
+};
+
+// Create new asset
+export const createMockAsset = async (data: AssetFormData): Promise<Asset> => {
+  await delay(400);
+  initializeStore();
+
+  const now = new Date();
+  const acquisitionCost = parseFloat(data.acquisitionCost);
+
+  const newAsset: Asset = {
+    id: String(Date.now()),
+    code: data.code,
+    name: data.name,
+    description: data.description,
+    category: data.category,
+    status: data.status,
+    location: data.location,
+    acquisitionDate: new Date(data.acquisitionDate),
+    acquisitionCost: acquisitionCost,
+    currentValue: acquisitionCost, // Initial current value equals acquisition cost
+    depreciationMethod: data.depreciationMethod,
+    usefulLifeYears: data.usefulLifeYears ? parseInt(data.usefulLifeYears) : undefined,
+    salvageValue: data.salvageValue ? parseFloat(data.salvageValue) : undefined,
+    accumulatedDepreciation: 0,
+    assignedModule: (data.assignedModule && data.assignedModule !== 'none') ? data.assignedModule as Asset['assignedModule'] : undefined,
+    responsiblePerson: data.responsiblePerson || undefined,
+    serialNumber: data.serialNumber || undefined,
+    notes: data.notes || undefined,
+    createdAt: now,
+    updatedAt: now,
+  };
+
+  assetsStore.push(newAsset);
+  return newAsset;
+};
+
+// Update existing asset
+export const updateMockAsset = async (id: string, data: AssetFormData): Promise<Asset> => {
+  await delay(400);
+  initializeStore();
+
+  const index = assetsStore.findIndex(a => a.id === id);
+  if (index === -1) {
+    throw new Error('Activo no encontrado');
+  }
+
+  const existing = assetsStore[index];
+  const updatedAsset: Asset = {
+    ...existing,
+    code: data.code,
+    name: data.name,
+    description: data.description,
+    category: data.category,
+    status: data.status,
+    location: data.location,
+    acquisitionDate: new Date(data.acquisitionDate),
+    acquisitionCost: parseFloat(data.acquisitionCost),
+    depreciationMethod: data.depreciationMethod,
+    usefulLifeYears: data.usefulLifeYears ? parseInt(data.usefulLifeYears) : undefined,
+    salvageValue: data.salvageValue ? parseFloat(data.salvageValue) : undefined,
+    assignedModule: (data.assignedModule && data.assignedModule !== 'none') ? data.assignedModule as Asset['assignedModule'] : undefined,
+    responsiblePerson: data.responsiblePerson || undefined,
+    serialNumber: data.serialNumber || undefined,
+    notes: data.notes || undefined,
+    updatedAt: new Date(),
+  };
+
+  assetsStore[index] = updatedAsset;
+  return updatedAsset;
+};
+
+// Delete asset
+export const deleteMockAsset = async (id: string): Promise<void> => {
+  await delay(300);
+  initializeStore();
+
+  const index = assetsStore.findIndex(a => a.id === id);
+  if (index === -1) {
+    throw new Error('Activo no encontrado');
+  }
+
+  assetsStore.splice(index, 1);
 };
