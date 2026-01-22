@@ -21,13 +21,13 @@ export default function Breadcrumbs() {
   const pathnames = location.pathname.split('/').filter((x) => x);
 
   return (
-    <nav className="flex items-center gap-2 text-sm">
+    <nav className="flex items-center gap-1.5 text-sm">
       <Link
         to="/"
-        className="flex items-center gap-1 text-gray-600 hover:text-gray-900 transition-colors"
+        className="group flex items-center gap-2 px-3 py-1.5 text-gray-600 hover:text-gray-900 rounded-lg hover:bg-gray-100/80 transition-all duration-200"
       >
-        <Home className="w-4 h-4" />
-        <span>Inicio</span>
+        <Home className="w-4 h-4 transition-transform duration-200 group-hover:scale-110" strokeWidth={2} />
+        <span className="font-semibold">Inicio</span>
       </Link>
 
       {pathnames.map((value, index) => {
@@ -36,14 +36,16 @@ export default function Breadcrumbs() {
         const label = routeNames[value] || value;
 
         return (
-          <div key={to} className="flex items-center gap-2">
-            <ChevronRight className="w-4 h-4 text-gray-400" />
+          <div key={to} className="flex items-center gap-1.5">
+            <ChevronRight className="w-4 h-4 text-gray-300" strokeWidth={2.5} />
             {isLast ? (
-              <span className="text-gray-900 font-medium">{label}</span>
+              <span className="px-3 py-1.5 bg-gray-100 text-gray-900 font-bold rounded-lg">
+                {label}
+              </span>
             ) : (
               <Link
                 to={to}
-                className="text-gray-600 hover:text-gray-900 transition-colors"
+                className="px-3 py-1.5 text-gray-600 hover:text-gray-900 font-semibold rounded-lg hover:bg-gray-100/80 transition-all duration-200"
               >
                 {label}
               </Link>

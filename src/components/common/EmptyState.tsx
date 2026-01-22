@@ -1,4 +1,5 @@
-import { LucideIcon } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
+import { Plus } from 'lucide-react';
 
 interface EmptyStateProps {
   icon: LucideIcon;
@@ -20,35 +21,46 @@ export default function EmptyState({
   const isCompact = variant === 'compact';
 
   return (
-    <div className={`flex flex-col items-center justify-center text-center ${isCompact ? 'py-8' : 'py-12'}`}>
-      {/* Icon Circle */}
-      <div
-        className={`${
-          isCompact ? 'w-16 h-16' : 'w-20 h-20'
-        } bg-gray-100 rounded-full flex items-center justify-center mb-4`}
-      >
-        <Icon className={`${isCompact ? 'w-8 h-8' : 'w-10 h-10'} text-gray-400`} />
+    <div className={`flex flex-col items-center justify-center text-center ${isCompact ? 'py-10' : 'py-16'} animate-fade-in`}>
+      {/* Icon Circle with premium styling */}
+      <div className="relative mb-6">
+        <div
+          className={`${
+            isCompact ? 'w-20 h-20' : 'w-24 h-24'
+          } bg-gradient-to-br from-gray-100 to-gray-50 rounded-2xl flex items-center justify-center ring-1 ring-gray-200/50 shadow-sm`}
+        >
+          <Icon className={`${isCompact ? 'w-10 h-10' : 'w-12 h-12'} text-gray-400`} strokeWidth={1.5} />
+        </div>
+        {/* Decorative circles */}
+        <div className="absolute -top-1 -right-1 w-6 h-6 bg-gray-200/50 rounded-full blur-sm" />
+        <div className="absolute -bottom-2 -left-2 w-8 h-8 bg-gray-100/50 rounded-full blur-md" />
       </div>
 
-      {/* Title - Prominent */}
-      <h3 className={`${isCompact ? 'text-lg' : 'text-xl'} font-semibold text-gray-900 mb-2`}>
+      {/* Title - Premium typography */}
+      <h3 className={`${isCompact ? 'text-xl' : 'text-2xl'} font-bold text-gray-900 mb-3 tracking-tight`}>
         {title}
       </h3>
 
-      {/* Description - Supporting text */}
-      <p className={`text-sm text-gray-600 max-w-sm mb-6`}>
+      {/* Description - Better readability */}
+      <p className={`text-sm text-gray-600 max-w-md mb-8 leading-relaxed font-medium`}>
         {description}
       </p>
 
-      {/* Action Button - Clear CTA */}
+      {/* Action Button - Premium CTA */}
       {actionLabel && onAction && (
         <button
           onClick={onAction}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-green-700 text-white font-medium rounded-lg hover:bg-green-800 transition-colors"
+          className="btn-primary gap-2 px-6 py-3 shadow-md hover:shadow-lg"
         >
+          <Plus className="w-4 h-4" strokeWidth={2.5} />
           {actionLabel}
         </button>
       )}
+
+      {/* Subtle background decoration */}
+      <div className="absolute inset-0 -z-10 overflow-hidden pointer-events-none">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-gradient-to-br from-gray-100 to-transparent rounded-full blur-3xl opacity-50" />
+      </div>
     </div>
   );
 }
