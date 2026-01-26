@@ -8,10 +8,18 @@ import {
   Pencil,
   Trash2,
   Users,
+  Stethoscope,
+  Plus,
+  Syringe,
+  Pill,
+  Bug,
+  ClipboardCheck,
+  Scissors,
 } from 'lucide-react';
 import { Modal, ConfirmModal } from '../common/Modals';
 import { useDeleteLivestock } from '../../hooks/usePecuarioMutations';
-import type { Livestock, LivestockCategory } from '../../types/pecuario.types';
+import { useHealthRecordsByLivestock } from '../../hooks/usePecuario';
+import type { Livestock, HealthRecord } from '../../types/pecuario.types';
 
 interface LivestockDetailModalProps {
   open: boolean;
@@ -19,24 +27,47 @@ interface LivestockDetailModalProps {
   livestock: Livestock | null;
   onEdit?: (livestock: Livestock) => void;
   onDeleteSuccess?: () => void;
+  onAddHealthRecord?: (livestock: Livestock) => void;
+  onViewHealthRecord?: (record: HealthRecord) => void;
 }
 
-const categoryLabels: Record<LivestockCategory, string> = {
-  ternero: 'Ternero',
-  ternera: 'Ternera',
-  novillo: 'Novillo',
-  novilla: 'Novilla',
-  vaca: 'Vaca',
-  toro: 'Toro',
+// Labels for all categories
+const categoryLabels: Record<string, string> = {
+  // Bovinos
+  ternero: 'Ternero', ternera: 'Ternera', novillo: 'Novillo', novilla: 'Novilla', vaca: 'Vaca', toro: 'Toro',
+  // Porcinos
+  lechon: 'Lechón', lechona: 'Lechona', cerdo: 'Cerdo', cerda: 'Cerda', verraco: 'Verraco',
+  // Caprinos
+  cabrito: 'Cabrito', cabrita: 'Cabrita', chivo: 'Chivo', cabra: 'Cabra', semental_caprino: 'Semental',
+  // Bufalinos
+  bucerro: 'Bucerro', bucerra: 'Bucerra', bubillo: 'Bubillo', bubilla: 'Bubilla', bufala: 'Búfala', bufalo: 'Búfalo',
+  // Equinos
+  potro: 'Potro', potra: 'Potra', caballo: 'Caballo', yegua: 'Yegua', semental_equino: 'Semental',
+  // Ovinos
+  cordero: 'Cordero', cordera: 'Cordera', borrego: 'Borrego', oveja: 'Oveja', carnero: 'Carnero',
+  // Aves
+  gallina: 'Gallina', gallo: 'Gallo', pollo: 'Pollo', chompipe: 'Chompipe', pato: 'Pato', pata: 'Pata', ave_otro: 'Ave',
 };
 
-const categoryColors: Record<LivestockCategory, string> = {
-  ternero: 'bg-green-100 text-green-700',
-  ternera: 'bg-amber-100 text-amber-700',
-  novillo: 'bg-blue-100 text-blue-700',
-  novilla: 'bg-purple-100 text-purple-700',
-  vaca: 'bg-pink-100 text-pink-700',
-  toro: 'bg-red-100 text-red-700',
+// Colors by species
+const speciesColors: Record<string, string> = {
+  bovine: 'bg-blue-100 text-blue-700',
+  porcine: 'bg-pink-100 text-pink-700',
+  caprine: 'bg-amber-100 text-amber-700',
+  buffalo: 'bg-gray-100 text-gray-700',
+  equine: 'bg-purple-100 text-purple-700',
+  ovine: 'bg-green-100 text-green-700',
+  poultry: 'bg-orange-100 text-orange-700',
+};
+
+const speciesLabels: Record<string, string> = {
+  bovine: 'Bovino',
+  porcine: 'Porcino',
+  caprine: 'Caprino',
+  buffalo: 'Bufalino',
+  equine: 'Equino',
+  ovine: 'Ovino',
+  poultry: 'Ave',
 };
 
 function getStatusInfo(status: Livestock['status']): { label: string; color: string } {
@@ -110,15 +141,32 @@ function DetailRow({ icon, label, value }: DetailRowProps) {
   );
 }
 
+// Health record type configuration
+const healthTypeConfig: Record<string, { label: string; color: string; bgColor: string; icon: typeof Syringe }> = {
+  vaccination: { label: 'Vacunacion', color: 'text-blue-600', bgColor: 'bg-blue-100', icon: Syringe },
+  treatment: { label: 'Tratamiento', color: 'text-amber-600', bgColor: 'bg-amber-100', icon: Pill },
+  deworming: { label: 'Desparasitacion', color: 'text-green-600', bgColor: 'bg-green-100', icon: Bug },
+  checkup: { label: 'Revision', color: 'text-purple-600', bgColor: 'bg-purple-100', icon: ClipboardCheck },
+  surgery: { label: 'Cirugia', color: 'text-red-600', bgColor: 'bg-red-100', icon: Scissors },
+};
+
 export default function LivestockDetailModal({
   open,
   onOpenChange,
   livestock,
   onEdit,
   onDeleteSuccess,
+  onAddHealthRecord,
+  onViewHealthRecord,
 }: LivestockDetailModalProps) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [activeTab, setActiveTab] = useState<'info' | 'health'>('info');
   const deleteMutation = useDeleteLivestock();
+
+  // Fetch health records for this livestock
+  const { data: healthRecords, isLoading: healthLoading } = useHealthRecordsByLivestock(
+    open && livestock ? livestock.id : undefined
+  );
 
   if (!livestock) return null;
 
@@ -147,15 +195,15 @@ export default function LivestockDetailModal({
         onOpenChange={onOpenChange}
         title={livestock.name || livestock.tag}
         description={livestock.name ? livestock.tag : livestock.breed}
-        size="md"
+        size="lg"
       >
         <div className="space-y-1">
           {/* Status Badges */}
           <div className="flex items-center justify-center gap-3 mb-4">
             <span
-              className={`px-3 py-1 rounded-full text-sm font-semibold ${categoryColors[livestock.category]}`}
+              className={`px-3 py-1 rounded-full text-sm font-semibold ${speciesColors[livestock.species] || 'bg-gray-100 text-gray-700'}`}
             >
-              {categoryLabels[livestock.category]}
+              {speciesLabels[livestock.species]} - {categoryLabels[livestock.category] || livestock.category}
             </span>
             <span
               className={`px-3 py-1 rounded-full text-sm font-semibold ${statusInfo.color}`}
@@ -164,76 +212,206 @@ export default function LivestockDetailModal({
             </span>
           </div>
 
-          {/* Summary Cards */}
-          <div className="grid grid-cols-2 gap-3 mb-4">
-            <div className="bg-blue-50 rounded-lg p-3 text-center">
-              <p className="text-xs text-blue-600 uppercase tracking-wide">Peso Actual</p>
-              <p className="text-lg font-bold text-blue-700 mt-1">
-                {livestock.weight} <span className="text-sm">kg</span>
-              </p>
-            </div>
-            <div className="bg-emerald-50 rounded-lg p-3 text-center">
-              <p className="text-xs text-emerald-600 uppercase tracking-wide">Edad</p>
-              <p className="text-lg font-bold text-emerald-700 mt-1">
-                {calculateAge(livestock.birthDate)}
-              </p>
-            </div>
+          {/* Tabs */}
+          <div className="flex border-b border-gray-200 mb-4">
+            <button
+              type="button"
+              onClick={() => setActiveTab('info')}
+              className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+                activeTab === 'info'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              Informacion
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab('health')}
+              className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors inline-flex items-center gap-2 ${
+                activeTab === 'health'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              <Stethoscope className="w-4 h-4" />
+              Historial de Salud
+              {healthRecords && healthRecords.length > 0 && (
+                <span className="ml-1 px-1.5 py-0.5 text-xs bg-blue-100 text-blue-600 rounded-full">
+                  {healthRecords.length}
+                </span>
+              )}
+            </button>
           </div>
 
-          {/* Details */}
-          <div className="bg-gray-50 rounded-lg p-4">
-            <DetailRow
-              icon={<Tag className="w-4 h-4" />}
-              label="Raza / Género"
-              value={`${livestock.breed} - ${getGenderLabel(livestock.gender)}`}
-            />
-            <DetailRow
-              icon={<MapPin className="w-4 h-4" />}
-              label="Ubicación"
-              value={livestock.location}
-            />
-            <DetailRow
-              icon={<Calendar className="w-4 h-4" />}
-              label="Fecha de Nacimiento"
-              value={formatDate(livestock.birthDate)}
-            />
-            <DetailRow
-              icon={<Calendar className="w-4 h-4" />}
-              label="Fecha de Entrada"
-              value={`${formatDate(livestock.entryDate)} (${getEntryReasonLabel(livestock.entryReason)})`}
-            />
-            {(livestock.motherTag || livestock.fatherTag) && (
-              <DetailRow
-                icon={<Users className="w-4 h-4" />}
-                label="Padres"
-                value={
-                  <div className="flex gap-4">
-                    {livestock.motherTag && (
-                      <span>Madre: <strong>{livestock.motherTag}</strong></span>
-                    )}
-                    {livestock.fatherTag && (
-                      <span>Padre: <strong>{livestock.fatherTag}</strong></span>
-                    )}
-                  </div>
-                }
-              />
-            )}
-            <DetailRow
-              icon={<Scale className="w-4 h-4" />}
-              label="Peso"
-              value={`${livestock.weight} kg`}
-            />
-          </div>
-
-          {/* Notes */}
-          {livestock.notes && (
-            <div className="mt-4 p-3 bg-amber-50 rounded-lg border border-amber-100">
-              <div className="flex items-center gap-2 mb-1">
-                <FileText className="w-4 h-4 text-amber-600" />
-                <p className="text-xs text-amber-600 uppercase tracking-wide">Notas</p>
+          {/* Tab Content */}
+          {activeTab === 'info' ? (
+            <>
+              {/* Summary Cards */}
+              <div className="grid grid-cols-2 gap-3 mb-4">
+                <div className="bg-blue-50 rounded-lg p-3 text-center">
+                  <p className="text-xs text-blue-600 uppercase tracking-wide">Peso Actual</p>
+                  <p className="text-lg font-bold text-blue-700 mt-1">
+                    {livestock.weight} <span className="text-sm">kg</span>
+                  </p>
+                </div>
+                <div className="bg-emerald-50 rounded-lg p-3 text-center">
+                  <p className="text-xs text-emerald-600 uppercase tracking-wide">Edad</p>
+                  <p className="text-lg font-bold text-emerald-700 mt-1">
+                    {calculateAge(livestock.birthDate)}
+                  </p>
+                </div>
               </div>
-              <p className="text-sm text-amber-800">{livestock.notes}</p>
-            </div>
+
+              {/* Details */}
+              <div className="bg-gray-50 rounded-lg p-4">
+                <DetailRow
+                  icon={<Tag className="w-4 h-4" />}
+                  label="Raza / Genero"
+                  value={`${livestock.breed} - ${getGenderLabel(livestock.gender)}`}
+                />
+                <DetailRow
+                  icon={<MapPin className="w-4 h-4" />}
+                  label="Ubicacion"
+                  value={livestock.location}
+                />
+                <DetailRow
+                  icon={<Calendar className="w-4 h-4" />}
+                  label="Fecha de Nacimiento"
+                  value={formatDate(livestock.birthDate)}
+                />
+                <DetailRow
+                  icon={<Calendar className="w-4 h-4" />}
+                  label="Fecha de Entrada"
+                  value={`${formatDate(livestock.entryDate)} (${getEntryReasonLabel(livestock.entryReason)})`}
+                />
+                {(livestock.motherTag || livestock.fatherTag) && (
+                  <DetailRow
+                    icon={<Users className="w-4 h-4" />}
+                    label="Padres"
+                    value={
+                      <div className="flex gap-4">
+                        {livestock.motherTag && (
+                          <span>Madre: <strong>{livestock.motherTag}</strong></span>
+                        )}
+                        {livestock.fatherTag && (
+                          <span>Padre: <strong>{livestock.fatherTag}</strong></span>
+                        )}
+                      </div>
+                    }
+                  />
+                )}
+                <DetailRow
+                  icon={<Scale className="w-4 h-4" />}
+                  label="Peso"
+                  value={`${livestock.weight} kg`}
+                />
+              </div>
+
+              {/* Notes */}
+              {livestock.notes && (
+                <div className="mt-4 p-3 bg-amber-50 rounded-lg border border-amber-100">
+                  <div className="flex items-center gap-2 mb-1">
+                    <FileText className="w-4 h-4 text-amber-600" />
+                    <p className="text-xs text-amber-600 uppercase tracking-wide">Notas</p>
+                  </div>
+                  <p className="text-sm text-amber-800">{livestock.notes}</p>
+                </div>
+              )}
+            </>
+          ) : (
+            <>
+              {/* Health History Tab */}
+              <div className="space-y-3">
+                {/* Add Health Record Button */}
+                {onAddHealthRecord && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onOpenChange(false);
+                      onAddHealthRecord(livestock);
+                    }}
+                    className="w-full btn-secondary inline-flex items-center justify-center gap-2"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Agregar Registro de Salud
+                  </button>
+                )}
+
+                {/* Health Records List */}
+                {healthLoading ? (
+                  <div className="text-center py-8 text-gray-500">
+                    <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+                    <p>Cargando historial...</p>
+                  </div>
+                ) : healthRecords && healthRecords.length > 0 ? (
+                  <div className="space-y-2 max-h-[300px] overflow-y-auto">
+                    {healthRecords.map((record) => {
+                      const typeInfo = healthTypeConfig[record.type] || {
+                        label: record.type,
+                        color: 'text-gray-600',
+                        bgColor: 'bg-gray-100',
+                        icon: Stethoscope,
+                      };
+                      const TypeIcon = typeInfo.icon;
+                      const recordDate = new Date(record.date);
+
+                      return (
+                        <div
+                          key={record.id}
+                          onClick={() => {
+                            if (onViewHealthRecord) {
+                              onOpenChange(false);
+                              onViewHealthRecord(record);
+                            }
+                          }}
+                          className={`p-3 rounded-lg border border-gray-100 bg-gray-50/50 hover:border-gray-200 transition-all ${
+                            onViewHealthRecord ? 'cursor-pointer hover:shadow-sm' : ''
+                          }`}
+                        >
+                          <div className="flex items-start gap-3">
+                            <div className={`p-1.5 rounded-lg ${typeInfo.bgColor}`}>
+                              <TypeIcon className={`w-4 h-4 ${typeInfo.color}`} />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 mb-1">
+                                <span className={`text-xs font-medium ${typeInfo.color}`}>
+                                  {typeInfo.label}
+                                </span>
+                                <span className="text-xs text-gray-400">
+                                  {recordDate.toLocaleDateString('es-CR', {
+                                    day: 'numeric',
+                                    month: 'short',
+                                    year: 'numeric',
+                                  })}
+                                </span>
+                              </div>
+                              <p className="text-sm text-gray-900 truncate">
+                                {record.description}
+                              </p>
+                              {record.medication && (
+                                <p className="text-xs text-gray-500 mt-1">
+                                  {record.medication}
+                                  {record.dosage && ` - ${record.dosage}`}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-gray-500">
+                    <Stethoscope className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                    <p>No hay registros de salud</p>
+                    <p className="text-sm text-gray-400 mt-1">
+                      Agrega el primer registro para este animal
+                    </p>
+                  </div>
+                )}
+              </div>
+            </>
           )}
 
           {/* Actions */}

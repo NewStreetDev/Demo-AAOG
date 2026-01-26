@@ -6,28 +6,41 @@ interface LivestockCardProps {
   onClick?: () => void;
 }
 
+// Labels for all categories
+const categoryLabels: Record<string, string> = {
+  // Bovinos
+  ternero: 'Ternero', ternera: 'Ternera', novillo: 'Novillo', novilla: 'Novilla', vaca: 'Vaca', toro: 'Toro',
+  // Porcinos
+  lechon: 'Lechón', lechona: 'Lechona', cerdo: 'Cerdo', cerda: 'Cerda', verraco: 'Verraco',
+  // Caprinos
+  cabrito: 'Cabrito', cabrita: 'Cabrita', chivo: 'Chivo', cabra: 'Cabra', semental_caprino: 'Semental',
+  // Bufalinos
+  bucerro: 'Bucerro', bucerra: 'Bucerra', bubillo: 'Bubillo', bubilla: 'Bubilla', bufala: 'Búfala', bufalo: 'Búfalo',
+  // Equinos
+  potro: 'Potro', potra: 'Potra', caballo: 'Caballo', yegua: 'Yegua', semental_equino: 'Semental',
+  // Ovinos
+  cordero: 'Cordero', cordera: 'Cordera', borrego: 'Borrego', oveja: 'Oveja', carnero: 'Carnero',
+  // Aves
+  gallina: 'Gallina', gallo: 'Gallo', pollo: 'Pollo', chompipe: 'Chompipe', pato: 'Pato', pata: 'Pata', ave_otro: 'Ave',
+};
+
+// Colors by species
+const speciesColors: Record<string, string> = {
+  bovine: 'bg-blue-100 text-blue-700',
+  porcine: 'bg-pink-100 text-pink-700',
+  caprine: 'bg-amber-100 text-amber-700',
+  buffalo: 'bg-gray-100 text-gray-700',
+  equine: 'bg-purple-100 text-purple-700',
+  ovine: 'bg-green-100 text-green-700',
+  poultry: 'bg-orange-100 text-orange-700',
+};
+
 function getCategoryLabel(category: Livestock['category']): string {
-  const labels = {
-    ternero: 'Ternero',
-    ternera: 'Ternera',
-    novillo: 'Novillo',
-    novilla: 'Novilla',
-    vaca: 'Vaca',
-    toro: 'Toro',
-  };
-  return labels[category];
+  return categoryLabels[category] || category;
 }
 
-function getCategoryColor(category: Livestock['category']): string {
-  const colors = {
-    ternero: 'bg-green-100 text-green-700',
-    ternera: 'bg-amber-100 text-amber-700',
-    novillo: 'bg-blue-100 text-blue-700',
-    novilla: 'bg-purple-100 text-purple-700',
-    vaca: 'bg-pink-100 text-pink-700',
-    toro: 'bg-red-100 text-red-700',
-  };
-  return colors[category];
+function getCategoryColor(animal: Livestock): string {
+  return speciesColors[animal.species] || 'bg-gray-100 text-gray-700';
 }
 
 function getStatusInfo(status: Livestock['status']): { label: string; color: string } {
@@ -58,7 +71,7 @@ function calculateAge(birthDate: Date): string {
 
 export default function LivestockCard({ animal, onClick }: LivestockCardProps) {
   const categoryLabel = getCategoryLabel(animal.category);
-  const categoryColor = getCategoryColor(animal.category);
+  const categoryColor = getCategoryColor(animal);
   const statusInfo = getStatusInfo(animal.status);
 
   return (

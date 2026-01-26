@@ -1,12 +1,58 @@
 import type { BaseEntity } from './common.types';
 
-// Categoría de ganado según docs
-export type LivestockCategory = 'ternero' | 'ternera' | 'novillo' | 'novilla' | 'vaca' | 'toro';
+// Especies de ganado según documento de requisitos
+export type LivestockSpecies =
+  | 'bovine'    // Bovinos (con seguimiento de padres)
+  | 'porcine'   // Porcinos (con seguimiento de padres)
+  | 'caprine'   // Caprinos (con seguimiento de padres)
+  | 'buffalo'   // Bufalinos (con seguimiento de padres)
+  | 'equine'    // Equinos (con seguimiento de padres)
+  | 'ovine'     // Ovinos (con seguimiento de padres)
+  | 'poultry';  // Aves (SIN seguimiento de padres)
+
+// Categorías de ganado - ahora dinámicas por especie
+export type LivestockCategory =
+  // Bovinos
+  | 'ternero' | 'ternera' | 'novillo' | 'novilla' | 'vaca' | 'toro'
+  // Porcinos
+  | 'lechon' | 'lechona' | 'cerdo' | 'cerda' | 'verraco'
+  // Caprinos
+  | 'cabrito' | 'cabrita' | 'chivo' | 'cabra' | 'semental_caprino'
+  // Bufalinos
+  | 'bucerro' | 'bucerra' | 'bubillo' | 'bubilla' | 'bufala' | 'bufalo'
+  // Equinos
+  | 'potro' | 'potra' | 'caballo' | 'yegua' | 'semental_equino'
+  // Ovinos
+  | 'cordero' | 'cordera' | 'borrego' | 'oveja' | 'carnero'
+  // Aves
+  | 'gallina' | 'gallo' | 'pollo' | 'chompipe' | 'pato' | 'pata' | 'ave_otro';
+
+// Mapeo de categorías por especie (para validación y UI)
+export const categoriesBySpecies: Record<LivestockSpecies, LivestockCategory[]> = {
+  bovine: ['ternero', 'ternera', 'novillo', 'novilla', 'vaca', 'toro'],
+  porcine: ['lechon', 'lechona', 'cerdo', 'cerda', 'verraco'],
+  caprine: ['cabrito', 'cabrita', 'chivo', 'cabra', 'semental_caprino'],
+  buffalo: ['bucerro', 'bucerra', 'bubillo', 'bubilla', 'bufala', 'bufalo'],
+  equine: ['potro', 'potra', 'caballo', 'yegua', 'semental_equino'],
+  ovine: ['cordero', 'cordera', 'borrego', 'oveja', 'carnero'],
+  poultry: ['gallina', 'gallo', 'pollo', 'chompipe', 'pato', 'pata', 'ave_otro'],
+};
+
+// Especies que requieren seguimiento de padres
+export const speciesWithParentTracking: LivestockSpecies[] = [
+  'bovine', 'porcine', 'caprine', 'buffalo', 'equine', 'ovine'
+];
+
+// Verificar si una especie requiere seguimiento de padres
+export const requiresParentTracking = (species: LivestockSpecies): boolean => {
+  return speciesWithParentTracking.includes(species);
+};
 
 // Ganado individual
 export interface Livestock extends BaseEntity {
   tag: string; // Identificador único (arete)
   name?: string;
+  species: LivestockSpecies; // NUEVO: Especie del animal
   category: LivestockCategory;
   breed: string;
   birthDate: Date;
@@ -14,6 +60,7 @@ export interface Livestock extends BaseEntity {
   weight: number;
   status: 'active' | 'sold' | 'deceased' | 'transferred';
   location: string; // Potrero o ubicación
+  // Seguimiento de padres (solo para especies que lo requieren)
   motherId?: string;
   fatherId?: string;
   motherTag?: string;
@@ -29,6 +76,7 @@ export interface Livestock extends BaseEntity {
 // Grupo de ganado
 export interface LivestockGroup extends BaseEntity {
   name: string;
+  species: LivestockSpecies;
   category: LivestockCategory;
   count: number;
   location: string;
@@ -54,6 +102,7 @@ export interface HealthRecord extends BaseEntity {
 export interface GroupHealthAction extends BaseEntity {
   groupId?: string;
   groupName?: string;
+  species?: LivestockSpecies;
   category?: LivestockCategory;
   affectedCount: number;
   date: Date;
@@ -110,6 +159,16 @@ export interface MilkProduction extends BaseEntity {
 // Dashboard stats
 export interface PecuarioDashboardStats {
   totalLivestock: number;
+  bySpecies: {
+    bovine: number;
+    porcine: number;
+    caprine: number;
+    buffalo: number;
+    equine: number;
+    ovine: number;
+    poultry: number;
+  };
+  // Mantenemos byCategory para compatibilidad (bovinos)
   byCategory: {
     terneros: number;
     terneras: number;

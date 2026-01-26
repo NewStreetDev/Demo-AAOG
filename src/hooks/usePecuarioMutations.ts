@@ -6,8 +6,29 @@ import {
   createMockPotrero,
   updateMockPotrero,
   deleteMockPotrero,
+  createMockHealthRecord,
+  updateMockHealthRecord,
+  deleteMockHealthRecord,
+  createMockGroupHealthAction,
+  createMockReproductionRecord,
+  updateMockReproductionRecord,
+  deleteMockReproductionRecord,
+  createMockMilkProduction,
+  updateMockMilkProduction,
+  deleteMockMilkProduction,
+  createMockLivestockGroup,
+  updateMockLivestockGroup,
+  deleteMockLivestockGroup,
 } from '../services/mock/pecuario.mock';
-import type { LivestockFormData, PotreroFormData } from '../schemas/pecuario.schema';
+import type {
+  LivestockFormData,
+  PotreroFormData,
+  HealthRecordFormData,
+  GroupHealthActionFormData,
+  ReproductionRecordFormData,
+  MilkProductionFormData,
+  LivestockGroupFormData,
+} from '../schemas/pecuario.schema';
 
 // Livestock mutations
 export function useCreateLivestock() {
@@ -84,6 +105,209 @@ export function useDeletePotrero() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['potreros'] });
       queryClient.invalidateQueries({ queryKey: ['pecuario-stats'] });
+    },
+  });
+}
+
+// ========================================
+// Health Record mutations
+// ========================================
+
+export function useCreateHealthRecord() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: HealthRecordFormData) => createMockHealthRecord(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['health-records'] });
+      queryClient.invalidateQueries({ queryKey: ['pecuario-stats'] });
+      queryClient.invalidateQueries({ queryKey: ['pecuario-tasks'] });
+    },
+  });
+}
+
+export function useUpdateHealthRecord() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: HealthRecordFormData }) =>
+      updateMockHealthRecord(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['health-records'] });
+      queryClient.invalidateQueries({ queryKey: ['pecuario-stats'] });
+      queryClient.invalidateQueries({ queryKey: ['pecuario-tasks'] });
+    },
+  });
+}
+
+export function useDeleteHealthRecord() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => deleteMockHealthRecord(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['health-records'] });
+      queryClient.invalidateQueries({ queryKey: ['pecuario-stats'] });
+      queryClient.invalidateQueries({ queryKey: ['pecuario-tasks'] });
+    },
+  });
+}
+
+// ========================================
+// Group Health Action mutations
+// ========================================
+
+export function useCreateGroupHealthAction() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: GroupHealthActionFormData) => createMockGroupHealthAction(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['group-health-actions'] });
+      queryClient.invalidateQueries({ queryKey: ['recent-health-actions'] });
+      queryClient.invalidateQueries({ queryKey: ['pecuario-stats'] });
+      queryClient.invalidateQueries({ queryKey: ['pecuario-tasks'] });
+    },
+  });
+}
+
+// ========================================
+// Reproduction Record mutations
+// ========================================
+
+export function useCreateReproductionRecord() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: ReproductionRecordFormData) => createMockReproductionRecord(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['reproduction-records'] });
+      queryClient.invalidateQueries({ queryKey: ['pecuario-stats'] });
+      queryClient.invalidateQueries({ queryKey: ['pecuario-dashboard'] });
+      queryClient.invalidateQueries({ queryKey: ['pecuario-tasks'] });
+    },
+  });
+}
+
+export function useUpdateReproductionRecord() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: ReproductionRecordFormData }) =>
+      updateMockReproductionRecord(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['reproduction-records'] });
+      queryClient.invalidateQueries({ queryKey: ['pecuario-stats'] });
+      queryClient.invalidateQueries({ queryKey: ['pecuario-dashboard'] });
+      queryClient.invalidateQueries({ queryKey: ['pecuario-tasks'] });
+    },
+  });
+}
+
+export function useDeleteReproductionRecord() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => deleteMockReproductionRecord(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['reproduction-records'] });
+      queryClient.invalidateQueries({ queryKey: ['pecuario-stats'] });
+      queryClient.invalidateQueries({ queryKey: ['pecuario-dashboard'] });
+      queryClient.invalidateQueries({ queryKey: ['pecuario-tasks'] });
+    },
+  });
+}
+
+// ========================================
+// Milk Production mutations
+// ========================================
+
+export function useCreateMilkProduction() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: MilkProductionFormData) => createMockMilkProduction(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['milk-production'] });
+      queryClient.invalidateQueries({ queryKey: ['pecuario-stats'] });
+      queryClient.invalidateQueries({ queryKey: ['pecuario-dashboard'] });
+      queryClient.invalidateQueries({ queryKey: ['pecuario-production'] });
+      queryClient.invalidateQueries({ queryKey: ['pecuario-production-data'] });
+    },
+  });
+}
+
+export function useUpdateMilkProduction() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: MilkProductionFormData }) =>
+      updateMockMilkProduction(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['milk-production'] });
+      queryClient.invalidateQueries({ queryKey: ['pecuario-stats'] });
+      queryClient.invalidateQueries({ queryKey: ['pecuario-dashboard'] });
+      queryClient.invalidateQueries({ queryKey: ['pecuario-production'] });
+      queryClient.invalidateQueries({ queryKey: ['pecuario-production-data'] });
+    },
+  });
+}
+
+export function useDeleteMilkProduction() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => deleteMockMilkProduction(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['milk-production'] });
+      queryClient.invalidateQueries({ queryKey: ['pecuario-stats'] });
+      queryClient.invalidateQueries({ queryKey: ['pecuario-dashboard'] });
+      queryClient.invalidateQueries({ queryKey: ['pecuario-production'] });
+      queryClient.invalidateQueries({ queryKey: ['pecuario-production-data'] });
+    },
+  });
+}
+
+// ========================================
+// Livestock Group mutations
+// ========================================
+
+export function useCreateLivestockGroup() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: LivestockGroupFormData) => createMockLivestockGroup(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['livestock-groups'] });
+      queryClient.invalidateQueries({ queryKey: ['pecuario-stats'] });
+      queryClient.invalidateQueries({ queryKey: ['pecuario-dashboard'] });
+    },
+  });
+}
+
+export function useUpdateLivestockGroup() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: LivestockGroupFormData }) =>
+      updateMockLivestockGroup(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['livestock-groups'] });
+      queryClient.invalidateQueries({ queryKey: ['pecuario-stats'] });
+      queryClient.invalidateQueries({ queryKey: ['pecuario-dashboard'] });
+    },
+  });
+}
+
+export function useDeleteLivestockGroup() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => deleteMockLivestockGroup(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['livestock-groups'] });
+      queryClient.invalidateQueries({ queryKey: ['pecuario-stats'] });
+      queryClient.invalidateQueries({ queryKey: ['pecuario-dashboard'] });
     },
   });
 }

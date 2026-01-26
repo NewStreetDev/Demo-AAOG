@@ -12,7 +12,8 @@ import {
 } from '../common/Forms';
 import {
   livestockFormSchema,
-  categoryOptions,
+  speciesOptions,
+  categoryOptionsBySpecies,
   genderOptions,
   livestockStatusOptions,
   entryReasonOptions,
@@ -20,7 +21,8 @@ import {
   type LivestockFormData,
 } from '../../schemas/pecuario.schema';
 import { useCreateLivestock, useUpdateLivestock } from '../../hooks/usePecuarioMutations';
-import type { Livestock } from '../../types/pecuario.types';
+import type { Livestock, LivestockSpecies } from '../../types/pecuario.types';
+import { requiresParentTracking } from '../../types/pecuario.types';
 
 interface LivestockFormModalProps {
   open: boolean;
@@ -51,12 +53,15 @@ export default function LivestockFormModal({
     handleSubmit,
     control,
     reset,
+    watch,
+    setValue,
     formState: { errors },
   } = useForm<LivestockFormData>({
     resolver: zodResolver(livestockFormSchema),
     defaultValues: {
       tag: '',
       name: '',
+      species: undefined,
       category: undefined,
       breed: '',
       birthDate: '',
@@ -76,11 +81,17 @@ export default function LivestockFormModal({
     },
   });
 
+  // Watch species to filter categories and show/hide parent fields
+  const selectedSpecies = watch('species') as LivestockSpecies | undefined;
+  const categoryOptions = selectedSpecies ? categoryOptionsBySpecies[selectedSpecies] || [] : [];
+  const showParentFields = selectedSpecies ? requiresParentTracking(selectedSpecies) : true;
+
   useEffect(() => {
     if (open && livestock) {
       reset({
         tag: livestock.tag,
         name: livestock.name || '',
+        species: livestock.species,
         category: livestock.category,
         breed: livestock.breed,
         birthDate: formatDateForInput(livestock.birthDate),
@@ -102,6 +113,7 @@ export default function LivestockFormModal({
       reset({
         tag: '',
         name: '',
+        species: undefined,
         category: undefined,
         breed: '',
         birthDate: '',
@@ -121,6 +133,14 @@ export default function LivestockFormModal({
       });
     }
   }, [open, livestock, reset]);
+
+  // Reset category when species changes (only for new animals)
+  useEffect(() => {
+    if (selectedSpecies && !livestock) {
+      // Clear category when species changes
+      setValue('category', '' as LivestockFormData['category']);
+    }
+  }, [selectedSpecies, setValue, livestock]);
 
   const onSubmit = async (data: LivestockFormData) => {
     try {
@@ -169,8 +189,23 @@ export default function LivestockFormModal({
           </div>
         </div>
 
-        {/* Row 2: Category, Gender, Breed */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* Row 2: Species and Category */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <FormField label="Especie" required error={errors.species?.message}>
+            <Controller
+              name="species"
+              control={control}
+              render={({ field }) => (
+                <FormSelect
+                  value={field.value}
+                  onValueChange={field.onChange}
+                  options={speciesOptions}
+                  placeholder="Seleccionar especie..."
+                  error={errors.species?.message}
+                />
+              )}
+            />
+          </FormField>
           <FormField label="Categoría" required error={errors.category?.message}>
             <Controller
               name="category"
@@ -180,12 +215,17 @@ export default function LivestockFormModal({
                   value={field.value}
                   onValueChange={field.onChange}
                   options={categoryOptions}
-                  placeholder="Seleccionar..."
+                  placeholder={selectedSpecies ? "Seleccionar categoría..." : "Seleccione especie primero"}
                   error={errors.category?.message}
+                  disabled={!selectedSpecies}
                 />
               )}
             />
           </FormField>
+        </div>
+
+        {/* Row 3: Gender, Breed */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField label="Género" required error={errors.gender?.message}>
             <Controller
               name="gender"
@@ -277,23 +317,31 @@ export default function LivestockFormModal({
           </FormField>
         </div>
 
-        {/* Row 6: Mother, Father */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField label="Arete de la Madre" error={errors.motherTag?.message}>
-            <FormInput
-              {...register('motherTag')}
-              placeholder="Ej: BOV-001"
-              error={errors.motherTag?.message}
-            />
-          </FormField>
-          <FormField label="Arete del Padre" error={errors.fatherTag?.message}>
-            <FormInput
-              {...register('fatherTag')}
-              placeholder="Ej: BOV-002"
-              error={errors.fatherTag?.message}
-            />
-          </FormField>
-        </div>
+        {/* Row 6: Mother, Father - Only for species with parent tracking */}
+        {showParentFields && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FormField label="Arete de la Madre" error={errors.motherTag?.message}>
+              <FormInput
+                {...register('motherTag')}
+                placeholder="Ej: BOV-001"
+                error={errors.motherTag?.message}
+              />
+            </FormField>
+            <FormField label="Arete del Padre" error={errors.fatherTag?.message}>
+              <FormInput
+                {...register('fatherTag')}
+                placeholder="Ej: BOV-002"
+                error={errors.fatherTag?.message}
+              />
+            </FormField>
+          </div>
+        )}
+
+        {!showParentFields && selectedSpecies && (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm text-blue-700">
+            Las aves no requieren seguimiento de padres individual.
+          </div>
+        )}
 
         {/* Row 7: Exit Date, Exit Reason (optional) */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
