@@ -8,6 +8,12 @@ import {
   getMockCropDistribution,
   getMockCropSummaries,
   getMockRecentAgroActions,
+  getMockAgroActions,
+  getMockAgroActionsByLote,
+  getMockAgroActionsByCrop,
+  getMockHarvests,
+  getMockHarvestsByLote,
+  getMockHarvestsByCrop,
 } from '../services/mock/agro.mock';
 
 export function useLotes() {
@@ -63,5 +69,55 @@ export function useRecentAgroActions() {
   return useQuery({
     queryKey: ['recent-agro-actions'],
     queryFn: getMockRecentAgroActions,
+  });
+}
+
+// ==================== AGRO ACTIONS ====================
+
+export function useAgroActions() {
+  return useQuery({
+    queryKey: ['agro-actions'],
+    queryFn: getMockAgroActions,
+  });
+}
+
+export function useAgroActionsByLote(loteId: string | undefined) {
+  return useQuery({
+    queryKey: ['agro-actions', 'lote', loteId],
+    queryFn: () => getMockAgroActionsByLote(loteId!),
+    enabled: !!loteId,
+  });
+}
+
+export function useAgroActionsByCrop(cropId: string | undefined) {
+  return useQuery({
+    queryKey: ['agro-actions', 'crop', cropId],
+    queryFn: () => getMockAgroActionsByCrop(cropId!),
+    enabled: !!cropId,
+  });
+}
+
+// ==================== HARVESTS ====================
+
+export function useHarvests() {
+  return useQuery({
+    queryKey: ['harvests'],
+    queryFn: getMockHarvests,
+  });
+}
+
+export function useHarvestsByLote(loteId: string | undefined) {
+  return useQuery({
+    queryKey: ['harvests', 'lote', loteId],
+    queryFn: () => getMockHarvestsByLote(loteId!),
+    enabled: !!loteId,
+  });
+}
+
+export function useHarvestsByCrop(cropId: string | undefined) {
+  return useQuery({
+    queryKey: ['harvests', 'crop', cropId],
+    queryFn: () => getMockHarvestsByCrop(cropId!),
+    enabled: !!cropId,
   });
 }

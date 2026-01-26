@@ -7,14 +7,17 @@ import type {
   CropDistribution,
   CropSummary,
   AgroAction,
+  Harvest,
 } from '../../types/agro.types';
-import type { LoteFormData, CropFormData } from '../../schemas/agro.schema';
+import type { LoteFormData, CropFormData, AgroActionFormData, HarvestFormData } from '../../schemas/agro.schema';
 
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 // In-memory stores
 let lotesStore: Lote[] = [];
 let cropsStore: Crop[] = [];
+let agroActionsStore: AgroAction[] = [];
+let harvestsStore: Harvest[] = [];
 
 // Initial Lotes Data
 const initialLotes: Lote[] = [
@@ -465,58 +468,394 @@ export const getMockCropSummaries = async (): Promise<CropSummary[]> => {
   ];
 };
 
-// Recent actions
+// Initial AgroActions Data
+const initialAgroActions: AgroAction[] = [
+  {
+    id: '1',
+    cropId: '1',
+    cropName: 'Tomate',
+    loteId: '1',
+    loteName: 'Lote Norte',
+    type: 'fertilization',
+    date: new Date('2026-01-18'),
+    description: 'Aplicacion de fertilizante NPK',
+    insumoUsed: 'NPK 15-15-15',
+    quantity: 50,
+    unit: 'kg',
+    cost: 45000,
+    performedBy: 'Juan Perez',
+    weatherConditions: 'sunny',
+    createdAt: new Date('2026-01-18'),
+    updatedAt: new Date('2026-01-18'),
+  },
+  {
+    id: '2',
+    cropId: '2',
+    cropName: 'Chile',
+    loteId: '2',
+    loteName: 'Lote Central',
+    type: 'irrigation',
+    date: new Date('2026-01-17'),
+    description: 'Riego por aspersion',
+    quantity: 15000,
+    unit: 'L',
+    performedBy: 'Maria Lopez',
+    weatherConditions: 'cloudy',
+    createdAt: new Date('2026-01-17'),
+    updatedAt: new Date('2026-01-17'),
+  },
+  {
+    id: '3',
+    cropId: '3',
+    cropName: 'Pepino',
+    loteId: '3',
+    loteName: 'Lote Sur',
+    type: 'pesticide',
+    date: new Date('2026-01-15'),
+    description: 'Control preventivo de afidos',
+    insumoUsed: 'Insecticida organico',
+    quantity: 5,
+    unit: 'L',
+    cost: 25000,
+    performedBy: 'Carlos Sanchez',
+    weatherConditions: 'sunny',
+    createdAt: new Date('2026-01-15'),
+    updatedAt: new Date('2026-01-15'),
+  },
+  {
+    id: '4',
+    cropId: '1',
+    cropName: 'Tomate',
+    loteId: '1',
+    loteName: 'Lote Norte',
+    type: 'weeding',
+    date: new Date('2026-01-12'),
+    description: 'Deshierbe manual de camas',
+    performedBy: 'Pedro Martinez',
+    weatherConditions: 'sunny',
+    createdAt: new Date('2026-01-12'),
+    updatedAt: new Date('2026-01-12'),
+  },
+  {
+    id: '5',
+    loteId: '4',
+    loteName: 'Lote Este',
+    type: 'soil_preparation',
+    date: new Date('2026-01-10'),
+    description: 'Preparacion de suelo con tractor',
+    cost: 120000,
+    performedBy: 'Juan Perez',
+    weatherConditions: 'sunny',
+    notes: 'Se preparo toda el area para proxima siembra',
+    createdAt: new Date('2026-01-10'),
+    updatedAt: new Date('2026-01-10'),
+  },
+];
+
+// Initial Harvests Data
+const initialHarvests: Harvest[] = [
+  {
+    id: '1',
+    cropId: '4',
+    cropName: 'Cilantro',
+    loteId: '1',
+    loteName: 'Lote Norte',
+    date: new Date('2026-01-20'),
+    quantity: 150,
+    unit: 'kg',
+    quality: 'A',
+    destination: 'sale',
+    pricePerUnit: 2500,
+    totalValue: 375000,
+    harvestedBy: 'Maria Lopez',
+    notes: 'Excelente calidad, hojas frescas',
+    createdAt: new Date('2026-01-20'),
+    updatedAt: new Date('2026-01-20'),
+  },
+  {
+    id: '2',
+    cropId: '4',
+    cropName: 'Cilantro',
+    loteId: '1',
+    loteName: 'Lote Norte',
+    date: new Date('2026-01-15'),
+    quantity: 100,
+    unit: 'kg',
+    quality: 'B',
+    destination: 'sale',
+    pricePerUnit: 2000,
+    totalValue: 200000,
+    harvestedBy: 'Carlos Sanchez',
+    createdAt: new Date('2026-01-15'),
+    updatedAt: new Date('2026-01-15'),
+  },
+  {
+    id: '3',
+    cropId: '1',
+    cropName: 'Tomate',
+    loteId: '1',
+    loteName: 'Lote Norte',
+    date: new Date('2026-01-08'),
+    quantity: 500,
+    unit: 'kg',
+    quality: 'A',
+    destination: 'sale',
+    pricePerUnit: 1800,
+    totalValue: 900000,
+    harvestedBy: 'Juan Perez',
+    notes: 'Primera cosecha de la temporada',
+    createdAt: new Date('2026-01-08'),
+    updatedAt: new Date('2026-01-08'),
+  },
+];
+
+// Initialize AgroActions store
+export const initializeAgroActionsStore = () => {
+  if (agroActionsStore.length === 0) {
+    agroActionsStore = [...initialAgroActions];
+  }
+};
+
+// Initialize Harvests store
+export const initializeHarvestsStore = () => {
+  if (harvestsStore.length === 0) {
+    harvestsStore = [...initialHarvests];
+  }
+};
+
+// ==================== AGRO ACTIONS CRUD ====================
+
+// Get all AgroActions
+export const getMockAgroActions = async (): Promise<AgroAction[]> => {
+  await delay(300);
+  initializeAgroActionsStore();
+  return [...agroActionsStore].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+};
+
+// Get AgroActions by Lote
+export const getMockAgroActionsByLote = async (loteId: string): Promise<AgroAction[]> => {
+  await delay(300);
+  initializeAgroActionsStore();
+  return agroActionsStore
+    .filter(a => a.loteId === loteId)
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+};
+
+// Get AgroActions by Crop
+export const getMockAgroActionsByCrop = async (cropId: string): Promise<AgroAction[]> => {
+  await delay(300);
+  initializeAgroActionsStore();
+  return agroActionsStore
+    .filter(a => a.cropId === cropId)
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+};
+
+// Get single AgroAction
+export const getMockAgroActionById = async (id: string): Promise<AgroAction | undefined> => {
+  await delay(200);
+  initializeAgroActionsStore();
+  return agroActionsStore.find(a => a.id === id);
+};
+
+// Create AgroAction
+export const createMockAgroAction = async (data: AgroActionFormData): Promise<AgroAction> => {
+  await delay(400);
+  initializeAgroActionsStore();
+  initializeLotesStore();
+  initializeCropsStore();
+
+  const lote = lotesStore.find(l => l.id === data.loteId);
+  const crop = data.cropId ? cropsStore.find(c => c.id === data.cropId) : undefined;
+
+  const newAction: AgroAction = {
+    id: String(Date.now()),
+    loteId: data.loteId,
+    loteName: lote?.name || '',
+    cropId: data.cropId || undefined,
+    cropName: crop?.name,
+    type: data.type,
+    date: new Date(data.date),
+    description: data.description,
+    insumoUsed: data.insumoUsed || undefined,
+    quantity: data.quantity ? parseFloat(data.quantity) : undefined,
+    unit: data.unit || undefined,
+    cost: data.cost ? parseFloat(data.cost) : undefined,
+    performedBy: data.performedBy,
+    weatherConditions: data.weatherConditions || undefined,
+    notes: data.notes || undefined,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
+  agroActionsStore.push(newAction);
+  return newAction;
+};
+
+// Update AgroAction
+export const updateMockAgroAction = async (id: string, data: AgroActionFormData): Promise<AgroAction> => {
+  await delay(400);
+  initializeAgroActionsStore();
+  initializeLotesStore();
+  initializeCropsStore();
+
+  const index = agroActionsStore.findIndex(a => a.id === id);
+  if (index === -1) throw new Error('AgroAction not found');
+
+  const lote = lotesStore.find(l => l.id === data.loteId);
+  const crop = data.cropId ? cropsStore.find(c => c.id === data.cropId) : undefined;
+  const existing = agroActionsStore[index];
+
+  const updatedAction: AgroAction = {
+    ...existing,
+    loteId: data.loteId,
+    loteName: lote?.name || '',
+    cropId: data.cropId || undefined,
+    cropName: crop?.name,
+    type: data.type,
+    date: new Date(data.date),
+    description: data.description,
+    insumoUsed: data.insumoUsed || undefined,
+    quantity: data.quantity ? parseFloat(data.quantity) : undefined,
+    unit: data.unit || undefined,
+    cost: data.cost ? parseFloat(data.cost) : undefined,
+    performedBy: data.performedBy,
+    weatherConditions: data.weatherConditions || undefined,
+    notes: data.notes || undefined,
+    updatedAt: new Date(),
+  };
+  agroActionsStore[index] = updatedAction;
+  return updatedAction;
+};
+
+// Delete AgroAction
+export const deleteMockAgroAction = async (id: string): Promise<void> => {
+  await delay(300);
+  initializeAgroActionsStore();
+  const index = agroActionsStore.findIndex(a => a.id === id);
+  if (index === -1) throw new Error('AgroAction not found');
+  agroActionsStore.splice(index, 1);
+};
+
+// ==================== HARVESTS CRUD ====================
+
+// Get all Harvests
+export const getMockHarvests = async (): Promise<Harvest[]> => {
+  await delay(300);
+  initializeHarvestsStore();
+  return [...harvestsStore].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+};
+
+// Get Harvests by Lote
+export const getMockHarvestsByLote = async (loteId: string): Promise<Harvest[]> => {
+  await delay(300);
+  initializeHarvestsStore();
+  return harvestsStore
+    .filter(h => h.loteId === loteId)
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+};
+
+// Get Harvests by Crop
+export const getMockHarvestsByCrop = async (cropId: string): Promise<Harvest[]> => {
+  await delay(300);
+  initializeHarvestsStore();
+  return harvestsStore
+    .filter(h => h.cropId === cropId)
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+};
+
+// Get single Harvest
+export const getMockHarvestById = async (id: string): Promise<Harvest | undefined> => {
+  await delay(200);
+  initializeHarvestsStore();
+  return harvestsStore.find(h => h.id === id);
+};
+
+// Create Harvest
+export const createMockHarvest = async (data: HarvestFormData): Promise<Harvest> => {
+  await delay(400);
+  initializeHarvestsStore();
+  initializeLotesStore();
+  initializeCropsStore();
+
+  const lote = lotesStore.find(l => l.id === data.loteId);
+  const crop = cropsStore.find(c => c.id === data.cropId);
+  const quantity = parseFloat(data.quantity);
+  const pricePerUnit = data.pricePerUnit ? parseFloat(data.pricePerUnit) : undefined;
+  const totalValue = pricePerUnit ? quantity * pricePerUnit : undefined;
+
+  const newHarvest: Harvest = {
+    id: String(Date.now()),
+    cropId: data.cropId,
+    cropName: crop?.name || '',
+    loteId: data.loteId,
+    loteName: lote?.name || '',
+    date: new Date(data.date),
+    quantity,
+    unit: data.unit,
+    quality: data.quality,
+    destination: data.destination,
+    pricePerUnit,
+    totalValue,
+    harvestedBy: data.harvestedBy || undefined,
+    notes: data.notes || undefined,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
+  harvestsStore.push(newHarvest);
+  return newHarvest;
+};
+
+// Update Harvest
+export const updateMockHarvest = async (id: string, data: HarvestFormData): Promise<Harvest> => {
+  await delay(400);
+  initializeHarvestsStore();
+  initializeLotesStore();
+  initializeCropsStore();
+
+  const index = harvestsStore.findIndex(h => h.id === id);
+  if (index === -1) throw new Error('Harvest not found');
+
+  const lote = lotesStore.find(l => l.id === data.loteId);
+  const crop = cropsStore.find(c => c.id === data.cropId);
+  const existing = harvestsStore[index];
+  const quantity = parseFloat(data.quantity);
+  const pricePerUnit = data.pricePerUnit ? parseFloat(data.pricePerUnit) : undefined;
+  const totalValue = pricePerUnit ? quantity * pricePerUnit : undefined;
+
+  const updatedHarvest: Harvest = {
+    ...existing,
+    cropId: data.cropId,
+    cropName: crop?.name || '',
+    loteId: data.loteId,
+    loteName: lote?.name || '',
+    date: new Date(data.date),
+    quantity,
+    unit: data.unit,
+    quality: data.quality,
+    destination: data.destination,
+    pricePerUnit,
+    totalValue,
+    harvestedBy: data.harvestedBy || undefined,
+    notes: data.notes || undefined,
+    updatedAt: new Date(),
+  };
+  harvestsStore[index] = updatedHarvest;
+  return updatedHarvest;
+};
+
+// Delete Harvest
+export const deleteMockHarvest = async (id: string): Promise<void> => {
+  await delay(300);
+  initializeHarvestsStore();
+  const index = harvestsStore.findIndex(h => h.id === id);
+  if (index === -1) throw new Error('Harvest not found');
+  harvestsStore.splice(index, 1);
+};
+
+// Recent actions (for dashboard)
 export const getMockRecentAgroActions = async (): Promise<AgroAction[]> => {
   await delay(300);
-  return [
-    {
-      id: '1',
-      cropId: '1',
-      cropName: 'Tomate',
-      loteId: '1',
-      loteName: 'Lote Norte',
-      type: 'fertilization',
-      date: new Date('2026-01-18'),
-      description: 'Aplicación de fertilizante NPK',
-      insumoUsed: 'NPK 15-15-15',
-      quantity: 50,
-      unit: 'kg',
-      cost: 45000,
-      performedBy: 'Juan Pérez',
-      createdAt: new Date('2026-01-18'),
-      updatedAt: new Date('2026-01-18'),
-    },
-    {
-      id: '2',
-      cropId: '2',
-      cropName: 'Chile',
-      loteId: '2',
-      loteName: 'Lote Central',
-      type: 'irrigation',
-      date: new Date('2026-01-17'),
-      description: 'Riego por aspersión',
-      quantity: 15000,
-      unit: 'L',
-      performedBy: 'María López',
-      createdAt: new Date('2026-01-17'),
-      updatedAt: new Date('2026-01-17'),
-    },
-    {
-      id: '3',
-      cropId: '3',
-      cropName: 'Pepino',
-      loteId: '3',
-      loteName: 'Lote Sur',
-      type: 'pesticide',
-      date: new Date('2026-01-15'),
-      description: 'Control preventivo de áfidos',
-      insumoUsed: 'Insecticida orgánico',
-      quantity: 5,
-      unit: 'L',
-      cost: 25000,
-      performedBy: 'Carlos Sánchez',
-      createdAt: new Date('2026-01-15'),
-      updatedAt: new Date('2026-01-15'),
-    },
-  ];
+  initializeAgroActionsStore();
+  return [...agroActionsStore]
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    .slice(0, 5);
 };
