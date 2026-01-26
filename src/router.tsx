@@ -1,6 +1,7 @@
 import { createBrowserRouter } from 'react-router-dom';
 import MainLayout from './components/common/Layout/MainLayout';
 import Home from './pages/Home';
+import Finca from './pages/Finca';
 import Apicultura from './pages/Apicultura';
 import Pecuario from './pages/Pecuario';
 import Agro from './pages/Agro';
@@ -20,6 +21,15 @@ export const router = createBrowserRouter([
       {
         index: true,
         element: <Home />,
+      },
+      {
+        path: 'finca',
+        children: [
+          {
+            index: true,
+            element: <Finca />,
+          },
+        ],
       },
       {
         path: 'agro',

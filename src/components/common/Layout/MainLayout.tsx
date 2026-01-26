@@ -1,11 +1,12 @@
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { Home, Sprout, Beef, Flower2, Factory, DollarSign, FileText, ChevronDown, Users, Building, Package, Box, Bell, Settings, User } from 'lucide-react';
+import { Home, Sprout, Beef, Flower2, Factory, DollarSign, FileText, ChevronDown, Users, Building, Package, Box, Bell, Settings, User, Map } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import Breadcrumbs from '../Breadcrumbs';
 import FincaSelector from '../FincaSelector';
 
 const navigation = [
-  { name: 'Mi Finca', href: '/', icon: Home },
+  { name: 'Inicio', href: '/', icon: Home },
+  { name: 'Finca', href: '/finca', icon: Map },
   { name: 'Agricultura', href: '/agro', icon: Sprout },
   { name: 'Pecuario', href: '/pecuario', icon: Beef },
   { name: 'Apicultura', href: '/apicultura', icon: Flower2 },
