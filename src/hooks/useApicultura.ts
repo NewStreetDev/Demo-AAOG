@@ -7,6 +7,16 @@ import {
   getMockApiculturaTasks,
   getMockHealthDistribution,
   getMockRecentActions,
+  getMockWorkPlans,
+  getMockAcciones,
+  getMockAccionesByApiario,
+  getMockAccionesByColmena,
+  getMockRevisiones,
+  getMockRevisionesByApiario,
+  getMockRevisionesByColmena,
+  getMockCosechas,
+  getMockCosechasByApiario,
+  getMockCosechasByColmena,
 } from '../services/mock/apicultura.mock';
 
 export function useApiarios() {
@@ -55,5 +65,87 @@ export function useRecentActions() {
   return useQuery({
     queryKey: ['recent-actions'],
     queryFn: getMockRecentActions,
+  });
+}
+
+export function useWorkPlans() {
+  return useQuery({
+    queryKey: ['work-plans'],
+    queryFn: getMockWorkPlans,
+  });
+}
+
+// ==================== ACCIONES ====================
+
+export function useAcciones() {
+  return useQuery({
+    queryKey: ['acciones'],
+    queryFn: getMockAcciones,
+  });
+}
+
+export function useAccionesByApiario(apiarioId: string | undefined) {
+  return useQuery({
+    queryKey: ['acciones', 'apiario', apiarioId],
+    queryFn: () => getMockAccionesByApiario(apiarioId!),
+    enabled: !!apiarioId,
+  });
+}
+
+export function useAccionesByColmena(colmenaId: string | undefined) {
+  return useQuery({
+    queryKey: ['acciones', 'colmena', colmenaId],
+    queryFn: () => getMockAccionesByColmena(colmenaId!),
+    enabled: !!colmenaId,
+  });
+}
+
+// ==================== REVISIONES ====================
+
+export function useRevisiones() {
+  return useQuery({
+    queryKey: ['revisiones'],
+    queryFn: getMockRevisiones,
+  });
+}
+
+export function useRevisionesByApiario(apiarioId: string | undefined) {
+  return useQuery({
+    queryKey: ['revisiones', 'apiario', apiarioId],
+    queryFn: () => getMockRevisionesByApiario(apiarioId!),
+    enabled: !!apiarioId,
+  });
+}
+
+export function useRevisionesByColmena(colmenaId: string | undefined) {
+  return useQuery({
+    queryKey: ['revisiones', 'colmena', colmenaId],
+    queryFn: () => getMockRevisionesByColmena(colmenaId!),
+    enabled: !!colmenaId,
+  });
+}
+
+// ==================== COSECHAS ====================
+
+export function useCosechas() {
+  return useQuery({
+    queryKey: ['cosechas'],
+    queryFn: getMockCosechas,
+  });
+}
+
+export function useCosechasByApiario(apiarioId: string | undefined) {
+  return useQuery({
+    queryKey: ['cosechas', 'apiario', apiarioId],
+    queryFn: () => getMockCosechasByApiario(apiarioId!),
+    enabled: !!apiarioId,
+  });
+}
+
+export function useCosechasByColmena(colmenaId: string | undefined) {
+  return useQuery({
+    queryKey: ['cosechas', 'colmena', colmenaId],
+    queryFn: () => getMockCosechasByColmena(colmenaId!),
+    enabled: !!colmenaId,
   });
 }

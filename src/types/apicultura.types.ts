@@ -80,6 +80,39 @@ export type ApiculturaReproductionType =
   | 'queen_introduction' // Introducción de reinas con genética mejorada
   | 'queen_raising';     // Crianza de reinas (Método Do Little)
 
+// Tipos de actividad para Plan de Trabajo
+export type WorkPlanActivityType =
+  | 'medication'      // Aplicación de medicamentos
+  | 'panel_change'    // Cambio de panales
+  | 'feeding'         // Alimentación
+  | 'revision'        // Revisión
+  | 'queen_change'    // Cambio de reinas
+  | 'reproduction'    // Reproducción
+  | 'harvest'         // Cosecha
+  | 'maintenance'     // Mantenimiento general
+  | 'other';          // Otros
+
+// Estado del Plan de Trabajo
+export type WorkPlanStatus = 'pending' | 'in_progress' | 'completed' | 'cancelled';
+
+// Plan de Trabajo - Planificación de actividades
+export interface WorkPlan extends BaseEntity {
+  title: string;
+  description?: string;
+  apiarioId?: string;
+  apiarioName?: string;
+  colmenaId?: string;
+  colmenaCode?: string;
+  activityType: WorkPlanActivityType;
+  scheduledDate: Date;
+  estimatedDuration?: number; // en horas
+  assignedTo?: string;
+  priority: 'high' | 'medium' | 'low';
+  status: WorkPlanStatus;
+  completedDate?: Date;
+  notes?: string;
+}
+
 // Accion - Actions performed on apiario/colmena
 export interface AccionApicultura extends BaseEntity {
   apiarioId: string;
@@ -97,10 +130,22 @@ export interface AccionApicultura extends BaseEntity {
   reproductionType?: ApiculturaReproductionType; // Detalle si type es 'reproduction'
   date: Date;
   description: string;
+  performedBy: string;
+  // Campos para Medicamentos
+  medication?: string;
+  dosage?: string;
+  applicationMethod?: string;
+  nextApplicationDate?: Date;
+  // Campos para Cambio de Panales
+  panelCount?: number;
+  waxOrigin?: string;
+  // Campos para Alimentacion
+  feedingType?: string;
   insumoUsed?: string;
   quantity?: number;
   unit?: string;
-  performedBy: string;
+  // Campos para Reproduccion
+  reproductionDetails?: string;
   notes?: string;
 }
 
@@ -109,11 +154,13 @@ export interface Cosecha extends BaseEntity {
   apiarioId: string;
   apiarioName?: string;
   colmenaId?: string;
+  colmenaCode?: string;
   date: Date;
   productType: 'honey' | 'wax' | 'royal_jelly' | 'propolis' | 'pollen' | 'hives';
   quantity: number;
   unit: string;
   quality?: 'A' | 'B' | 'C';
+  performedBy: string;
   notes?: string;
 }
 
