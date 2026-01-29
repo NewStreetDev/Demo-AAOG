@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Plus, LayoutDashboard, Map, Sprout, ClipboardList, Package } from 'lucide-react';
+import { useState, useMemo } from 'react';
+import { Plus, LayoutDashboard, Map, Sprout, ClipboardList, Package, CalendarDays } from 'lucide-react';
 import {
   AgroStatCard,
   CropCard,
@@ -33,11 +33,16 @@ import {
   useHarvests,
 } from '../hooks/useAgro';
 import type { Lote, Crop, AgroAction, Harvest } from '../types/agro.types';
+import type { GeneralPlan } from '../types/finca.types';
+import { GeneralPlanFormModal, GeneralPlanDetailModal } from '../components/finca';
+import { CalendarView } from '../components/common/Calendar';
+import { useGeneralPlans } from '../hooks/useFinca';
 
-type TabType = 'dashboard' | 'lotes' | 'cultivos' | 'acciones' | 'cosechas';
+type TabType = 'dashboard' | 'planificacion' | 'lotes' | 'cultivos' | 'acciones' | 'cosechas';
 
 const tabs: { id: TabType; label: string; icon: typeof LayoutDashboard }[] = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { id: 'planificacion', label: 'Planificacion', icon: CalendarDays },
   { id: 'lotes', label: 'Lotes', icon: Map },
   { id: 'cultivos', label: 'Cultivos', icon: Sprout },
   { id: 'acciones', label: 'Acciones', icon: ClipboardList },
@@ -66,6 +71,12 @@ export default function Agro() {
   const [selectedHarvest, setSelectedHarvest] = useState<Harvest | null>(null);
   const [harvestFormModalOpen, setHarvestFormModalOpen] = useState(false);
   const [harvestDetailModalOpen, setHarvestDetailModalOpen] = useState(false);
+
+  // Modal state for Plans
+  const [selectedPlan, setSelectedPlan] = useState<GeneralPlan | null>(null);
+  const [planFormModalOpen, setPlanFormModalOpen] = useState(false);
+  const [planDetailModalOpen, setPlanDetailModalOpen] = useState(false);
+  const [preselectedDate, setPreselectedDate] = useState<Date | null>(null);
 
   // Lote handlers
   const handleLoteClick = (lote: Lote) => {
@@ -138,6 +149,35 @@ export default function Agro() {
     setHarvestFormModalOpen(true);
   };
 
+  // Plan handlers
+  const handlePlanClick = (_plan: GeneralPlan) => {
+    // Popover handles this - no action needed here
+  };
+
+  const handlePlanView = (plan: GeneralPlan) => {
+    setSelectedPlan(plan);
+    setPlanDetailModalOpen(true);
+  };
+
+  const handlePlanEdit = (plan: GeneralPlan) => {
+    setSelectedPlan(plan);
+    setPlanDetailModalOpen(false);
+    setPreselectedDate(null);
+    setPlanFormModalOpen(true);
+  };
+
+  const handleNewPlan = () => {
+    setSelectedPlan(null);
+    setPreselectedDate(null);
+    setPlanFormModalOpen(true);
+  };
+
+  const handlePlanDayClick = (date: Date) => {
+    setSelectedPlan(null);
+    setPreselectedDate(date);
+    setPlanFormModalOpen(true);
+  };
+
   const { data: lotes, isLoading: lotesLoading } = useLotes();
   const { data: crops, isLoading: cropsLoading } = useCrops();
   const { data: stats, isLoading: statsLoading } = useAgroStats();
@@ -147,6 +187,13 @@ export default function Agro() {
   const { data: cropSummaries, isLoading: summariesLoading } = useCropSummaries();
   const { data: agroActions, isLoading: actionsLoading } = useAgroActions();
   const { data: harvests, isLoading: harvestsLoading } = useHarvests();
+  const { data: allPlans, isLoading: plansLoading } = useGeneralPlans();
+
+  // Filter plans for agro module
+  const agroPlans = useMemo(() => {
+    if (!allPlans) return [];
+    return allPlans.filter(plan => plan.targetModule === 'agro');
+  }, [allPlans]);
 
   const renderActionButtons = () => {
     switch (activeTab) {
@@ -188,6 +235,16 @@ export default function Agro() {
           >
             <Plus className="w-4 h-4" />
             Nueva Cosecha
+          </button>
+        );
+      case 'planificacion':
+        return (
+          <button
+            onClick={handleNewPlan}
+            className="btn-primary inline-flex items-center gap-2"
+          >
+            <Plus className="w-4 h-4" />
+            Nueva Accion
           </button>
         );
       default:
@@ -531,6 +588,31 @@ export default function Agro() {
         </>
       )}
 
+      {activeTab === 'planificacion' && (
+        <>
+          {plansLoading ? (
+            <div className="bg-white rounded-xl border border-gray-200 p-8 animate-pulse">
+              <div className="h-12 bg-gray-100 rounded-lg mb-4" />
+              <div className="grid grid-cols-7 gap-2">
+                {[...Array(35)].map((_, i) => (
+                  <div key={i} className="h-24 bg-gray-100 rounded-lg" />
+                ))}
+              </div>
+            </div>
+          ) : (
+            <CalendarView
+              plans={agroPlans}
+              onDayClick={handlePlanDayClick}
+              onPlanClick={handlePlanClick}
+              onPlanEdit={handlePlanEdit}
+              onPlanView={handlePlanView}
+              defaultModule="agro"
+              showModuleColors={false}
+            />
+          )}
+        </>
+      )}
+
       {/* Modals */}
       <LoteFormModal
         open={loteFormModalOpen}
@@ -581,6 +663,29 @@ export default function Agro() {
         onOpenChange={setHarvestDetailModalOpen}
         harvest={selectedHarvest}
         onEdit={handleHarvestEdit}
+      />
+
+      {/* Plan Modals - filtered to agro module */}
+      <GeneralPlanFormModal
+        open={planFormModalOpen}
+        onOpenChange={(open) => {
+          setPlanFormModalOpen(open);
+          if (!open) setPreselectedDate(null);
+        }}
+        plan={selectedPlan}
+        defaultModule="agro"
+        preselectedDate={preselectedDate}
+        onSuccess={() => {
+          setSelectedPlan(null);
+          setPreselectedDate(null);
+        }}
+      />
+      <GeneralPlanDetailModal
+        open={planDetailModalOpen}
+        onOpenChange={setPlanDetailModalOpen}
+        plan={selectedPlan}
+        onEdit={handlePlanEdit}
+        onDeleteSuccess={() => setSelectedPlan(null)}
       />
     </div>
   );

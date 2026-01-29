@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Plus, ClipboardList, ClipboardCheck, Droplet, Activity } from 'lucide-react';
+import { useState, useMemo } from 'react';
+import { Plus, ClipboardList, ClipboardCheck, Droplet, Activity, CalendarDays } from 'lucide-react';
 import {
   ApiarioCard,
   ColmenaList,
@@ -38,8 +38,12 @@ import {
   useCosechas,
 } from '../hooks/useApicultura';
 import type { Apiario, Colmena, WorkPlan, AccionApicultura, Revision, Cosecha } from '../types/apicultura.types';
+import type { GeneralPlan } from '../types/finca.types';
+import { GeneralPlanFormModal, GeneralPlanDetailModal } from '../components/finca';
+import { CalendarView } from '../components/common/Calendar';
+import { useGeneralPlans } from '../hooks/useFinca';
 
-type TabType = 'dashboard' | 'acciones' | 'revisiones' | 'cosechas';
+type TabType = 'dashboard' | 'planificacion' | 'acciones' | 'revisiones' | 'cosechas';
 
 export default function Apicultura() {
   const [activeTab, setActiveTab] = useState<TabType>('dashboard');
@@ -83,6 +87,12 @@ export default function Apicultura() {
   const [cosechaFormOpen, setCosechaFormOpen] = useState(false);
   const [cosechaDetailOpen, setCosechaDetailOpen] = useState(false);
   const [selectedCosecha, setSelectedCosecha] = useState<Cosecha | null>(null);
+
+  // Plan modals state
+  const [selectedPlan, setSelectedPlan] = useState<GeneralPlan | null>(null);
+  const [planFormModalOpen, setPlanFormModalOpen] = useState(false);
+  const [planDetailModalOpen, setPlanDetailModalOpen] = useState(false);
+  const [preselectedDate, setPreselectedDate] = useState<Date | null>(null);
 
   // Apiario handlers
   const handleApiarioClick = (apiario: Apiario) => {
@@ -180,8 +190,47 @@ export default function Apicultura() {
     setCosechaFormOpen(true);
   };
 
+  // Plan handlers
+  const handlePlanClick = (_plan: GeneralPlan) => {
+    // Popover handles this - no action needed here
+  };
+
+  const handlePlanView = (plan: GeneralPlan) => {
+    setSelectedPlan(plan);
+    setPlanDetailModalOpen(true);
+  };
+
+  const handlePlanEdit = (plan: GeneralPlan) => {
+    setSelectedPlan(plan);
+    setPlanDetailModalOpen(false);
+    setPreselectedDate(null);
+    setPlanFormModalOpen(true);
+  };
+
+  const handleNewPlan = () => {
+    setSelectedPlan(null);
+    setPreselectedDate(null);
+    setPlanFormModalOpen(true);
+  };
+
+  const handlePlanDayClick = (date: Date) => {
+    setSelectedPlan(null);
+    setPreselectedDate(date);
+    setPlanFormModalOpen(true);
+  };
+
+  // Query for general plans
+  const { data: allPlans, isLoading: plansLoading } = useGeneralPlans();
+
+  // Filter plans for apicultura module
+  const apiculturaPlans = useMemo(() => {
+    if (!allPlans) return [];
+    return allPlans.filter(plan => plan.targetModule === 'apicultura');
+  }, [allPlans]);
+
   const tabs = [
     { id: 'dashboard' as TabType, label: 'Dashboard', icon: Activity },
+    { id: 'planificacion' as TabType, label: 'Planificacion', icon: CalendarDays },
     { id: 'acciones' as TabType, label: 'Acciones', icon: ClipboardList },
     { id: 'revisiones' as TabType, label: 'Revisiones', icon: ClipboardCheck },
     { id: 'cosechas' as TabType, label: 'Cosechas', icon: Droplet },
@@ -250,6 +299,15 @@ export default function Apicultura() {
             >
               <Plus className="w-4 h-4" />
               Nueva Cosecha
+            </button>
+          )}
+          {activeTab === 'planificacion' && (
+            <button
+              onClick={handleNewPlan}
+              className="btn-primary inline-flex items-center gap-2"
+            >
+              <Plus className="w-4 h-4" />
+              Nueva Accion
             </button>
           )}
         </div>
@@ -433,6 +491,32 @@ export default function Apicultura() {
         </div>
       )}
 
+      {/* Planificacion Tab Content */}
+      {activeTab === 'planificacion' && (
+        <>
+          {plansLoading ? (
+            <div className="bg-white rounded-xl border border-gray-200 p-8 animate-pulse">
+              <div className="h-12 bg-gray-100 rounded-lg mb-4" />
+              <div className="grid grid-cols-7 gap-2">
+                {[...Array(35)].map((_, i) => (
+                  <div key={i} className="h-24 bg-gray-100 rounded-lg" />
+                ))}
+              </div>
+            </div>
+          ) : (
+            <CalendarView
+              plans={apiculturaPlans}
+              onDayClick={handlePlanDayClick}
+              onPlanClick={handlePlanClick}
+              onPlanEdit={handlePlanEdit}
+              onPlanView={handlePlanView}
+              defaultModule="apicultura"
+              showModuleColors={false}
+            />
+          )}
+        </>
+      )}
+
       {/* Apiario Modals */}
       <ApiarioFormModal
         open={apiarioFormOpen}
@@ -509,6 +593,29 @@ export default function Apicultura() {
         onOpenChange={setCosechaDetailOpen}
         cosecha={selectedCosecha}
         onEdit={handleCosechaEdit}
+      />
+
+      {/* Plan Modals - filtered to apicultura module */}
+      <GeneralPlanFormModal
+        open={planFormModalOpen}
+        onOpenChange={(open) => {
+          setPlanFormModalOpen(open);
+          if (!open) setPreselectedDate(null);
+        }}
+        plan={selectedPlan}
+        defaultModule="apicultura"
+        preselectedDate={preselectedDate}
+        onSuccess={() => {
+          setSelectedPlan(null);
+          setPreselectedDate(null);
+        }}
+      />
+      <GeneralPlanDetailModal
+        open={planDetailModalOpen}
+        onOpenChange={setPlanDetailModalOpen}
+        plan={selectedPlan}
+        onEdit={handlePlanEdit}
+        onDeleteSuccess={() => setSelectedPlan(null)}
       />
     </div>
   );

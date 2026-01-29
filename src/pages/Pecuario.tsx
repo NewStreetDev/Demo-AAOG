@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Plus, Stethoscope, Users, Heart, Droplets, LayoutDashboard, Beef, MapPin, FolderOpen } from 'lucide-react';
+import { useState, useMemo } from 'react';
+import { Plus, Stethoscope, Users, Heart, Droplets, LayoutDashboard, Beef, MapPin, FolderOpen, CalendarDays } from 'lucide-react';
 import {
   PecuarioStatCard,
   LivestockTable,
@@ -44,8 +44,12 @@ import {
   useLivestockGroups,
 } from '../hooks/usePecuario';
 import type { Livestock, LivestockGroup, Potrero, HealthRecord, ReproductionRecord, MilkProduction } from '../types/pecuario.types';
+import type { GeneralPlan } from '../types/finca.types';
+import { GeneralPlanFormModal, GeneralPlanDetailModal } from '../components/finca';
+import { CalendarView } from '../components/common/Calendar';
+import { useGeneralPlans } from '../hooks/useFinca';
 
-type TabType = 'dashboard' | 'inventario' | 'salud' | 'reproduccion' | 'produccion' | 'grupos';
+type TabType = 'dashboard' | 'inventario' | 'grupos' | 'salud' | 'reproduccion' | 'produccion' | 'planificacion';
 
 export default function Pecuario() {
   const [activeTab, setActiveTab] = useState<TabType>('dashboard');
@@ -84,6 +88,12 @@ export default function Pecuario() {
   const [selectedLivestockGroup, setSelectedLivestockGroup] = useState<LivestockGroup | null>(null);
   const [livestockGroupFormModalOpen, setLivestockGroupFormModalOpen] = useState(false);
   const [livestockGroupDetailModalOpen, setLivestockGroupDetailModalOpen] = useState(false);
+
+  // Modal state for Plans
+  const [selectedPlan, setSelectedPlan] = useState<GeneralPlan | null>(null);
+  const [planFormModalOpen, setPlanFormModalOpen] = useState(false);
+  const [planDetailModalOpen, setPlanDetailModalOpen] = useState(false);
+  const [preselectedDate, setPreselectedDate] = useState<Date | null>(null);
 
   // Livestock handlers
   const handleLivestockClick = (livestock: Livestock) => {
@@ -205,6 +215,35 @@ export default function Pecuario() {
     setLivestockGroupFormModalOpen(true);
   };
 
+  // Plan handlers
+  const handlePlanClick = (plan: GeneralPlan) => {
+    // Popover handles this - no action needed here
+  };
+
+  const handlePlanView = (plan: GeneralPlan) => {
+    setSelectedPlan(plan);
+    setPlanDetailModalOpen(true);
+  };
+
+  const handlePlanEdit = (plan: GeneralPlan) => {
+    setSelectedPlan(plan);
+    setPlanDetailModalOpen(false);
+    setPreselectedDate(null);
+    setPlanFormModalOpen(true);
+  };
+
+  const handleNewPlan = () => {
+    setSelectedPlan(null);
+    setPreselectedDate(null);
+    setPlanFormModalOpen(true);
+  };
+
+  const handlePlanDayClick = (date: Date) => {
+    setSelectedPlan(null);
+    setPreselectedDate(date);
+    setPlanFormModalOpen(true);
+  };
+
   // Queries
   const { data: livestock, isLoading: livestockLoading } = useLivestock();
   const { data: potreros, isLoading: potrerosLoading } = usePotreros();
@@ -218,9 +257,17 @@ export default function Pecuario() {
   const { data: dashboardStats, isLoading: dashboardStatsLoading } = usePecuarioDashboard();
   const { data: dashboardProductionData, isLoading: dashboardProductionLoading } = usePecuarioProductionData();
   const { data: livestockGroups, isLoading: livestockGroupsLoading } = useLivestockGroups();
+  const { data: allPlans, isLoading: plansLoading } = useGeneralPlans();
+
+  // Filter plans for pecuario module
+  const pecuarioPlans = useMemo(() => {
+    if (!allPlans) return [];
+    return allPlans.filter(plan => plan.targetModule === 'pecuario');
+  }, [allPlans]);
 
   const tabs: { id: TabType; label: string; icon: typeof LayoutDashboard }[] = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { id: 'planificacion', label: 'Planificacion', icon: CalendarDays },
     { id: 'inventario', label: 'Inventario', icon: Beef },
     { id: 'grupos', label: 'Grupos', icon: FolderOpen },
     { id: 'salud', label: 'Salud', icon: Stethoscope },
@@ -473,6 +520,32 @@ export default function Pecuario() {
           </div>
         );
 
+      case 'planificacion':
+        return (
+          <>
+            {plansLoading ? (
+              <div className="bg-white rounded-xl border border-gray-200 p-8 animate-pulse">
+                <div className="h-12 bg-gray-100 rounded-lg mb-4" />
+                <div className="grid grid-cols-7 gap-2">
+                  {[...Array(35)].map((_, i) => (
+                    <div key={i} className="h-24 bg-gray-100 rounded-lg" />
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <CalendarView
+                plans={pecuarioPlans}
+                onDayClick={handlePlanDayClick}
+                onPlanClick={handlePlanClick}
+                onPlanEdit={handlePlanEdit}
+                onPlanView={handlePlanView}
+                defaultModule="pecuario"
+                showModuleColors={false}
+              />
+            )}
+          </>
+        );
+
       default:
         return null;
     }
@@ -480,6 +553,32 @@ export default function Pecuario() {
 
   const getActionButtons = () => {
     switch (activeTab) {
+      case 'dashboard':
+        return (
+          <>
+            <button
+              onClick={() => handleNewHealthRecord()}
+              className="btn-secondary inline-flex items-center gap-2"
+            >
+              <Plus className="w-4 h-4" />
+              Registro Salud
+            </button>
+            <button
+              onClick={handleNewMilkProduction}
+              className="btn-secondary inline-flex items-center gap-2"
+            >
+              <Plus className="w-4 h-4" />
+              Registrar Ordeño
+            </button>
+            <button
+              onClick={handleNewLivestock}
+              className="btn-primary inline-flex items-center gap-2"
+            >
+              <Plus className="w-4 h-4" />
+              Nuevo Animal
+            </button>
+          </>
+        );
       case 'inventario':
         return (
           <>
@@ -546,6 +645,16 @@ export default function Pecuario() {
           >
             <Plus className="w-4 h-4" />
             Registrar Ordeno
+          </button>
+        );
+      case 'planificacion':
+        return (
+          <button
+            onClick={handleNewPlan}
+            className="btn-primary inline-flex items-center gap-2"
+          >
+            <Plus className="w-4 h-4" />
+            Nueva Accion
           </button>
         );
       default:
@@ -711,6 +820,29 @@ export default function Pecuario() {
         livestockGroup={selectedLivestockGroup}
         onEdit={handleLivestockGroupEdit}
         onDeleteSuccess={() => setSelectedLivestockGroup(null)}
+      />
+
+      {/* Plan Modals - filtered to pecuario module */}
+      <GeneralPlanFormModal
+        open={planFormModalOpen}
+        onOpenChange={(open) => {
+          setPlanFormModalOpen(open);
+          if (!open) setPreselectedDate(null);
+        }}
+        plan={selectedPlan}
+        defaultModule="pecuario"
+        preselectedDate={preselectedDate}
+        onSuccess={() => {
+          setSelectedPlan(null);
+          setPreselectedDate(null);
+        }}
+      />
+      <GeneralPlanDetailModal
+        open={planDetailModalOpen}
+        onOpenChange={setPlanDetailModalOpen}
+        plan={selectedPlan}
+        onEdit={handlePlanEdit}
+        onDeleteSuccess={() => setSelectedPlan(null)}
       />
     </div>
   );
