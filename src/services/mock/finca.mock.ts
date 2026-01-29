@@ -5,6 +5,7 @@ import type {
   FincaDashboardStats,
   MonthlyAggregatedData,
   AggregatedTask,
+  PlanPhase,
 } from '../../types/finca.types';
 import type { FincaFormData, DivisionFormData, GeneralPlanFormData } from '../../schemas/finca.schema';
 
@@ -17,6 +18,7 @@ import { getMockTrabajadoresStats, getMockTrabajadoresTasks } from './trabajador
 import { getMockInsumosStats } from './insumos.mock';
 import { getMockInfraestructuraStats } from './infraestructura.mock';
 import { getMockActivosStats } from './activos.mock';
+import { initializeAnnualPlanStoreConnection } from './annualPlan.mock';
 
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -24,6 +26,15 @@ const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 let fincaStore: Finca | null = null;
 let divisionsStore: Division[] = [];
 let generalPlansStore: GeneralPlan[] = [];
+
+// Expose store access for annualPlan.mock.ts
+export const getGeneralPlansStoreRef = () => generalPlansStore;
+export const setGeneralPlansStoreRef = (plans: GeneralPlan[]) => {
+  generalPlansStore = plans;
+};
+
+// Initialize connection on module load
+initializeAnnualPlanStoreConnection(getGeneralPlansStoreRef, setGeneralPlansStoreRef);
 
 // ==================== INITIAL DATA ====================
 
@@ -210,6 +221,8 @@ const initialGeneralPlans: GeneralPlan[] = [
     assignedTo: 'Juan Garcia',
     priority: 'medium',
     status: 'pending',
+    annualPlanId: 'ap-2026',
+    planPhase: 'initial',
     createdAt: new Date('2026-01-15'),
     updatedAt: new Date('2026-01-15'),
   },
@@ -225,6 +238,8 @@ const initialGeneralPlans: GeneralPlan[] = [
     assignedTo: 'Roberto Sanchez',
     priority: 'high',
     status: 'pending',
+    annualPlanId: 'ap-2026',
+    planPhase: 'initial',
     createdAt: new Date('2026-01-10'),
     updatedAt: new Date('2026-01-10'),
   },
@@ -240,6 +255,8 @@ const initialGeneralPlans: GeneralPlan[] = [
     assignedTo: 'Roberto Sanchez',
     priority: 'high',
     status: 'in_progress',
+    annualPlanId: 'ap-2026',
+    planPhase: 'initial',
     createdAt: new Date('2026-01-05'),
     updatedAt: new Date('2026-01-20'),
   },
@@ -259,6 +276,8 @@ const initialGeneralPlans: GeneralPlan[] = [
     status: 'completed',
     completedDate: new Date('2026-01-22'),
     actualCost: 45000,
+    annualPlanId: 'ap-2026',
+    planPhase: 'initial',
     createdAt: new Date('2026-01-15'),
     updatedAt: new Date('2026-01-22'),
   },
@@ -275,6 +294,8 @@ const initialGeneralPlans: GeneralPlan[] = [
     assignedTo: 'Maria Lopez',
     priority: 'high',
     status: 'pending',
+    annualPlanId: 'ap-2026',
+    planPhase: 'initial',
     createdAt: new Date('2026-01-18'),
     updatedAt: new Date('2026-01-18'),
   },
@@ -289,8 +310,118 @@ const initialGeneralPlans: GeneralPlan[] = [
     assignedTo: 'Carlos Rodriguez',
     priority: 'medium',
     status: 'pending',
+    annualPlanId: 'ap-2026',
+    planPhase: 'initial',
     createdAt: new Date('2026-01-20'),
     updatedAt: new Date('2026-01-20'),
+  },
+  // 2025 Completed plan - Initial phase plans
+  {
+    id: '7',
+    title: 'Mantenimiento de equipos 2025',
+    description: 'Revision y mantenimiento de toda la maquinaria',
+    actionType: 'mantenimiento',
+    targetModule: 'general',
+    scheduledDate: new Date('2025-03-01'),
+    dueDate: new Date('2025-03-15'),
+    estimatedDuration: 24,
+    estimatedCost: 200000,
+    assignedTo: 'Juan Garcia',
+    priority: 'medium',
+    status: 'completed',
+    completedDate: new Date('2025-03-10'),
+    actualCost: 185000,
+    annualPlanId: 'ap-2025',
+    planPhase: 'initial',
+    createdAt: new Date('2024-12-15'),
+    updatedAt: new Date('2025-03-10'),
+  },
+  {
+    id: '8',
+    title: 'Capacitacion en apicultura 2025',
+    description: 'Curso de manejo de colmenas para nuevos trabajadores',
+    actionType: 'capacitacion',
+    targetModule: 'apicultura',
+    scheduledDate: new Date('2025-02-15'),
+    estimatedDuration: 16,
+    estimatedCost: 100000,
+    assignedTo: 'Carlos Rodriguez',
+    priority: 'high',
+    status: 'completed',
+    completedDate: new Date('2025-02-15'),
+    actualCost: 100000,
+    annualPlanId: 'ap-2025',
+    planPhase: 'initial',
+    createdAt: new Date('2024-12-10'),
+    updatedAt: new Date('2025-02-15'),
+  },
+  // 2025 Completed plan - Execution phase plans (copied from initial)
+  {
+    id: 'exec-7-2025',
+    title: 'Mantenimiento de equipos 2025',
+    description: 'Revision y mantenimiento de toda la maquinaria',
+    actionType: 'mantenimiento',
+    targetModule: 'general',
+    scheduledDate: new Date('2025-03-05'), // Rescheduled from original
+    dueDate: new Date('2025-03-15'),
+    estimatedDuration: 24,
+    estimatedCost: 200000,
+    assignedTo: 'Juan Garcia',
+    priority: 'medium',
+    status: 'completed',
+    completedDate: new Date('2025-03-12'),
+    actualCost: 195000,
+    annualPlanId: 'ap-2025',
+    planPhase: 'execution',
+    linkedPlanId: '7',
+    isFromPlanning: true,
+    originalScheduledDate: new Date('2025-03-01'), // Original date
+    originalDueDate: new Date('2025-03-15'),
+    createdAt: new Date('2025-01-01'),
+    updatedAt: new Date('2025-03-12'),
+  },
+  {
+    id: 'exec-8-2025',
+    title: 'Capacitacion en apicultura 2025',
+    description: 'Curso de manejo de colmenas para nuevos trabajadores',
+    actionType: 'capacitacion',
+    targetModule: 'apicultura',
+    scheduledDate: new Date('2025-02-15'),
+    estimatedDuration: 16,
+    estimatedCost: 100000,
+    assignedTo: 'Carlos Rodriguez',
+    priority: 'high',
+    status: 'completed',
+    completedDate: new Date('2025-02-15'),
+    actualCost: 100000,
+    annualPlanId: 'ap-2025',
+    planPhase: 'execution',
+    linkedPlanId: '8',
+    isFromPlanning: true,
+    originalScheduledDate: new Date('2025-02-15'),
+    createdAt: new Date('2025-01-01'),
+    updatedAt: new Date('2025-02-15'),
+  },
+  // An execution plan added directly (not from planning)
+  {
+    id: 'exec-9-2025',
+    title: 'Reparacion urgente de bomba de agua',
+    description: 'Reparacion no planificada de bomba principal',
+    actionType: 'reparacion',
+    targetModule: 'infraestructura',
+    scheduledDate: new Date('2025-06-10'),
+    estimatedDuration: 4,
+    estimatedCost: 150000,
+    assignedTo: 'Juan Garcia',
+    priority: 'high',
+    status: 'completed',
+    completedDate: new Date('2025-06-10'),
+    actualCost: 180000,
+    annualPlanId: 'ap-2025',
+    planPhase: 'execution',
+    isFromPlanning: false,
+    createdAt: new Date('2025-06-10'),
+    updatedAt: new Date('2025-06-10'),
   },
 ];
 
@@ -477,6 +608,13 @@ export const createMockGeneralPlan = async (data: GeneralPlanFormData): Promise<
     priority: data.priority,
     status: data.status,
     notes: data.notes,
+    // Annual planning fields
+    annualPlanId: data.annualPlanId || undefined,
+    planPhase: data.planPhase as PlanPhase || undefined,
+    linkedPlanId: data.linkedPlanId || undefined,
+    isFromPlanning: data.isFromPlanning ?? undefined,
+    originalScheduledDate: data.originalScheduledDate ? new Date(data.originalScheduledDate) : undefined,
+    originalDueDate: data.originalDueDate ? new Date(data.originalDueDate) : undefined,
     createdAt: new Date(),
     updatedAt: new Date(),
   };
@@ -518,6 +656,17 @@ export const updateMockGeneralPlan = async (id: string, data: GeneralPlanFormDat
     priority: data.priority,
     status: data.status,
     notes: data.notes,
+    // Annual planning fields - only update if provided, preserve existing values
+    annualPlanId: data.annualPlanId !== undefined ? (data.annualPlanId || undefined) : existingPlan.annualPlanId,
+    planPhase: data.planPhase !== undefined ? (data.planPhase as PlanPhase || undefined) : existingPlan.planPhase,
+    linkedPlanId: data.linkedPlanId !== undefined ? (data.linkedPlanId || undefined) : existingPlan.linkedPlanId,
+    isFromPlanning: data.isFromPlanning !== undefined ? data.isFromPlanning : existingPlan.isFromPlanning,
+    originalScheduledDate: data.originalScheduledDate
+      ? new Date(data.originalScheduledDate)
+      : existingPlan.originalScheduledDate,
+    originalDueDate: data.originalDueDate
+      ? new Date(data.originalDueDate)
+      : existingPlan.originalDueDate,
     updatedAt: new Date(),
   };
 
@@ -533,6 +682,30 @@ export const deleteMockGeneralPlan = async (id: string): Promise<void> => {
   if (index === -1) throw new Error('Plan not found');
 
   generalPlansStore.splice(index, 1);
+};
+
+// ==================== ANNUAL PLAN QUERIES ====================
+
+export const getMockGeneralPlansByAnnualPlan = async (
+  annualPlanId: string,
+  planPhase?: PlanPhase
+): Promise<GeneralPlan[]> => {
+  await delay(300);
+  initializeGeneralPlansStore();
+
+  return generalPlansStore
+    .filter(p => {
+      if (p.annualPlanId !== annualPlanId) return false;
+      if (planPhase && p.planPhase !== planPhase) return false;
+      return true;
+    })
+    .sort((a, b) => {
+      // Sort by status priority (pending/in_progress first), then by scheduledDate
+      const statusOrder = { pending: 0, in_progress: 1, completed: 2, cancelled: 3 };
+      const statusDiff = statusOrder[a.status] - statusOrder[b.status];
+      if (statusDiff !== 0) return statusDiff;
+      return new Date(a.scheduledDate).getTime() - new Date(b.scheduledDate).getTime();
+    });
 };
 
 // ==================== DASHBOARD AGGREGATED DATA ====================

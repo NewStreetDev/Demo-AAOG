@@ -52,6 +52,24 @@ export interface Division extends BaseEntity {
   notes?: string;
 }
 
+// ==================== ANNUAL PLAN ====================
+
+// Annual Plan status
+export type AnnualPlanStatus = 'draft' | 'planning' | 'active' | 'completed';
+
+// Plan phase
+export type PlanPhase = 'initial' | 'execution';
+
+// Annual Plan - Yearly planning container
+export interface AnnualPlan extends BaseEntity {
+  year: number;
+  name: string; // e.g., "Planificacion 2026"
+  status: AnnualPlanStatus;
+  description?: string;
+  activatedAt?: Date; // When "Iniciar Ejecucion" was clicked
+  completedAt?: Date;
+}
+
 // ==================== GENERAL PLAN ====================
 
 // Action types for general planning
@@ -92,6 +110,13 @@ export interface GeneralPlan extends BaseEntity {
   priority: PlanPriority;
   status: PlanStatus;
   notes?: string;
+  // Annual planning fields
+  annualPlanId?: string;           // Reference to AnnualPlan
+  planPhase?: PlanPhase;           // Which phase this plan belongs to
+  linkedPlanId?: string;           // For execution plans: links to the original initial plan
+  isFromPlanning?: boolean;        // Was this created from initial planning (true) or added later (false)
+  originalScheduledDate?: Date;    // Original date from planning (to track changes)
+  originalDueDate?: Date;          // Original due date from planning
 }
 
 // ==================== DASHBOARD STATS ====================

@@ -151,6 +151,39 @@ export const moduleAssociationOptions = [
   { value: 'general', label: 'General' },
 ];
 
+// ==================== ANNUAL PLAN SCHEMA ====================
+
+export const annualPlanStatuses = ['draft', 'planning', 'active', 'completed'] as const;
+export const planPhases = ['initial', 'execution'] as const;
+
+export const annualPlanFormSchema = z.object({
+  year: z
+    .number()
+    .min(2020, 'El ano debe ser mayor a 2020')
+    .max(2100, 'El ano debe ser menor a 2100'),
+  name: z
+    .string()
+    .min(1, 'El nombre es requerido')
+    .max(100, 'El nombre no puede tener mas de 100 caracteres'),
+  description: z.string().optional(),
+});
+
+export type AnnualPlanFormData = z.infer<typeof annualPlanFormSchema>;
+
+// Annual Plan status options
+export const annualPlanStatusOptions = [
+  { value: 'draft', label: 'Borrador' },
+  { value: 'planning', label: 'En Planificacion' },
+  { value: 'active', label: 'Activo' },
+  { value: 'completed', label: 'Completado' },
+];
+
+// Plan phase options
+export const planPhaseOptions = [
+  { value: 'initial', label: 'Planificacion Inicial' },
+  { value: 'execution', label: 'Ejecucion' },
+];
+
 // ==================== GENERAL PLAN SCHEMA ====================
 
 export const planActionTypes = [
@@ -213,6 +246,13 @@ export const generalPlanFormSchema = z.object({
     message: 'Seleccione un estado',
   }),
   notes: z.string().optional(),
+  // Annual planning fields
+  annualPlanId: z.string().optional(),
+  planPhase: z.enum(planPhases).optional(),
+  linkedPlanId: z.string().optional(),
+  isFromPlanning: z.boolean().optional(),
+  originalScheduledDate: z.string().optional(),
+  originalDueDate: z.string().optional(),
 });
 
 export type GeneralPlanFormData = z.infer<typeof generalPlanFormSchema>;
