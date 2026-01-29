@@ -17,6 +17,9 @@ interface FormSelectProps {
   className?: string;
 }
 
+// Special value to represent "none" selection (Radix doesn't allow empty strings)
+const NONE_VALUE = '__NONE__';
+
 export default function FormSelect({
   value,
   onValueChange,
@@ -26,11 +29,22 @@ export default function FormSelect({
   disabled,
   className,
 }: FormSelectProps) {
-  // Radix Select doesn't handle empty strings well, use undefined for unselected state
-  const selectValue = value === '' ? undefined : value;
+  // Convert empty string to special value for Radix, undefined for unselected
+  const selectValue = value === '' ? NONE_VALUE : (value || undefined);
+
+  // Filter and transform options - replace empty string values with NONE_VALUE
+  const transformedOptions = options.map(opt => ({
+    ...opt,
+    value: opt.value === '' ? NONE_VALUE : opt.value,
+  }));
+
+  const handleValueChange = (newValue: string) => {
+    // Convert NONE_VALUE back to empty string
+    onValueChange(newValue === NONE_VALUE ? '' : newValue);
+  };
 
   return (
-    <Select.Root value={selectValue} onValueChange={onValueChange} disabled={disabled}>
+    <Select.Root value={selectValue} onValueChange={handleValueChange} disabled={disabled}>
       <Select.Trigger
         className={cn(
           'flex h-10 w-full items-center justify-between rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm',
@@ -56,7 +70,7 @@ export default function FormSelect({
           sideOffset={4}
         >
           <Select.Viewport className="p-1">
-            {options.map((option) => (
+            {transformedOptions.map((option) => (
               <Select.Item
                 key={option.value}
                 value={option.value}
