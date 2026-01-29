@@ -269,7 +269,6 @@ export default function ProcessingBatchDetailModal({
             <div className="space-y-2 max-h-64 overflow-y-auto">
               {batch.stages.map((stage, idx) => {
                 const stageStatus = stageStatusConfig[stage.status];
-                const StageIcon = stageStatus.icon;
                 return (
                   <div
                     key={stage.id}

@@ -3,8 +3,6 @@ import {
   User,
   MapPin,
   Crown,
-  Heart,
-  Scale,
   Droplet,
   Users,
   Egg,

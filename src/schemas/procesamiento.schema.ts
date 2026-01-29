@@ -82,7 +82,7 @@ export const processingStageSchema = z.object({
   order: z.number(),
   name: z.string().min(1, 'El nombre del proceso es requerido'),
   description: z.string().optional(),
-  status: z.enum(stageStatuses).default('pending'),
+  status: z.enum(stageStatuses),
   // Input
   inputProductName: z.string().optional(),
   inputQuantity: z.string().optional(),
@@ -229,7 +229,7 @@ export const qualityControlFormSchema = z.object({
       (val) => !val || (!isNaN(parseFloat(val)) && parseFloat(val) >= 0 && parseFloat(val) <= 14),
       'El pH debe estar entre 0 y 14'
     ),
-  approved: z.boolean().default(false),
+  approved: z.boolean(),
   approvedBy: z.string().optional(),
   defectsDescription: z.string().optional(),
   correctiveActions: z.string().optional(),

@@ -7,7 +7,6 @@ import {
   Filter,
   ClipboardCheck,
   Crown,
-  Heart,
 } from 'lucide-react';
 import type { Revision } from '../../types/apicultura.types';
 

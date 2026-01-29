@@ -338,8 +338,8 @@ export const revisionFormSchema = z.object({
       (val) => !val || (!isNaN(parseInt(val)) && parseInt(val) >= 0),
       'La edad debe ser un numero valido'
     ),
-  queenChanged: z.boolean().default(false),
-  queenPresent: z.boolean().default(true),
+  queenChanged: z.boolean(),
+  queenPresent: z.boolean(),
   postureState: z.enum(postureStates, {
     message: 'Seleccione un estado de postura',
   }),

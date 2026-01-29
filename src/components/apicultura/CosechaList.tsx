@@ -8,7 +8,6 @@ import {
   Search,
   Filter,
   Star,
-  TrendingUp,
 } from 'lucide-react';
 import type { Cosecha } from '../../types/apicultura.types';
 

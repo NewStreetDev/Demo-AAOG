@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useForm, Controller, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Loader2, Plus, Trash2, GripVertical, ChevronDown, ChevronUp } from 'lucide-react';
+import { Loader2, Plus, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
 import { Modal } from '../common/Modals';
 import {
   FormInput,

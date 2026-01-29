@@ -216,7 +216,7 @@ export default function Pecuario() {
   };
 
   // Plan handlers
-  const handlePlanClick = (plan: GeneralPlan) => {
+  const handlePlanClick = (_plan: GeneralPlan) => {
     // Popover handles this - no action needed here
   };
 
