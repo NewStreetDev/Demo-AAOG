@@ -1,4 +1,4 @@
-import { Edit, Trash2, Calendar, Clock, User, DollarSign, Tag, MapPin, CheckCircle } from 'lucide-react';
+import { Edit, Trash2, Calendar, Clock, User, DollarSign, Tag, MapPin, CheckCircle, Link2, AlertCircle } from 'lucide-react';
 import Modal from '../common/Modals/Modal';
 import type { GeneralPlan } from '../../types/finca.types';
 import { useDeleteGeneralPlan } from '../../hooks/useFincaMutations';
@@ -9,6 +9,7 @@ interface GeneralPlanDetailModalProps {
   plan: GeneralPlan | null;
   onEdit: (plan: GeneralPlan) => void;
   onDeleteSuccess?: () => void;
+  readOnly?: boolean;
 }
 
 const actionTypeLabels: Record<string, string> = {
@@ -85,6 +86,7 @@ export default function GeneralPlanDetailModal({
   plan,
   onEdit,
   onDeleteSuccess,
+  readOnly = false,
 }: GeneralPlanDetailModalProps) {
   const deleteMutation = useDeleteGeneralPlan();
 
@@ -238,6 +240,53 @@ export default function GeneralPlanDetailModal({
           </div>
         )}
 
+        {/* Execution Plan Info - Show if this is a copied execution plan */}
+        {plan.planPhase === 'execution' && plan.isFromPlanning && (
+          <div className="bg-blue-50 rounded-lg p-4">
+            <div className="flex items-center gap-2 text-blue-700 mb-2">
+              <Link2 className="w-4 h-4" />
+              <span className="text-sm font-medium">Copiado de Planificacion Inicial</span>
+            </div>
+
+            {/* Show if dates changed from original */}
+            {(plan.originalScheduledDate || plan.originalDueDate) && (
+              <div className="mt-2 space-y-1 text-sm">
+                {plan.originalScheduledDate &&
+                  new Date(plan.originalScheduledDate).toDateString() !== new Date(plan.scheduledDate).toDateString() && (
+                  <div className="flex items-center gap-2 text-amber-700">
+                    <AlertCircle className="w-3 h-3" />
+                    <span>
+                      Fecha programada original: {formatDate(plan.originalScheduledDate)}
+                    </span>
+                  </div>
+                )}
+                {plan.originalDueDate && plan.dueDate &&
+                  new Date(plan.originalDueDate).toDateString() !== new Date(plan.dueDate).toDateString() && (
+                  <div className="flex items-center gap-2 text-amber-700">
+                    <AlertCircle className="w-3 h-3" />
+                    <span>
+                      Fecha limite original: {formatDate(plan.originalDueDate)}
+                    </span>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Execution Plan Info - Show if this was added during execution */}
+        {plan.planPhase === 'execution' && plan.isFromPlanning === false && (
+          <div className="bg-amber-50 rounded-lg p-4">
+            <div className="flex items-center gap-2 text-amber-700">
+              <AlertCircle className="w-4 h-4" />
+              <span className="text-sm font-medium">Agregado durante ejecucion</span>
+            </div>
+            <p className="text-xs text-amber-600 mt-1">
+              Esta accion no estaba en la planificacion inicial y fue agregada durante la fase de ejecucion.
+            </p>
+          </div>
+        )}
+
         {/* Notes */}
         {plan.notes && (
           <div>
@@ -255,22 +304,33 @@ export default function GeneralPlanDetailModal({
         </div>
 
         {/* Actions */}
-        <div className="flex justify-between pt-4 border-t border-gray-100">
-          <button
-            onClick={handleDelete}
-            className="btn-ghost text-red-600 hover:bg-red-50 inline-flex items-center gap-2"
-          >
-            <Trash2 className="w-4 h-4" />
-            Eliminar
-          </button>
-          <button
-            onClick={() => onEdit(plan)}
-            className="btn-primary inline-flex items-center gap-2"
-          >
-            <Edit className="w-4 h-4" />
-            Editar
-          </button>
-        </div>
+        {!readOnly && (
+          <div className="flex justify-between pt-4 border-t border-gray-100">
+            <button
+              onClick={handleDelete}
+              className="btn-ghost text-red-600 hover:bg-red-50 inline-flex items-center gap-2"
+            >
+              <Trash2 className="w-4 h-4" />
+              Eliminar
+            </button>
+            <button
+              onClick={() => onEdit(plan)}
+              className="btn-primary inline-flex items-center gap-2"
+            >
+              <Edit className="w-4 h-4" />
+              Editar
+            </button>
+          </div>
+        )}
+
+        {/* Read-only message */}
+        {readOnly && (
+          <div className="pt-4 border-t border-gray-100">
+            <p className="text-sm text-gray-500 italic text-center">
+              Este plan es de solo lectura
+            </p>
+          </div>
+        )}
       </div>
     </Modal>
   );

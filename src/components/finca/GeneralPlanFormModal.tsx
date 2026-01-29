@@ -3,10 +3,9 @@ import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Loader2 } from 'lucide-react';
 import { Modal } from '../common/Modals';
-import { FormInput, FormField, FormSelect, FormTextArea, FormDatePicker } from '../common/Forms';
+import { FormInput, FormField, FormSelect, FormSelectWithAdd, FormTextArea, FormDatePicker } from '../common/Forms';
 import {
   generalPlanFormSchema,
-  planActionTypeOptions,
   priorityOptions,
   planStatusOptions,
   moduleAssociationOptions,
@@ -14,13 +13,19 @@ import {
 } from '../../schemas/finca.schema';
 import { useCreateGeneralPlan, useUpdateGeneralPlan } from '../../hooks/useFincaMutations';
 import { useDivisions } from '../../hooks/useFinca';
+import { useActionTypes, useAddActionType } from '../../hooks/useActionTypes';
 import type { GeneralPlan } from '../../types/finca.types';
 
 interface GeneralPlanFormModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   plan?: GeneralPlan | null;
+  defaultModule?: 'pecuario' | 'apicultura' | 'agro' | 'procesamiento';
+  preselectedDate?: Date | null;
   onSuccess?: () => void;
+  // Annual planning props
+  annualPlanId?: string;
+  planPhase?: 'initial' | 'execution';
 }
 
 function formatDateForInput(date: Date | undefined): string {
@@ -33,14 +38,29 @@ export default function GeneralPlanFormModal({
   open,
   onOpenChange,
   plan,
+  defaultModule,
+  preselectedDate,
   onSuccess,
+  annualPlanId,
+  planPhase,
 }: GeneralPlanFormModalProps) {
   const isEditing = !!plan;
 
   const { data: divisions } = useDivisions();
+  const { data: actionTypes = [] } = useActionTypes();
+  const addActionTypeMutation = useAddActionType();
   const createMutation = useCreateGeneralPlan();
   const updateMutation = useUpdateGeneralPlan();
   const isLoading = createMutation.isPending || updateMutation.isPending;
+
+  // Handle adding a new action type
+  const handleAddActionType = async (label: string, value: string) => {
+    try {
+      await addActionTypeMutation.mutateAsync({ label, value });
+    } catch (error) {
+      console.error('Error adding action type:', error);
+    }
+  };
 
   const {
     register,
@@ -90,14 +110,16 @@ export default function GeneralPlanFormModal({
         notes: plan.notes || '',
       });
     } else if (open && !plan) {
-      const today = new Date().toISOString().split('T')[0];
+      const dateToUse = preselectedDate
+        ? formatDateForInput(preselectedDate)
+        : new Date().toISOString().split('T')[0];
       reset({
         title: '',
         description: '',
         actionType: 'otro',
-        targetModule: undefined,
+        targetModule: defaultModule || undefined,
         targetDivisionId: '',
-        scheduledDate: today,
+        scheduledDate: dateToUse,
         dueDate: '',
         estimatedDuration: '',
         estimatedCost: '',
@@ -108,14 +130,22 @@ export default function GeneralPlanFormModal({
         notes: '',
       });
     }
-  }, [open, plan, reset]);
+  }, [open, plan, defaultModule, preselectedDate, reset]);
 
   const onSubmit = async (data: GeneralPlanFormData) => {
     try {
+      // Include annualPlanId and planPhase when creating new plans
+      const submitData: GeneralPlanFormData = {
+        ...data,
+        ...(annualPlanId && !isEditing && { annualPlanId }),
+        ...(planPhase && !isEditing && { planPhase }),
+        ...(planPhase && !isEditing && { isFromPlanning: planPhase === 'initial' }),
+      };
+
       if (isEditing && plan) {
-        await updateMutation.mutateAsync({ id: plan.id, data });
+        await updateMutation.mutateAsync({ id: plan.id, data: submitData });
       } else {
-        await createMutation.mutateAsync(data);
+        await createMutation.mutateAsync(submitData);
       }
       onOpenChange(false);
       onSuccess?.();
@@ -134,8 +164,8 @@ export default function GeneralPlanFormModal({
     <Modal
       open={open}
       onOpenChange={onOpenChange}
-      title={isEditing ? 'Editar Plan' : 'Nuevo Plan General'}
-      description={isEditing ? 'Modifica los datos del plan' : 'Crea un plan de accion transversal'}
+      title={isEditing ? 'Editar Accion' : 'Nueva Accion Planificada'}
+      description={isEditing ? 'Modifica los datos de la accion' : 'Programa una accion en el plan anual'}
       size="lg"
     >
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
@@ -153,12 +183,15 @@ export default function GeneralPlanFormModal({
               name="actionType"
               control={control}
               render={({ field }) => (
-                <FormSelect
+                <FormSelectWithAdd
                   value={field.value}
                   onValueChange={field.onChange}
-                  options={planActionTypeOptions}
+                  options={actionTypes}
                   placeholder="Seleccionar tipo..."
                   error={errors.actionType?.message}
+                  onAddNew={handleAddActionType}
+                  addButtonLabel="+ Agregar tipo"
+                  addModalTitle="Nuevo Tipo de Accion"
                 />
               )}
             />
@@ -314,7 +347,7 @@ export default function GeneralPlanFormModal({
             className="btn-primary inline-flex items-center gap-2"
           >
             {isLoading && <Loader2 className="w-4 h-4 animate-spin" />}
-            {isEditing ? 'Guardar Cambios' : 'Crear Plan'}
+            {isEditing ? 'Guardar Cambios' : 'Crear Accion'}
           </button>
         </div>
       </form>

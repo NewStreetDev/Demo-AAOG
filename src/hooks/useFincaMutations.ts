@@ -73,6 +73,7 @@ export function useCreateGeneralPlan() {
     mutationFn: (data: GeneralPlanFormData) => createMockGeneralPlan(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['general-plans'] });
+      queryClient.invalidateQueries({ queryKey: ['annual-plan-plans'] });
       queryClient.invalidateQueries({ queryKey: ['aggregated-tasks'] });
       queryClient.invalidateQueries({ queryKey: ['finca-dashboard'] });
     },
@@ -88,6 +89,7 @@ export function useUpdateGeneralPlan() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['general-plans'] });
       queryClient.invalidateQueries({ queryKey: ['general-plan'] });
+      queryClient.invalidateQueries({ queryKey: ['annual-plan-plans'] });
       queryClient.invalidateQueries({ queryKey: ['aggregated-tasks'] });
       queryClient.invalidateQueries({ queryKey: ['finca-dashboard'] });
     },
@@ -101,6 +103,7 @@ export function useDeleteGeneralPlan() {
     mutationFn: (id: string) => deleteMockGeneralPlan(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['general-plans'] });
+      queryClient.invalidateQueries({ queryKey: ['annual-plan-plans'] });
       queryClient.invalidateQueries({ queryKey: ['aggregated-tasks'] });
       queryClient.invalidateQueries({ queryKey: ['finca-dashboard'] });
     },
