@@ -1,5 +1,7 @@
 import { createBrowserRouter } from 'react-router-dom';
 import MainLayout from './components/common/Layout/MainLayout';
+import { ProtectedRoute } from './components/common/Auth';
+import Login from './pages/Login';
 import Home from './pages/Home';
 import Finca from './pages/Finca';
 import Apicultura from './pages/Apicultura';
@@ -15,8 +17,16 @@ import Activos from './pages/Activos';
 
 export const router = createBrowserRouter([
   {
+    path: '/login',
+    element: <Login />,
+  },
+  {
     path: '/',
-    element: <MainLayout />,
+    element: (
+      <ProtectedRoute>
+        <MainLayout />
+      </ProtectedRoute>
+    ),
     children: [
       {
         index: true,

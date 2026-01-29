@@ -1,8 +1,9 @@
-import { Outlet, Link, useLocation } from 'react-router-dom';
-import { Home, Sprout, Beef, Flower2, Factory, DollarSign, FileText, ChevronDown, Users, Building, Package, Box, Bell, Settings, User, Map } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
+import { Home, Sprout, Beef, Flower2, Factory, DollarSign, FileText, ChevronDown, Users, Building, Package, Box, Bell, Settings, User, Map, LogOut } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
 import Breadcrumbs from '../Breadcrumbs';
 import FincaSelector from '../FincaSelector';
+import { useAuth } from '../../../contexts/AuthContext';
 
 const navigation = [
   { name: 'Inicio', href: '/', icon: Home },
@@ -24,6 +25,10 @@ const administrationItems = [
 
 export default function MainLayout() {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const userMenuRef = useRef<HTMLDivElement>(null);
 
   // Check if any administration route is active
   const isAdminRouteActive = administrationItems.some(
@@ -47,6 +52,30 @@ export default function MainLayout() {
   useEffect(() => {
     localStorage.setItem('adminMenuOpen', JSON.stringify(adminOpen));
   }, [adminOpen]);
+
+  // Close user menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setUserMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleLogout = async () => {
+    await logout();
+    navigate('/login');
+  };
+
+  const userInitial = user?.name?.charAt(0).toUpperCase() || 'U';
+  const roleLabels: Record<string, string> = {
+    admin: 'Administrador',
+    manager: 'Gerente',
+    operator: 'Operador',
+  };
 
   return (
     <div className="flex h-screen bg-gray-50">
@@ -179,19 +208,41 @@ export default function MainLayout() {
             <div className="h-8 w-px bg-gray-200 mx-2" />
 
             {/* User menu */}
-            <button className="group flex items-center gap-3 hover:bg-gray-50 rounded-xl px-3 py-2 transition-all duration-200 hover:shadow-sm">
-              <div className="relative">
-                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold text-sm shadow-md ring-2 ring-blue-100 transition-transform duration-200 group-hover:scale-110 group-hover:rotate-3">
-                  M
+            <div className="relative" ref={userMenuRef}>
+              <button
+                onClick={() => setUserMenuOpen(!userMenuOpen)}
+                className="group flex items-center gap-3 hover:bg-gray-50 rounded-xl px-3 py-2 transition-all duration-200 hover:shadow-sm"
+              >
+                <div className="relative">
+                  <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center text-white font-bold text-sm shadow-md ring-2 ring-green-100 transition-transform duration-200 group-hover:scale-110 group-hover:rotate-3">
+                    {userInitial}
+                  </div>
+                  <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full ring-2 ring-white" />
                 </div>
-                <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full ring-2 ring-white" />
-              </div>
-              <div className="text-left">
-                <p className="text-sm font-bold text-gray-900">Miguel</p>
-                <p className="text-xs text-gray-500">Administrador</p>
-              </div>
-              <ChevronDown className="w-4 h-4 text-gray-400 transition-transform duration-200 group-hover:translate-y-0.5" strokeWidth={2.5} />
-            </button>
+                <div className="text-left">
+                  <p className="text-sm font-bold text-gray-900">{user?.name || 'Usuario'}</p>
+                  <p className="text-xs text-gray-500">{roleLabels[user?.role || 'operator']}</p>
+                </div>
+                <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${userMenuOpen ? 'rotate-180' : ''}`} strokeWidth={2.5} />
+              </button>
+
+              {/* Dropdown menu */}
+              {userMenuOpen && (
+                <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-50 animate-fade-in">
+                  <div className="px-4 py-2 border-b border-gray-100">
+                    <p className="text-sm font-medium text-gray-900">{user?.name}</p>
+                    <p className="text-xs text-gray-500">{user?.email}</p>
+                  </div>
+                  <button
+                    onClick={handleLogout}
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    Cerrar Sesion
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </header>
 
