@@ -47,8 +47,8 @@ function getStatusLabel(status: Insumo['status']): string {
 function getCategoryLabel(category: Insumo['category']): string {
   const labels: Record<Insumo['category'], string> = {
     semillas: 'Semillas',
-    fertilizantes: 'Fertilizantes',
-    pesticidas: 'Pesticidas',
+    fertilizantes: 'Abonos',
+    pesticidas: 'Agroquimicos',
     herbicidas: 'Herbicidas',
     alimentos: 'Alimentos',
     medicamentos: 'Medicamentos',

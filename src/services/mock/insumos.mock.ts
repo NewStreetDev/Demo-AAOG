@@ -508,8 +508,8 @@ export const getMockCategorySummaries = async (): Promise<CategorySummary[]> => 
   await delay(300);
   return [
     { category: 'semillas', categoryLabel: 'Semillas', count: 3, totalValue: 1637000, bajoStock: 2, icon: '🌱', color: '#10b981' },
-    { category: 'fertilizantes', categoryLabel: 'Fertilizantes', count: 2, totalValue: 1800000, bajoStock: 0, icon: '🧪', color: '#3b82f6' },
-    { category: 'pesticidas', categoryLabel: 'Pesticidas', count: 2, totalValue: 1509000, bajoStock: 1, icon: '🐛', color: '#ef4444' },
+    { category: 'fertilizantes', categoryLabel: 'Abonos', count: 2, totalValue: 1800000, bajoStock: 0, icon: '🧪', color: '#3b82f6' },
+    { category: 'pesticidas', categoryLabel: 'Agroquimicos', count: 2, totalValue: 1509000, bajoStock: 1, icon: '🐛', color: '#ef4444' },
     { category: 'alimentos', categoryLabel: 'Alimentos', count: 2, totalValue: 9260000, bajoStock: 0, icon: '🥕', color: '#f59e0b' },
     { category: 'medicamentos', categoryLabel: 'Medicamentos', count: 2, totalValue: 2485000, bajoStock: 0, icon: '💊', color: '#8b5cf6' },
     { category: 'herramientas', categoryLabel: 'Herramientas', count: 1, totalValue: 925000, bajoStock: 0, icon: '🔧', color: '#6366f1' },

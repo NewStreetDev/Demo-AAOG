@@ -11,8 +11,8 @@ interface InsumosListProps {
 
 const categoryLabels: Record<InsumoCategoryType, string> = {
   semillas: 'Semillas',
-  fertilizantes: 'Fertilizantes',
-  pesticidas: 'Pesticidas',
+  fertilizantes: 'Abonos',
+  pesticidas: 'Agroquimicos',
   herbicidas: 'Herbicidas',
   alimentos: 'Alimentos',
   medicamentos: 'Medicamentos',

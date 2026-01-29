@@ -76,8 +76,8 @@ export type InsumoFormData = z.infer<typeof insumoFormSchema>;
 // Select options
 export const categoryOptions = [
   { value: 'semillas', label: 'Semillas' },
-  { value: 'fertilizantes', label: 'Fertilizantes' },
-  { value: 'pesticidas', label: 'Pesticidas' },
+  { value: 'fertilizantes', label: 'Abonos' },
+  { value: 'pesticidas', label: 'Agroquimicos' },
   { value: 'herbicidas', label: 'Herbicidas' },
   { value: 'alimentos', label: 'Alimentos' },
   { value: 'medicamentos', label: 'Medicamentos' },
