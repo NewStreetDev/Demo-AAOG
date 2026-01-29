@@ -14,6 +14,10 @@ import {
   Shield,
   Edit2,
   Trash2,
+  ListOrdered,
+  Circle,
+  Loader2,
+  SkipForward,
 } from 'lucide-react';
 import { Modal } from '../common/Modals';
 import { useDeleteProcessingBatch } from '../../hooks/useProcesamientoMutations';
@@ -46,6 +50,13 @@ const gradeColors: Record<string, string> = {
   B: 'bg-blue-100 text-blue-700',
   C: 'bg-amber-100 text-amber-700',
   descarte: 'bg-red-100 text-red-700',
+};
+
+const stageStatusConfig = {
+  pending: { label: 'Pendiente', color: 'text-gray-500', bgColor: 'bg-gray-100', icon: Circle },
+  in_progress: { label: 'En Proceso', color: 'text-orange-600', bgColor: 'bg-orange-100', icon: Loader2 },
+  completed: { label: 'Completada', color: 'text-green-600', bgColor: 'bg-green-100', icon: CheckCircle2 },
+  skipped: { label: 'Omitida', color: 'text-gray-400', bgColor: 'bg-gray-50', icon: SkipForward },
 };
 
 export default function ProcessingBatchDetailModal({
@@ -245,6 +256,92 @@ export default function ProcessingBatchDetailModal({
             </div>
           )}
         </div>
+
+        {/* Processing Stages */}
+        {batch.stages && batch.stages.length > 0 && (
+          <div>
+            <div className="flex items-center gap-2 mb-3">
+              <ListOrdered className="w-5 h-5 text-gray-500" />
+              <h3 className="text-sm font-medium text-gray-700">
+                Procesos ({batch.stages.filter(s => s.status === 'completed').length}/{batch.stages.length} completados)
+              </h3>
+            </div>
+            <div className="space-y-2 max-h-64 overflow-y-auto">
+              {batch.stages.map((stage, idx) => {
+                const stageStatus = stageStatusConfig[stage.status];
+                const StageIcon = stageStatus.icon;
+                return (
+                  <div
+                    key={stage.id}
+                    className={`flex items-center gap-3 p-3 rounded-lg border ${
+                      stage.status === 'in_progress'
+                        ? 'border-orange-200 bg-orange-50'
+                        : stage.status === 'completed'
+                        ? 'border-green-200 bg-green-50'
+                        : 'border-gray-200 bg-gray-50'
+                    }`}
+                  >
+                    <div className={`w-7 h-7 rounded-full flex items-center justify-center text-sm font-medium ${stageStatus.bgColor} ${stageStatus.color}`}>
+                      {stage.status === 'completed' ? (
+                        <CheckCircle2 className="w-4 h-4" />
+                      ) : stage.status === 'in_progress' ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        idx + 1
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className={`font-medium ${stage.status === 'completed' ? 'text-green-700' : stage.status === 'in_progress' ? 'text-orange-700' : 'text-gray-700'}`}>
+                        {stage.name}
+                      </p>
+                      {/* Product transformation */}
+                      {(stage.inputProductName || stage.outputProductName) && (
+                        <div className="flex items-center gap-1 text-xs mt-0.5">
+                          {stage.inputProductName && (
+                            <span className="text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">{stage.inputProductName}</span>
+                          )}
+                          {stage.inputProductName && stage.outputProductName && (
+                            <span className="text-gray-400">→</span>
+                          )}
+                          {stage.outputProductName && (
+                            <span className="text-green-600 bg-green-50 px-1.5 py-0.5 rounded">{stage.outputProductName}</span>
+                          )}
+                        </div>
+                      )}
+                      {stage.description && (
+                        <p className="text-xs text-gray-500 truncate mt-0.5">{stage.description}</p>
+                      )}
+                    </div>
+                    {(stage.outputQuantity !== undefined || stage.inputQuantity !== undefined) && (
+                      <div className="text-right text-sm flex items-center gap-1 flex-shrink-0">
+                        {stage.inputQuantity !== undefined && (
+                          <span className="text-gray-500">{stage.inputQuantity}</span>
+                        )}
+                        {stage.inputQuantity !== undefined && stage.outputQuantity !== undefined && (
+                          <span className="text-gray-400">→</span>
+                        )}
+                        {stage.outputQuantity !== undefined && (
+                          <span className="text-gray-700 font-medium">{stage.outputQuantity}</span>
+                        )}
+                        {stage.unit && (
+                          <span className="text-gray-500 text-xs">{stage.unit}</span>
+                        )}
+                        {stage.inputQuantity !== undefined && stage.outputQuantity !== undefined && stage.inputQuantity > 0 && (
+                          <span className={`text-xs ml-1 ${stage.outputQuantity < stage.inputQuantity ? 'text-red-500' : 'text-green-500'}`}>
+                            ({stage.outputQuantity < stage.inputQuantity ? '-' : '+'}{Math.abs(((stage.outputQuantity - stage.inputQuantity) / stage.inputQuantity) * 100).toFixed(0)}%)
+                          </span>
+                        )}
+                      </div>
+                    )}
+                    <span className={`text-xs px-2 py-1 rounded-full ${stageStatus.bgColor} ${stageStatus.color}`}>
+                      {stageStatus.label}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         {/* Notes */}
         {batch.notes && (

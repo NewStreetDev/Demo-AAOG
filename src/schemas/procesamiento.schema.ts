@@ -74,6 +74,27 @@ export const capacityUnitOptions = [
 export const processingStatuses = ['pending', 'in_progress', 'quality_control', 'completed', 'rejected', 'paused'] as const;
 export const sourceModules = ['agro', 'pecuario', 'apicultura'] as const;
 export const qualityGrades = ['A', 'B', 'C', 'descarte'] as const;
+export const stageStatuses = ['pending', 'in_progress', 'completed', 'skipped'] as const;
+
+// Processing Stage Schema
+export const processingStageSchema = z.object({
+  id: z.string(),
+  order: z.number(),
+  name: z.string().min(1, 'El nombre del proceso es requerido'),
+  description: z.string().optional(),
+  status: z.enum(stageStatuses).default('pending'),
+  // Input
+  inputProductName: z.string().optional(),
+  inputQuantity: z.string().optional(),
+  // Output
+  outputProductName: z.string().optional(),
+  outputQuantity: z.string().optional(),
+  unit: z.string().optional(),
+  operator: z.string().optional(),
+  notes: z.string().optional(),
+});
+
+export type ProcessingStageFormData = z.infer<typeof processingStageSchema>;
 
 export const processingBatchFormSchema = z.object({
   batchCode: z
@@ -126,6 +147,8 @@ export const processingBatchFormSchema = z.object({
     ),
   storageLocation: z.string().optional(),
   notes: z.string().optional(),
+  // Processing stages
+  stages: z.array(processingStageSchema).optional(),
 });
 
 export type ProcessingBatchFormData = z.infer<typeof processingBatchFormSchema>;
@@ -157,6 +180,13 @@ export const inputUnitOptions = [
   { value: 'kg', label: 'Kilogramos (kg)' },
   { value: 'L', label: 'Litros (L)' },
   { value: 'unidades', label: 'Unidades' },
+];
+
+export const stageStatusOptions = [
+  { value: 'pending', label: 'Pendiente' },
+  { value: 'in_progress', label: 'En Proceso' },
+  { value: 'completed', label: 'Completada' },
+  { value: 'skipped', label: 'Omitida' },
 ];
 
 // ========================================

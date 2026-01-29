@@ -9,6 +9,31 @@ export type ProcessingProductType = 'tomate' | 'chile' | 'pepino' | 'leche' | 'c
 // Quality Grade
 export type QualityGrade = 'A' | 'B' | 'C' | 'descarte';
 
+// Processing Stage Status
+export type StageStatus = 'pending' | 'in_progress' | 'completed' | 'skipped';
+
+// Processing Stage - Individual step in the process
+export interface ProcessingStage {
+  id: string;
+  order: number;
+  name: string;
+  description?: string;
+  status: StageStatus;
+  // Input
+  inputProductName?: string;
+  inputQuantity?: number;
+  // Output
+  outputProductName?: string;
+  outputQuantity?: number;
+  unit?: string;
+  // Tracking
+  startedAt?: Date;
+  completedAt?: Date;
+  duration?: number; // minutes
+  operator?: string;
+  notes?: string;
+}
+
 // Processing Line Status
 export type ProcessingLineStatus = 'active' | 'maintenance' | 'idle' | 'calibration';
 
@@ -38,6 +63,9 @@ export interface ProcessingBatch extends BaseEntity {
   outputGrade?: QualityGrade;
   storageLocation?: string;
   notes?: string;
+  // Processing stages
+  stages?: ProcessingStage[];
+  currentStageIndex?: number;
 }
 
 // Processing Line
