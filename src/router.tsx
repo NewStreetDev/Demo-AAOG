@@ -1,19 +1,14 @@
-import { createBrowserRouter } from 'react-router-dom';
+import { createBrowserRouter, Navigate } from 'react-router-dom';
 import MainLayout from './components/common/Layout/MainLayout';
 import { ProtectedRoute } from './components/common/Auth';
 import Login from './pages/Login';
-import Home from './pages/Home';
 import Finca from './pages/Finca';
-import Apicultura from './pages/Apicultura';
 import Pecuario from './pages/Pecuario';
 import Agro from './pages/Agro';
-import Insumos from './pages/Insumos';
 import Finanzas from './pages/Finanzas';
 import Procesamiento from './pages/Procesamiento';
 import Reportes from './pages/Reportes';
-import Trabajadores from './pages/Trabajadores';
-import Infraestructura from './pages/Infraestructura';
-import Activos from './pages/Activos';
+import Reglamentos from './pages/Reglamentos';
 
 export const router = createBrowserRouter([
   {
@@ -30,106 +25,35 @@ export const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <Home />,
+        element: <Navigate to="/finca" replace />,
       },
       {
         path: 'finca',
-        children: [
-          {
-            index: true,
-            element: <Finca />,
-          },
-        ],
+        element: <Finca />,
       },
       {
         path: 'agro',
-        children: [
-          {
-            index: true,
-            element: <Agro />,
-          },
-        ],
+        element: <Agro />,
       },
       {
         path: 'pecuario',
-        children: [
-          {
-            index: true,
-            element: <Pecuario />,
-          },
-        ],
-      },
-      {
-        path: 'apicultura',
-        children: [
-          {
-            index: true,
-            element: <Apicultura />,
-          },
-        ],
+        element: <Pecuario />,
       },
       {
         path: 'procesamiento',
-        children: [
-          {
-            index: true,
-            element: <Procesamiento />,
-          },
-        ],
+        element: <Procesamiento />,
       },
       {
         path: 'finanzas',
-        children: [
-          {
-            index: true,
-            element: <Finanzas />,
-          },
-        ],
+        element: <Finanzas />,
       },
       {
         path: 'reportes',
-        children: [
-          {
-            index: true,
-            element: <Reportes />,
-          },
-        ],
+        element: <Reportes />,
       },
       {
-        path: 'trabajadores',
-        children: [
-          {
-            index: true,
-            element: <Trabajadores />,
-          },
-        ],
-      },
-      {
-        path: 'infraestructura',
-        children: [
-          {
-            index: true,
-            element: <Infraestructura />,
-          },
-        ],
-      },
-      {
-        path: 'activos',
-        children: [
-          {
-            index: true,
-            element: <Activos />,
-          },
-        ],
-      },
-      {
-        path: 'insumos',
-        children: [
-          {
-            index: true,
-            element: <Insumos />,
-          },
-        ],
+        path: 'reglamentos',
+        element: <Reglamentos />,
       },
     ],
   },

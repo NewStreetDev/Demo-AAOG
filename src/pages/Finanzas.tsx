@@ -1,53 +1,28 @@
 import { useState } from 'react';
-import { Plus } from 'lucide-react';
+import { Plus, ShoppingCart, BarChart3, FileSpreadsheet } from 'lucide-react';
 import {
-  FinanzasStatCard,
-  IncomeExpenseChart,
   SalesByModuleChart,
-  BudgetProgressCard,
-  PendingPaymentsList,
-  FinanzasTaskList,
   SaleRecordFormModal,
   SaleRecordDetailModal,
-  PurchaseRecordFormModal,
-  PurchaseRecordDetailModal,
 } from '../components/finanzas';
-import StatCardSkeleton from '../components/common/Skeletons/StatCardSkeleton';
-import ChartSkeleton from '../components/common/Skeletons/ChartSkeleton';
-import ListCardSkeleton from '../components/common/Skeletons/ListCardSkeleton';
 import {
-  useFinanzasStats,
-  useMonthlyFinancialData,
   useSalesByModule,
-  useBudgetComparisons,
-  useAccountsReceivable,
-  useAccountsPayable,
-  useFinanzasTasks,
   useSalesRecords,
-  usePurchaseRecords,
 } from '../hooks/useFinanzas';
-import type { SaleRecord, PurchaseRecord } from '../types/finanzas.types';
+import type { SaleRecord } from '../types/finanzas.types';
+
+type TabType = 'ventas' | 'resumen' | 'exportaciones';
 
 export default function Finanzas() {
-  const { data: stats, isLoading: statsLoading } = useFinanzasStats();
-  const { data: monthlyData, isLoading: monthlyLoading } = useMonthlyFinancialData();
+  const [activeTab, setActiveTab] = useState<TabType>('ventas');
+
   const { data: salesByModule, isLoading: moduleLoading } = useSalesByModule();
-  const { data: budgets, isLoading: budgetLoading } = useBudgetComparisons();
-  const { data: receivables, isLoading: receivableLoading } = useAccountsReceivable();
-  const { data: payables, isLoading: payableLoading } = useAccountsPayable();
-  const { data: tasks, isLoading: tasksLoading } = useFinanzasTasks();
   const { data: sales, isLoading: salesLoading } = useSalesRecords();
-  const { data: purchases, isLoading: purchasesLoading } = usePurchaseRecords();
 
   // Sale modals state
   const [saleFormOpen, setSaleFormOpen] = useState(false);
   const [saleDetailOpen, setSaleDetailOpen] = useState(false);
   const [selectedSale, setSelectedSale] = useState<SaleRecord | null>(null);
-
-  // Purchase modals state
-  const [purchaseFormOpen, setPurchaseFormOpen] = useState(false);
-  const [purchaseDetailOpen, setPurchaseDetailOpen] = useState(false);
-  const [selectedPurchase, setSelectedPurchase] = useState<PurchaseRecord | null>(null);
 
   // Sale handlers
   const handleSaleClick = (sale: SaleRecord) => {
@@ -65,20 +40,171 @@ export default function Finanzas() {
     setSaleFormOpen(true);
   };
 
-  // Purchase handlers
-  const handlePurchaseClick = (purchase: PurchaseRecord) => {
-    setSelectedPurchase(purchase);
-    setPurchaseDetailOpen(true);
+  const tabs = [
+    { id: 'ventas' as TabType, label: 'Ventas', icon: ShoppingCart },
+    { id: 'resumen' as TabType, label: 'Resumen', icon: BarChart3 },
+    { id: 'exportaciones' as TabType, label: 'Exportaciones', icon: FileSpreadsheet },
+  ];
+
+  const getActionButtons = () => {
+    switch (activeTab) {
+      case 'ventas':
+        return (
+          <button
+            onClick={handleNewSale}
+            className="btn-primary inline-flex items-center gap-2"
+          >
+            <Plus className="w-4 h-4" />
+            Nueva Venta
+          </button>
+        );
+      default:
+        return null;
+    }
   };
 
-  const handlePurchaseEdit = (purchase: PurchaseRecord) => {
-    setSelectedPurchase(purchase);
-    setPurchaseFormOpen(true);
-  };
+  // Calculate totals from sales
+  const totalVentas = sales?.reduce((sum, s) => sum + s.totalAmount, 0) || 0;
 
-  const handleNewPurchase = () => {
-    setSelectedPurchase(null);
-    setPurchaseFormOpen(true);
+  const ventasPorModulo = sales?.reduce((acc, sale) => {
+    const mod = sale.moduleSource || 'general';
+    acc[mod] = (acc[mod] || 0) + sale.totalAmount;
+    return acc;
+  }, {} as Record<string, number>) || {};
+
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case 'ventas':
+        return (
+          <div className="space-y-6">
+            <div className="card p-5">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-bold text-gray-900">Registro de Ventas</h3>
+                <span className="text-sm text-gray-500">{sales?.length || 0} total</span>
+              </div>
+              {salesLoading ? (
+                <div className="space-y-3">
+                  {[...Array(5)].map((_, i) => (
+                    <div key={i} className="h-16 bg-gray-100 rounded-lg animate-pulse" />
+                  ))}
+                </div>
+              ) : sales && sales.length > 0 ? (
+                <div className="space-y-2">
+                  {sales.map((sale) => (
+                    <div
+                      key={sale.id}
+                      className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors"
+                      onClick={() => handleSaleClick(sale)}
+                    >
+                      <div>
+                        <p className="font-medium text-gray-900">{sale.productDescription || sale.invoiceNumber}</p>
+                        <p className="text-sm text-gray-500">{sale.buyerName}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-semibold text-green-600">
+                          {sale.totalAmount.toLocaleString('es-CR', { style: 'currency', currency: 'CRC' })}
+                        </p>
+                        <p className="text-xs text-gray-400">
+                          {new Date(sale.date).toLocaleDateString('es-CR')}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <ShoppingCart className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                  <p className="text-gray-500 mb-4">No hay ventas registradas</p>
+                  <button
+                    onClick={handleNewSale}
+                    className="btn-primary inline-flex items-center gap-2"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Registrar Venta
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        );
+
+      case 'resumen':
+        return (
+          <div className="space-y-6">
+            {/* Total general */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="card p-5 bg-green-50 border-green-200">
+                <p className="text-sm text-green-600 font-medium">Total Ventas</p>
+                <p className="text-2xl font-bold text-green-700 mt-1">
+                  {totalVentas.toLocaleString('es-CR', { style: 'currency', currency: 'CRC' })}
+                </p>
+                <p className="text-xs text-green-500 mt-1">Período actual</p>
+              </div>
+              <div className="card p-5">
+                <p className="text-sm text-gray-600 font-medium">Ventas Agrícolas</p>
+                <p className="text-2xl font-bold text-gray-900 mt-1">
+                  {(ventasPorModulo['agro'] || 0).toLocaleString('es-CR', { style: 'currency', currency: 'CRC' })}
+                </p>
+              </div>
+              <div className="card p-5">
+                <p className="text-sm text-gray-600 font-medium">Ventas Procesamiento</p>
+                <p className="text-2xl font-bold text-gray-900 mt-1">
+                  {(ventasPorModulo['procesamiento'] || 0).toLocaleString('es-CR', { style: 'currency', currency: 'CRC' })}
+                </p>
+              </div>
+              <div className="card p-5">
+                <p className="text-sm text-gray-600 font-medium">Ventas Pecuarias</p>
+                <p className="text-2xl font-bold text-gray-900 mt-1">
+                  {(ventasPorModulo['pecuario'] || 0).toLocaleString('es-CR', { style: 'currency', currency: 'CRC' })}
+                </p>
+              </div>
+            </div>
+
+            {/* Sales by Module Chart */}
+            <div className="max-w-lg">
+              {moduleLoading ? (
+                <div className="h-64 bg-gray-100 rounded-xl animate-pulse" />
+              ) : salesByModule ? (
+                <SalesByModuleChart data={salesByModule} />
+              ) : null}
+            </div>
+          </div>
+        );
+
+      case 'exportaciones':
+        return (
+          <div className="space-y-6">
+            <div className="bg-white rounded-xl border border-gray-200 p-8 text-center">
+              <FileSpreadsheet className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                Exportación de Datos de Ventas
+              </h3>
+              <p className="text-gray-500 mb-6 max-w-md mx-auto">
+                Exporte la información de ventas para uso en sistemas externos. Seleccione el formato deseado.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <button
+                  onClick={() => alert('La exportación a Excel estará disponible próximamente.')}
+                  className="btn-secondary inline-flex items-center justify-center gap-2"
+                >
+                  <FileSpreadsheet className="w-4 h-4" />
+                  Exportar a Excel
+                </button>
+                <button
+                  onClick={() => alert('La exportación a CSV estará disponible próximamente.')}
+                  className="btn-secondary inline-flex items-center justify-center gap-2"
+                >
+                  <FileSpreadsheet className="w-4 h-4" />
+                  Exportar a CSV
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+
+      default:
+        return null;
+    }
   };
 
   return (
@@ -90,243 +216,41 @@ export default function Finanzas() {
             Finanzas
           </h1>
           <p className="text-sm text-gray-600">
-            Gestión financiera, presupuestos, ingresos y gastos
+            Registro y consulta de ventas de la finca
           </p>
         </div>
         <div className="flex gap-2">
-          <button
-            onClick={handleNewPurchase}
-            className="btn-secondary inline-flex items-center gap-2"
-          >
-            <Plus className="w-4 h-4" />
-            Nueva Compra
-          </button>
-          <button
-            onClick={handleNewSale}
-            className="btn-primary inline-flex items-center gap-2"
-          >
-            <Plus className="w-4 h-4" />
-            Nueva Venta
-          </button>
+          {getActionButtons()}
         </div>
       </div>
 
-      {/* Stats Grid - 6 columns */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 lg:gap-5">
-        {statsLoading ? (
-          <>
-            {[...Array(6)].map((_, i) => (
-              <StatCardSkeleton key={i} />
-            ))}
-          </>
-        ) : stats ? (
-          <>
-            <FinanzasStatCard
-              label="Ingresos Totales"
-              value={`₡${(stats.totalIncome / 1000000).toFixed(1)}M`}
-              icon="income"
-              subValue="este período"
-            />
-            <FinanzasStatCard
-              label="Gastos Totales"
-              value={`₡${(stats.totalExpense / 1000000).toFixed(1)}M`}
-              icon="expense"
-              subValue="este período"
-            />
-            <FinanzasStatCard
-              label="Ganancia Neta"
-              value={`₡${(stats.netProfit / 1000000).toFixed(1)}M`}
-              icon="profit"
-              trend={12}
-              trendLabel="vs mes anterior"
-            />
-            <FinanzasStatCard
-              label="Por Cobrar"
-              value={`₡${(stats.pendingReceivables / 1000000).toFixed(1)}M`}
-              icon="receivable"
-              subValue={`${stats.overdueSales} vencidas`}
-            />
-            <FinanzasStatCard
-              label="Por Pagar"
-              value={`₡${(stats.pendingPayables / 1000000).toFixed(1)}M`}
-              icon="pending"
-              subValue={`${stats.overduePayments} vencidas`}
-            />
-            <FinanzasStatCard
-              label="Flujo de Caja"
-              value={`₡${(stats.cashFlow / 1000000).toFixed(1)}M`}
-              icon="cashflow"
-              trend={8}
-              trendLabel="vs mes anterior"
-            />
-          </>
-        ) : null}
+      {/* Tabs */}
+      <div className="border-b border-gray-200">
+        <nav className="flex gap-1 -mb-px overflow-x-auto">
+          {tabs.map((tab) => {
+            const Icon = tab.icon;
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`inline-flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
+                  isActive
+                    ? 'border-green-600 text-green-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                <Icon className="w-4 h-4" />
+                {tab.label}
+              </button>
+            );
+          })}
+        </nav>
       </div>
 
-      {/* Income vs Expense and Sales by Module */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-5">
-        {/* Chart - takes 2/3 */}
-        <div className="lg:col-span-2">
-          {monthlyLoading ? (
-            <ChartSkeleton />
-          ) : monthlyData ? (
-            <IncomeExpenseChart data={monthlyData} />
-          ) : null}
-        </div>
-
-        {/* Sales by Module - takes 1/3 */}
-        <div>
-          {moduleLoading ? (
-            <ChartSkeleton />
-          ) : salesByModule ? (
-            <SalesByModuleChart data={salesByModule} />
-          ) : null}
-        </div>
-      </div>
-
-      {/* Recent Sales and Purchases */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-5">
-        {/* Recent Sales */}
-        <div className="card p-5">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-bold text-gray-900">Ventas Recientes</h3>
-            <span className="text-sm text-gray-500">{sales?.length || 0} total</span>
-          </div>
-          {salesLoading ? (
-            <div className="space-y-3">
-              {[...Array(3)].map((_, i) => (
-                <div key={i} className="h-16 bg-gray-100 rounded-lg animate-pulse" />
-              ))}
-            </div>
-          ) : sales && sales.length > 0 ? (
-            <div className="space-y-2">
-              {sales.slice(0, 5).map((sale) => (
-                <div
-                  key={sale.id}
-                  className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors"
-                  onClick={() => handleSaleClick(sale)}
-                >
-                  <div>
-                    <p className="font-medium text-gray-900">{sale.invoiceNumber}</p>
-                    <p className="text-sm text-gray-500">{sale.buyerName}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-semibold text-green-600">
-                      ₡{sale.totalAmount.toLocaleString('es-CR')}
-                    </p>
-                    <span className={`text-xs px-2 py-0.5 rounded-full ${
-                      sale.paymentStatus === 'paid'
-                        ? 'bg-green-100 text-green-700'
-                        : sale.paymentStatus === 'partial'
-                        ? 'bg-amber-100 text-amber-700'
-                        : 'bg-red-100 text-red-700'
-                    }`}>
-                      {sale.paymentStatus === 'paid' ? 'Pagado' : sale.paymentStatus === 'partial' ? 'Parcial' : 'Pendiente'}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-gray-500 text-center py-4">No hay ventas registradas</p>
-          )}
-        </div>
-
-        {/* Recent Purchases */}
-        <div className="card p-5">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-bold text-gray-900">Compras Recientes</h3>
-            <span className="text-sm text-gray-500">{purchases?.length || 0} total</span>
-          </div>
-          {purchasesLoading ? (
-            <div className="space-y-3">
-              {[...Array(3)].map((_, i) => (
-                <div key={i} className="h-16 bg-gray-100 rounded-lg animate-pulse" />
-              ))}
-            </div>
-          ) : purchases && purchases.length > 0 ? (
-            <div className="space-y-2">
-              {purchases.slice(0, 5).map((purchase) => (
-                <div
-                  key={purchase.id}
-                  className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors"
-                  onClick={() => handlePurchaseClick(purchase)}
-                >
-                  <div>
-                    <p className="font-medium text-gray-900">{purchase.invoiceNumber}</p>
-                    <p className="text-sm text-gray-500">{purchase.supplierName}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-semibold text-red-600">
-                      ₡{purchase.totalAmount.toLocaleString('es-CR')}
-                    </p>
-                    <span className={`text-xs px-2 py-0.5 rounded-full ${
-                      purchase.paymentStatus === 'paid'
-                        ? 'bg-green-100 text-green-700'
-                        : purchase.paymentStatus === 'partial'
-                        ? 'bg-amber-100 text-amber-700'
-                        : 'bg-red-100 text-red-700'
-                    }`}>
-                      {purchase.paymentStatus === 'paid' ? 'Pagado' : purchase.paymentStatus === 'partial' ? 'Parcial' : 'Pendiente'}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-gray-500 text-center py-4">No hay compras registradas</p>
-          )}
-        </div>
-      </div>
-
-      {/* Budget Progress Cards */}
-      <div>
-        <h2 className="text-lg font-bold text-gray-900 mb-4">
-          Presupuestos vs Real
-        </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-5">
-          {budgetLoading ? (
-            <>
-              {[...Array(4)].map((_, i) => (
-                <StatCardSkeleton key={i} />
-              ))}
-            </>
-          ) : budgets ? (
-            budgets.map((budget) => (
-              <BudgetProgressCard key={budget.category} budget={budget} />
-            ))
-          ) : null}
-        </div>
-      </div>
-
-      {/* Pending Payments and Tasks */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-5">
-        {/* Accounts Receivable - takes 1/3 */}
-        <div>
-          {receivableLoading ? (
-            <ListCardSkeleton itemCount={3} />
-          ) : (
-            <PendingPaymentsList receivables={receivables} type="receivable" />
-          )}
-        </div>
-
-        {/* Accounts Payable - takes 1/3 */}
-        <div>
-          {payableLoading ? (
-            <ListCardSkeleton itemCount={3} />
-          ) : (
-            <PendingPaymentsList payables={payables} type="payable" />
-          )}
-        </div>
-
-        {/* Tasks - takes 1/3 */}
-        <div>
-          {tasksLoading ? (
-            <ListCardSkeleton itemCount={5} />
-          ) : tasks ? (
-            <FinanzasTaskList tasks={tasks} />
-          ) : null}
-        </div>
+      {/* Tab Content */}
+      <div className="animate-fade-in">
+        {renderTabContent()}
       </div>
 
       {/* Sale Modals */}
@@ -340,19 +264,6 @@ export default function Finanzas() {
         onOpenChange={setSaleDetailOpen}
         saleRecord={selectedSale}
         onEdit={handleSaleEdit}
-      />
-
-      {/* Purchase Modals */}
-      <PurchaseRecordFormModal
-        open={purchaseFormOpen}
-        onOpenChange={setPurchaseFormOpen}
-        purchaseRecord={selectedPurchase}
-      />
-      <PurchaseRecordDetailModal
-        open={purchaseDetailOpen}
-        onOpenChange={setPurchaseDetailOpen}
-        purchaseRecord={selectedPurchase}
-        onEdit={handlePurchaseEdit}
       />
     </div>
   );

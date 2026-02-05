@@ -1,7 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Plus, LayoutDashboard, Map, CalendarDays, Calendar } from 'lucide-react';
+import { Plus, Map, CalendarDays, Calendar } from 'lucide-react';
 import {
-  FincaDashboard,
   FincaFormModal,
   DivisionList,
   DivisionFormModal,
@@ -14,16 +13,11 @@ import {
   AnnualPlanDetailModal,
 } from '../components/finca';
 import { CalendarView } from '../components/common/Calendar';
-import StatCardSkeleton from '../components/common/Skeletons/StatCardSkeleton';
-import ChartSkeleton from '../components/common/Skeletons/ChartSkeleton';
 import ListCardSkeleton from '../components/common/Skeletons/ListCardSkeleton';
 import { cn } from '../utils/cn';
 import {
   useFinca,
   useDivisions,
-  useFincaDashboard,
-  useMonthlyAggregatedData,
-  useAggregatedTasks,
 } from '../hooks/useFinca';
 import {
   useAnnualPlans,
@@ -32,10 +26,10 @@ import {
 } from '../hooks/useAnnualPlan';
 import type { Division, GeneralPlan, AnnualPlan, PlanPhase } from '../types/finca.types';
 
-type TabType = 'dashboard' | 'divisiones' | 'planificacion';
+type TabType = 'divisiones' | 'planificacion';
 
 export default function Finca() {
-  const [activeTab, setActiveTab] = useState<TabType>('dashboard');
+  const [activeTab, setActiveTab] = useState<TabType>('planificacion');
 
   // Finca modal state
   const [fincaFormModalOpen, setFincaFormModalOpen] = useState(false);
@@ -59,11 +53,8 @@ export default function Finca() {
   const [selectedAnnualPlanForEdit, setSelectedAnnualPlanForEdit] = useState<AnnualPlan | null>(null);
 
   // Queries
-  const { data: finca, isLoading: fincaLoading } = useFinca();
+  const { data: finca } = useFinca();
   const { data: divisions, isLoading: divisionsLoading } = useDivisions();
-  const { data: dashboardStats, isLoading: dashboardLoading } = useFincaDashboard();
-  const { data: monthlyData, isLoading: monthlyDataLoading } = useMonthlyAggregatedData();
-  const { data: tasks, isLoading: tasksLoading } = useAggregatedTasks();
 
   // Annual plan queries
   const { data: annualPlans, isLoading: annualPlansLoading } = useAnnualPlans();
@@ -81,12 +72,10 @@ export default function Finca() {
 
       if (currentYearPlan) {
         setSelectedAnnualPlanId(currentYearPlan.id);
-        // If plan is active, default to execution view
         if (currentYearPlan.status === 'active') {
           setSelectedPhase('execution');
         }
       } else {
-        // Select the most recent plan (annualPlans should be sorted)
         const sortedPlans = [...annualPlans].sort((a, b) => b.year - a.year);
         setSelectedAnnualPlanId(sortedPlans[0].id);
       }
@@ -99,22 +88,17 @@ export default function Finca() {
     return selectedAnnualPlan.status === 'active' || selectedAnnualPlan.status === 'completed';
   }, [selectedAnnualPlan]);
 
-  // Determine if the annual plan is editable (current year and active status)
   const isCurrentYear = useMemo(() => {
     if (!selectedAnnualPlan) return false;
     return selectedAnnualPlan.year === new Date().getFullYear();
   }, [selectedAnnualPlan]);
 
-  // Plans are editable if:
-  // - For initial phase: status is 'draft' or 'planning'
-  // - For execution phase: status is 'active' AND it's the current year
   const isPlanEditable = useMemo(() => {
     if (!selectedAnnualPlan) return false;
 
     if (selectedPhase === 'initial') {
       return selectedAnnualPlan.status === 'draft' || selectedAnnualPlan.status === 'planning';
     } else {
-      // Execution phase
       return selectedAnnualPlan.status === 'active' && isCurrentYear;
     }
   }, [selectedAnnualPlan, selectedPhase, isCurrentYear]);
@@ -150,7 +134,7 @@ export default function Finca() {
 
   // Plan handlers
   const handlePlanClick = (_plan: GeneralPlan) => {
-    // Popover handles this - no action needed here
+    // Popover handles this
   };
 
   const handlePlanView = (plan: GeneralPlan) => {
@@ -180,7 +164,6 @@ export default function Finca() {
   // Annual plan handlers
   const handleAnnualPlanChange = (planId: string) => {
     setSelectedAnnualPlanId(planId);
-    // Reset to initial phase when changing plan
     const plan = annualPlans?.find(p => p.id === planId);
     if (plan && (plan.status === 'active' || plan.status === 'completed')) {
       setSelectedPhase('execution');
@@ -200,17 +183,14 @@ export default function Finca() {
   };
 
   const handleAnnualPlanActivate = () => {
-    // Switch to execution view after activation
     setSelectedPhase('execution');
   };
 
   const handleAnnualPlanComplete = () => {
-    // Plan is now completed - stay on execution view
-    // UI will automatically become read-only
+    // Plan completed - stay on execution view, UI becomes read-only
   };
 
   const handleAnnualPlanDelete = () => {
-    // Clear selection after deletion
     setSelectedAnnualPlanId(null);
   };
 
@@ -218,15 +198,13 @@ export default function Finca() {
     setSelectedAnnualPlanForEdit(null);
   };
 
-  const tabs: { id: TabType; label: string; icon: typeof LayoutDashboard }[] = [
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  const tabs: { id: TabType; label: string; icon: typeof Map }[] = [
     { id: 'divisiones', label: 'Divisiones', icon: Map },
-    { id: 'planificacion', label: 'Planificacion', icon: CalendarDays },
+    { id: 'planificacion', label: 'Planificación', icon: CalendarDays },
   ];
 
   // Render planning tab content
   const renderPlanningTab = () => {
-    // Loading state for annual plans
     if (annualPlansLoading) {
       return (
         <div className="space-y-4">
@@ -237,7 +215,6 @@ export default function Finca() {
       );
     }
 
-    // No annual plans state
     if (!annualPlans || annualPlans.length === 0) {
       return (
         <div className="bg-white rounded-xl border border-gray-200 p-8">
@@ -248,7 +225,7 @@ export default function Finca() {
             </h3>
             <p className="text-sm text-gray-600 mb-6 max-w-md">
               Crea un plan anual para comenzar a organizar las actividades de tu finca.
-              Los planes anuales te permiten planificar y dar seguimiento a todas las acciones del ano.
+              Los planes anuales te permiten planificar y dar seguimiento a todas las acciones del año.
             </p>
             <button
               onClick={handleCreateAnnualPlan}
@@ -262,7 +239,6 @@ export default function Finca() {
       );
     }
 
-    // No plan selected state
     if (!selectedAnnualPlanId) {
       return (
         <div className="space-y-4">
@@ -288,14 +264,12 @@ export default function Finca() {
 
     return (
       <div className="space-y-4">
-        {/* Annual Plan Selector */}
         <AnnualPlanSelector
           selectedPlanId={selectedAnnualPlanId}
           onPlanChange={handleAnnualPlanChange}
           onCreateNew={handleCreateAnnualPlan}
         />
 
-        {/* Annual Plan Header */}
         <AnnualPlanHeader
           annualPlan={selectedAnnualPlan || null}
           onEdit={handleEditAnnualPlan}
@@ -316,7 +290,7 @@ export default function Finca() {
                   : 'text-gray-600 hover:text-gray-900'
               )}
             >
-              Planificacion Inicial
+              Planificación Inicial
             </button>
             <button
               onClick={() => setSelectedPhase('execution')}
@@ -328,21 +302,20 @@ export default function Finca() {
                   : 'text-gray-600 hover:text-gray-900',
                 !isExecutionEnabled && 'opacity-50 cursor-not-allowed'
               )}
-              title={!isExecutionEnabled ? 'El plan debe estar activo para ver la ejecucion' : undefined}
+              title={!isExecutionEnabled ? 'El plan debe estar activo para ver la ejecución' : undefined}
             >
-              Plan de Ejecucion
+              Plan de Ejecución
             </button>
           </div>
 
-          {/* Read-only indicator */}
           {selectedAnnualPlan && !isPlanEditable && (
             <span className="text-sm text-gray-500 italic">
               {selectedAnnualPlan.status === 'completed'
                 ? 'Plan completado - solo lectura'
                 : selectedPhase === 'execution' && !isCurrentYear
-                  ? 'Ano anterior - solo lectura'
+                  ? 'Año anterior - solo lectura'
                   : selectedPhase === 'initial' && selectedAnnualPlan.status === 'active'
-                    ? 'Plan activo - planificacion inicial bloqueada'
+                    ? 'Plan activo - planificación inicial bloqueada'
                     : ''}
             </span>
           )}
@@ -376,41 +349,6 @@ export default function Finca() {
 
   const renderTabContent = () => {
     switch (activeTab) {
-      case 'dashboard':
-        return (
-          <>
-            {(fincaLoading || dashboardLoading || monthlyDataLoading || tasksLoading) ? (
-              <div className="space-y-6">
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                  <div className="h-48 bg-gray-100 rounded-xl animate-pulse" />
-                  <div className="lg:col-span-2 grid grid-cols-2 md:grid-cols-4 gap-4">
-                    {[...Array(4)].map((_, i) => (
-                      <StatCardSkeleton key={i} />
-                    ))}
-                  </div>
-                </div>
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                  <ChartSkeleton />
-                  <ChartSkeleton />
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                  {[...Array(4)].map((_, i) => (
-                    <StatCardSkeleton key={i} />
-                  ))}
-                </div>
-              </div>
-            ) : finca && dashboardStats && monthlyData && tasks ? (
-              <FincaDashboard
-                finca={finca}
-                stats={dashboardStats}
-                monthlyData={monthlyData}
-                tasks={tasks}
-                onEditFinca={handleEditFinca}
-              />
-            ) : null}
-          </>
-        );
-
       case 'divisiones':
         return (
           <>
@@ -443,11 +381,10 @@ export default function Finca() {
             className="btn-primary inline-flex items-center gap-2"
           >
             <Plus className="w-4 h-4" />
-            Nueva Division
+            Nueva División
           </button>
         );
       case 'planificacion':
-        // Only show "Nuevo Plan" button if an annual plan is selected and editable
         if (selectedAnnualPlanId && selectedAnnualPlan && isPlanEditable) {
           return (
             <button
@@ -455,7 +392,7 @@ export default function Finca() {
               className="btn-primary inline-flex items-center gap-2"
             >
               <Plus className="w-4 h-4" />
-              Nueva Accion
+              Nueva Acción
             </button>
           );
         }
@@ -471,10 +408,10 @@ export default function Finca() {
       <div className="flex items-start justify-between animate-fade-in">
         <div className="space-y-1">
           <h1 className="text-3xl font-bold text-gray-900 tracking-tight">
-            Finca
+            Mi Finca
           </h1>
           <p className="text-sm text-gray-600">
-            Vision general y gestion centralizada de la finca
+            Gestión centralizada de la finca y planificación de actividades
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -558,7 +495,6 @@ export default function Finca() {
         readOnly={!isPlanEditable}
       />
 
-      {/* Annual Plan Modals */}
       <AnnualPlanFormModal
         open={annualPlanFormModalOpen}
         onOpenChange={setAnnualPlanFormModalOpen}
