@@ -1,3 +1,5 @@
+export type DocumentFolder = 'asociado' | 'administracion' | 'compartidos';
+
 export interface Document {
   id: string;
   name: string;
@@ -5,5 +7,6 @@ export interface Document {
   fileUrl: string;
   uploadedAt: string;
   category: 'normativo' | 'tecnico' | 'operativo' | 'certificacion';
+  folder: DocumentFolder;
   fileSize?: string;
 }

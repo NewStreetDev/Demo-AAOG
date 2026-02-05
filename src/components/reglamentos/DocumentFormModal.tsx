@@ -7,20 +7,24 @@ import { FormInput, FormField, FormSelect, FormTextArea } from '../common/Forms'
 import {
   documentFormSchema,
   categoryOptions,
+  folderOptions,
   type DocumentFormData,
 } from '../../schemas/reglamentos.schema';
 import { useCreateDocument } from '../../hooks/useReglamentos';
+import type { DocumentFolder } from '../../types/reglamentos.types';
 
 interface DocumentFormModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSuccess?: () => void;
+  defaultFolder?: DocumentFolder;
 }
 
 export default function DocumentFormModal({
   open,
   onOpenChange,
   onSuccess,
+  defaultFolder = 'compartidos',
 }: DocumentFormModalProps) {
   const createMutation = useCreateDocument();
   const isLoading = createMutation.isPending;
@@ -36,6 +40,7 @@ export default function DocumentFormModal({
       name: '',
       description: '',
       category: 'normativo',
+      folder: defaultFolder,
       fileUrl: '',
       fileSize: '',
     },
@@ -47,11 +52,12 @@ export default function DocumentFormModal({
         name: '',
         description: '',
         category: 'normativo',
+        folder: defaultFolder,
         fileUrl: '',
         fileSize: '',
       });
     }
-  }, [open, reset]);
+  }, [open, reset, defaultFolder]);
 
   const onSubmit = async (data: DocumentFormData) => {
     try {
@@ -108,6 +114,21 @@ export default function DocumentFormModal({
                 value={field.value}
                 onValueChange={field.onChange}
                 placeholder="Seleccione una categoria"
+              />
+            </FormField>
+          )}
+        />
+
+        <Controller
+          name="folder"
+          control={control}
+          render={({ field }) => (
+            <FormField label="Carpeta destino" error={errors.folder?.message}>
+              <FormSelect
+                options={folderOptions}
+                value={field.value}
+                onValueChange={field.onChange}
+                placeholder="Seleccione una carpeta"
               />
             </FormField>
           )}

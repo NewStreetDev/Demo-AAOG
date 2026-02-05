@@ -6,10 +6,9 @@ interface ReportsListProps {
 }
 
 const reportTypeConfig = {
-  comprehensive: { label: 'Integral', bg: 'bg-blue-100', text: 'text-blue-700' },
-  financial: { label: 'Financiero', bg: 'bg-green-100', text: 'text-green-700' },
-  production: { label: 'Producción', bg: 'bg-amber-100', text: 'text-amber-700' },
-  inventory: { label: 'Inventario', bg: 'bg-purple-100', text: 'text-purple-700' },
+  agricola: { label: 'Agrícola', bg: 'bg-green-100', text: 'text-green-700' },
+  pecuario: { label: 'Pecuario', bg: 'bg-amber-100', text: 'text-amber-700' },
+  procesamiento: { label: 'Procesamiento', bg: 'bg-blue-100', text: 'text-blue-700' },
 };
 
 const periodLabels = {

@@ -191,9 +191,9 @@ export const getMockGeneratedReports = async (): Promise<GeneratedReport[]> => {
     {
       id: '1',
       reportCode: 'REP-2026-001',
-      title: 'Reporte Mensual - Enero 2026',
-      description: 'Reporte consolidado de producción y finanzas',
-      reportType: 'comprehensive',
+      title: 'Reporte Agrícola - Enero 2026',
+      description: 'Reporte de producción agrícola y labores de finca',
+      reportType: 'agricola',
       period: 'monthly',
       periodStart: new Date('2026-01-01'),
       periodEnd: new Date('2026-01-31'),
@@ -210,9 +210,9 @@ export const getMockGeneratedReports = async (): Promise<GeneratedReport[]> => {
     {
       id: '2',
       reportCode: 'REP-2025-Q4',
-      title: 'Reporte Trimestral - Q4 2025',
-      description: 'Análisis del cuarto trimestre',
-      reportType: 'financial',
+      title: 'Reporte Pecuario - Q4 2025',
+      description: 'Análisis pecuario del cuarto trimestre',
+      reportType: 'pecuario',
       period: 'quarterly',
       periodStart: new Date('2025-10-01'),
       periodEnd: new Date('2025-12-31'),
@@ -229,9 +229,9 @@ export const getMockGeneratedReports = async (): Promise<GeneratedReport[]> => {
     {
       id: '3',
       reportCode: 'REP-2025-ANUAL',
-      title: 'Reporte Anual - 2025',
-      description: 'Resumen ejecutivo anual',
-      reportType: 'comprehensive',
+      title: 'Reporte Procesamiento - 2025',
+      description: 'Resumen anual de procesamiento de productos',
+      reportType: 'procesamiento',
       period: 'annual',
       periodStart: new Date('2025-01-01'),
       periodEnd: new Date('2025-12-31'),
@@ -248,8 +248,8 @@ export const getMockGeneratedReports = async (): Promise<GeneratedReport[]> => {
     {
       id: '4',
       reportCode: 'REP-2025-012',
-      title: 'Reporte Producción - Diciembre 2025',
-      reportType: 'production',
+      title: 'Reporte Agrícola - Diciembre 2025',
+      reportType: 'agricola',
       period: 'monthly',
       periodStart: new Date('2025-12-01'),
       periodEnd: new Date('2025-12-31'),
@@ -275,7 +275,7 @@ export const getMockReportesDashboardStats = async (): Promise<ReportesDashboard
     generatedToday: 1,
     pendingExports: 2,
     latestReportDate: new Date('2026-01-20'),
-    latestReportType: 'comprehensive',
+    latestReportType: 'agricola',
   };
 };
 

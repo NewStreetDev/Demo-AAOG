@@ -48,15 +48,14 @@ const categoryColors: Record<ReportType['category'], string> = {
   procesamiento: 'bg-blue-100 text-blue-700',
 };
 
-type HistorialReportType = 'all' | 'comprehensive' | 'financial' | 'production' | 'inventory';
+type HistorialReportType = 'all' | 'agricola' | 'pecuario' | 'procesamiento';
 type HistorialPeriod = 'all' | 'monthly' | 'quarterly' | 'annual';
 
 const historialReportTypeLabels: Record<HistorialReportType, string> = {
-  all: 'Todos los tipos',
-  comprehensive: 'Integral',
-  financial: 'Financiero',
-  production: 'Producción',
-  inventory: 'Inventario',
+  all: 'Todos',
+  agricola: 'Agrícola',
+  pecuario: 'Pecuario',
+  procesamiento: 'Procesamiento',
 };
 
 const historialPeriodLabels: Record<HistorialPeriod, string> = {
@@ -184,7 +183,7 @@ export default function Reportes() {
                 <select
                   value={historialTypeFilter}
                   onChange={(e) => setHistorialTypeFilter(e.target.value as HistorialReportType)}
-                  className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
                 >
                   {(Object.keys(historialReportTypeLabels) as HistorialReportType[]).map((type) => (
                     <option key={type} value={type}>
@@ -195,7 +194,7 @@ export default function Reportes() {
                 <select
                   value={historialPeriodFilter}
                   onChange={(e) => setHistorialPeriodFilter(e.target.value as HistorialPeriod)}
-                  className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
                 >
                   {(Object.keys(historialPeriodLabels) as HistorialPeriod[]).map((period) => (
                     <option key={period} value={period}>
@@ -271,7 +270,7 @@ export default function Reportes() {
                 onClick={() => setActiveTab(tab.id)}
                 className={`inline-flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
                   isActive
-                    ? 'border-blue-500 text-blue-600'
+                    ? 'border-green-600 text-green-600'
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 }`}
               >

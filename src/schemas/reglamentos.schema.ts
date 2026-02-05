@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 export const documentCategories = ['normativo', 'tecnico', 'operativo', 'certificacion'] as const;
+export const documentFolders = ['asociado', 'administracion', 'compartidos'] as const;
 
 export const documentFormSchema = z.object({
   name: z
@@ -13,6 +14,9 @@ export const documentFormSchema = z.object({
     .max(500, 'La descripcion no puede tener mas de 500 caracteres'),
   category: z.enum(documentCategories, {
     message: 'Seleccione una categoria',
+  }),
+  folder: z.enum(documentFolders, {
+    message: 'Seleccione una carpeta',
   }),
   fileUrl: z
     .string()
@@ -27,4 +31,10 @@ export const categoryOptions = [
   { value: 'tecnico', label: 'Tecnico' },
   { value: 'operativo', label: 'Operativo' },
   { value: 'certificacion', label: 'Certificacion' },
+];
+
+export const folderOptions = [
+  { value: 'asociado', label: 'Carpeta del Asociado' },
+  { value: 'administracion', label: 'Carpeta de Administracion' },
+  { value: 'compartidos', label: 'Recursos Compartidos' },
 ];

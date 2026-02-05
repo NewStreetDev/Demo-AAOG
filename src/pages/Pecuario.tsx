@@ -18,6 +18,9 @@ import {
   ReproductionFormModal,
   ReproductionDetailModal,
   ReproductionList,
+  LivestockGroupList,
+  LivestockGroupFormModal,
+  LivestockGroupDetailModal,
 } from '../components/pecuario';
 import StatCardSkeleton from '../components/common/Skeletons/StatCardSkeleton';
 import ChartSkeleton from '../components/common/Skeletons/ChartSkeleton';
@@ -31,8 +34,9 @@ import {
   useCategoryDistribution,
   useHealthRecords,
   useReproductionRecords,
+  useLivestockGroups,
 } from '../hooks/usePecuario';
-import type { Livestock, Potrero, HealthRecord, ReproductionRecord } from '../types/pecuario.types';
+import type { Livestock, Potrero, HealthRecord, ReproductionRecord, LivestockGroup } from '../types/pecuario.types';
 import type { GeneralPlan } from '../types/finca.types';
 import { GeneralPlanFormModal, GeneralPlanDetailModal } from '../components/finca';
 import { CalendarView } from '../components/common/Calendar';
@@ -67,6 +71,11 @@ export default function Pecuario() {
   const [reproductionFormModalOpen, setReproductionFormModalOpen] = useState(false);
   const [reproductionDetailModalOpen, setReproductionDetailModalOpen] = useState(false);
   const [preselectedCowForReproduction, setPreselectedCowForReproduction] = useState<Livestock | null>(null);
+
+  // Modal state for Livestock Groups
+  const [selectedGroup, setSelectedGroup] = useState<LivestockGroup | null>(null);
+  const [groupFormModalOpen, setGroupFormModalOpen] = useState(false);
+  const [groupDetailModalOpen, setGroupDetailModalOpen] = useState(false);
 
   // Modal state for Plans
   const [selectedPlan, setSelectedPlan] = useState<GeneralPlan | null>(null);
@@ -106,6 +115,23 @@ export default function Pecuario() {
   const handleNewPotrero = () => {
     setSelectedPotrero(null);
     setPotreroFormModalOpen(true);
+  };
+
+  // Livestock Group handlers
+  const handleGroupClick = (group: LivestockGroup) => {
+    setSelectedGroup(group);
+    setGroupDetailModalOpen(true);
+  };
+
+  const handleGroupEdit = (group: LivestockGroup) => {
+    setSelectedGroup(group);
+    setGroupDetailModalOpen(false);
+    setGroupFormModalOpen(true);
+  };
+
+  const handleNewGroup = () => {
+    setSelectedGroup(null);
+    setGroupFormModalOpen(true);
   };
 
   // Health Record handlers
@@ -198,6 +224,7 @@ export default function Pecuario() {
   const { data: categoryDist, isLoading: categoryLoading } = useCategoryDistribution();
   const { data: healthRecords, isLoading: healthRecordsLoading } = useHealthRecords();
   const { data: reproductionRecords, isLoading: reproductionLoading } = useReproductionRecords();
+  const { data: livestockGroups, isLoading: livestockGroupsLoading } = useLivestockGroups();
   const { data: allPlans, isLoading: plansLoading } = useGeneralPlans();
 
   // Filter plans for pecuario module
@@ -365,6 +392,20 @@ export default function Pecuario() {
                 ))
               ) : null}
             </div>
+
+            {/* Grupos de Animales */}
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">Grupos de Animales</h2>
+              {livestockGroupsLoading ? (
+                <ListCardSkeleton itemCount={4} />
+              ) : livestockGroups ? (
+                <LivestockGroupList
+                  livestockGroups={livestockGroups}
+                  onGroupClick={handleGroupClick}
+                  showFilters={true}
+                />
+              ) : null}
+            </div>
           </div>
         );
 
@@ -413,13 +454,22 @@ export default function Pecuario() {
         );
       case 'potreros':
         return (
-          <button
-            onClick={handleNewPotrero}
-            className="btn-primary inline-flex items-center gap-2"
-          >
-            <Plus className="w-4 h-4" />
-            Nuevo Potrero
-          </button>
+          <>
+            <button
+              onClick={handleNewGroup}
+              className="btn-ghost inline-flex items-center gap-2"
+            >
+              <Users className="w-4 h-4" />
+              Nuevo Grupo
+            </button>
+            <button
+              onClick={handleNewPotrero}
+              className="btn-primary inline-flex items-center gap-2"
+            >
+              <Plus className="w-4 h-4" />
+              Nuevo Potrero
+            </button>
+          </>
         );
       case 'salud':
         return (
@@ -541,6 +591,21 @@ export default function Pecuario() {
         potrero={selectedPotrero}
         onEdit={handlePotreroEdit}
         onDeleteSuccess={() => setSelectedPotrero(null)}
+      />
+
+      {/* Livestock Group Modals */}
+      <LivestockGroupFormModal
+        open={groupFormModalOpen}
+        onOpenChange={setGroupFormModalOpen}
+        livestockGroup={selectedGroup}
+        onSuccess={() => setSelectedGroup(null)}
+      />
+      <LivestockGroupDetailModal
+        open={groupDetailModalOpen}
+        onOpenChange={setGroupDetailModalOpen}
+        livestockGroup={selectedGroup}
+        onEdit={handleGroupEdit}
+        onDeleteSuccess={() => setSelectedGroup(null)}
       />
 
       {/* Health Record Modals */}

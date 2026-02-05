@@ -3,6 +3,7 @@ import type { Document } from '../types/reglamentos.types';
 import type { DocumentFormData } from '../schemas/reglamentos.schema';
 
 let mockDocuments: Document[] = [
+  // Carpeta del Asociado
   {
     id: '1',
     name: 'Reglamento de Agricultura Organica',
@@ -10,17 +11,20 @@ let mockDocuments: Document[] = [
     fileUrl: '/documents/reglamento-agricultura-organica.pdf',
     uploadedAt: '2024-01-15',
     category: 'normativo',
+    folder: 'asociado',
     fileSize: '2.4 MB',
   },
   {
     id: '2',
-    name: 'Manual de Buenas Practicas Pecuarias',
-    description: 'Guia tecnica para el manejo sanitario y bienestar animal',
-    fileUrl: '/documents/manual-bpp.pdf',
-    uploadedAt: '2024-02-20',
-    category: 'tecnico',
-    fileSize: '5.1 MB',
+    name: 'Mi Certificacion Organica 2024',
+    description: 'Copia del certificado organico vigente para la finca del asociado',
+    fileUrl: '/documents/certificacion-organica-2024.pdf',
+    uploadedAt: '2024-04-05',
+    category: 'certificacion',
+    folder: 'asociado',
+    fileSize: '1.1 MB',
   },
+  // Carpeta de Administracion
   {
     id: '3',
     name: 'Protocolo de Trazabilidad',
@@ -28,33 +32,68 @@ let mockDocuments: Document[] = [
     fileUrl: '/documents/protocolo-trazabilidad.pdf',
     uploadedAt: '2024-03-10',
     category: 'operativo',
+    folder: 'administracion',
     fileSize: '1.8 MB',
   },
   {
     id: '4',
+    name: 'Informe de Auditoría Interna 2024',
+    description: 'Resultados de la auditoría interna de cumplimiento normativo anual',
+    fileUrl: '/documents/auditoria-interna-2024.pdf',
+    uploadedAt: '2024-06-20',
+    category: 'operativo',
+    folder: 'administracion',
+    fileSize: '3.7 MB',
+  },
+  {
+    id: '5',
+    name: 'Registro de Sanciones y Hallazgos',
+    description: 'Documentacion de no conformidades y acciones correctivas de asociados',
+    fileUrl: '/documents/sanciones-hallazgos.pdf',
+    uploadedAt: '2024-05-15',
+    category: 'normativo',
+    folder: 'administracion',
+    fileSize: '2.1 MB',
+  },
+  // Recursos Compartidos
+  {
+    id: '6',
+    name: 'Manual de Buenas Practicas Pecuarias',
+    description: 'Guia tecnica para el manejo sanitario y bienestar animal',
+    fileUrl: '/documents/manual-bpp.pdf',
+    uploadedAt: '2024-02-20',
+    category: 'tecnico',
+    folder: 'compartidos',
+    fileSize: '5.1 MB',
+  },
+  {
+    id: '7',
     name: 'Requisitos Certificacion Organica',
     description: 'Documentacion requerida para obtener y mantener la certificacion organica',
     fileUrl: '/documents/requisitos-certificacion.pdf',
     uploadedAt: '2024-04-05',
     category: 'certificacion',
+    folder: 'compartidos',
     fileSize: '3.2 MB',
   },
   {
-    id: '5',
+    id: '8',
     name: 'Normas de Procesamiento de Alimentos',
     description: 'Regulaciones para el procesamiento y transformacion de productos agricolas',
     fileUrl: '/documents/normas-procesamiento.pdf',
     uploadedAt: '2024-05-12',
     category: 'normativo',
+    folder: 'compartidos',
     fileSize: '4.5 MB',
   },
   {
-    id: '6',
+    id: '9',
     name: 'Guia de Manejo Integrado de Plagas',
     description: 'Estrategias y metodos permitidos para el control de plagas en agricultura organica',
     fileUrl: '/documents/guia-mip.pdf',
     uploadedAt: '2024-06-08',
     category: 'tecnico',
+    folder: 'compartidos',
     fileSize: '2.9 MB',
   },
 ];
@@ -84,6 +123,7 @@ export function useCreateDocument() {
         fileUrl: data.fileUrl,
         uploadedAt: new Date().toISOString().split('T')[0],
         category: data.category,
+        folder: data.folder,
         fileSize: data.fileSize,
       };
 

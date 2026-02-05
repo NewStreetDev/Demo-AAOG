@@ -1,7 +1,7 @@
 import type { BaseEntity } from './common.types';
 
 // Report types
-export type ReportType = 'production' | 'financial' | 'inventory' | 'comprehensive';
+export type ReportType = 'agricola' | 'pecuario' | 'procesamiento';
 
 // Report periods
 export type ReportPeriod = 'monthly' | 'quarterly' | 'annual';
