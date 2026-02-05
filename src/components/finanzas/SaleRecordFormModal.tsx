@@ -11,7 +11,9 @@ import {
 } from '../common/Forms';
 import {
   saleRecordFormSchema,
-  moduleSourceSelectOptions,
+  saleTypeSelectOptions,
+  quantityModeSelectOptions,
+  priceTypeSelectOptions,
   paymentStatusSelectOptions,
   type SaleRecordFormData,
 } from '../../schemas/finanzas.schema';
@@ -31,6 +33,31 @@ function formatDateForInput(date: Date | string | undefined): string {
   return d.toISOString().split('T')[0];
 }
 
+// Package type options for processed products
+const packageTypeOptions = [
+  { value: 'sacos', label: 'Sacos' },
+  { value: 'cajas', label: 'Cajas' },
+  { value: 'frascos', label: 'Frascos' },
+  { value: 'envases', label: 'Envases' },
+  { value: 'bolsas', label: 'Bolsas' },
+  { value: 'unidades', label: 'Unidades' },
+];
+
+// Size unit options for processed products
+const packageSizeUnitOptions = [
+  { value: 'kg', label: 'kg' },
+  { value: 'g', label: 'g' },
+  { value: 'litros', label: 'litros' },
+  { value: 'ml', label: 'ml' },
+  { value: 'unidades', label: 'unidades' },
+];
+
+// Weight unit options
+const weightUnitOptions = [
+  { value: 'kg', label: 'kg' },
+  { value: 'lb', label: 'lb' },
+];
+
 export default function SaleRecordFormModal({
   open,
   onOpenChange,
@@ -48,13 +75,14 @@ export default function SaleRecordFormModal({
     control,
     reset,
     watch,
+    setValue,
     formState: { errors },
   } = useForm<SaleRecordFormData>({
     resolver: zodResolver(saleRecordFormSchema),
     defaultValues: {
+      saleType: undefined,
       date: '',
       invoiceNumber: '',
-      moduleSource: undefined,
       productDescription: '',
       quantity: '',
       unit: '',
@@ -64,17 +92,38 @@ export default function SaleRecordFormModal({
       amountPaid: '',
       dueDate: '',
       notes: '',
+      quantityMode: undefined,
+      packageType: '',
+      packageSize: '',
+      packageSizeUnit: '',
+      batchNumber: '',
+      animalWeight: '',
+      priceType: undefined,
     },
   });
 
+  const saleType = watch('saleType');
   const paymentStatus = watch('paymentStatus');
+  const quantityMode = watch('quantityMode');
+  const priceType = watch('priceType');
+
+  // Set default unit based on sale type and mode
+  useEffect(() => {
+    if (saleType === 'agricola' && quantityMode === 'peso') {
+      setValue('unit', 'kg');
+    } else if (saleType === 'animal_vivo') {
+      setValue('unit', 'animal');
+    } else if (saleType === 'carnico') {
+      setValue('unit', 'kg');
+    }
+  }, [saleType, quantityMode, setValue]);
 
   useEffect(() => {
     if (open && saleRecord) {
       reset({
+        saleType: saleRecord.saleType,
         date: formatDateForInput(saleRecord.date),
         invoiceNumber: saleRecord.invoiceNumber,
-        moduleSource: saleRecord.moduleSource,
         productDescription: saleRecord.productDescription,
         quantity: saleRecord.quantity.toString(),
         unit: saleRecord.unit,
@@ -84,12 +133,19 @@ export default function SaleRecordFormModal({
         amountPaid: saleRecord.amountPaid.toString(),
         dueDate: formatDateForInput(saleRecord.dueDate),
         notes: saleRecord.notes || '',
+        quantityMode: saleRecord.quantityMode,
+        packageType: saleRecord.packageType || '',
+        packageSize: saleRecord.packageSize?.toString() || '',
+        packageSizeUnit: saleRecord.packageSizeUnit || '',
+        batchNumber: saleRecord.batchNumber || '',
+        animalWeight: saleRecord.animalWeight?.toString() || '',
+        priceType: saleRecord.priceType,
       });
     } else if (open && !saleRecord) {
       reset({
+        saleType: undefined,
         date: formatDateForInput(new Date()),
         invoiceNumber: '',
-        moduleSource: undefined,
         productDescription: '',
         quantity: '',
         unit: '',
@@ -99,6 +155,13 @@ export default function SaleRecordFormModal({
         amountPaid: '',
         dueDate: '',
         notes: '',
+        quantityMode: undefined,
+        packageType: '',
+        packageSize: '',
+        packageSizeUnit: '',
+        batchNumber: '',
+        animalWeight: '',
+        priceType: undefined,
       });
     }
   }, [open, saleRecord, reset]);
@@ -117,6 +180,258 @@ export default function SaleRecordFormModal({
     }
   };
 
+  // Render type-specific fields based on saleType
+  const renderTypeSpecificFields = () => {
+    switch (saleType) {
+      case 'agricola':
+        return (
+          <>
+            {/* Agricola: Choose between unidades or peso */}
+            <FormField label="Modalidad de Registro" required error={errors.quantityMode?.message}>
+              <Controller
+                name="quantityMode"
+                control={control}
+                render={({ field }) => (
+                  <FormSelect
+                    value={field.value}
+                    onValueChange={field.onChange}
+                    options={quantityModeSelectOptions}
+                    placeholder="Seleccionar modalidad..."
+                    error={errors.quantityMode?.message}
+                  />
+                )}
+              />
+            </FormField>
+
+            {quantityMode && (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <FormField label="Cantidad" required error={errors.quantity?.message}>
+                  <FormInput
+                    {...register('quantity')}
+                    type="number"
+                    step="any"
+                    placeholder={quantityMode === 'unidades' ? 'Ej: 10' : 'Ej: 20'}
+                    error={errors.quantity?.message}
+                  />
+                </FormField>
+                <FormField label="Unidad" required error={errors.unit?.message}>
+                  <FormInput
+                    {...register('unit')}
+                    placeholder={quantityMode === 'unidades' ? 'Ej: lechugas, piñas' : 'kg'}
+                    error={errors.unit?.message}
+                  />
+                </FormField>
+                <FormField label="Precio Unitario (₡)" required error={errors.unitPrice?.message}>
+                  <FormInput
+                    {...register('unitPrice')}
+                    type="number"
+                    step="any"
+                    placeholder="Ej: 1500"
+                    error={errors.unitPrice?.message}
+                  />
+                </FormField>
+              </div>
+            )}
+          </>
+        );
+
+      case 'procesado':
+        return (
+          <>
+            {/* Procesado: Presentación comercial */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField label="Tipo de Unidad" required error={errors.packageType?.message}>
+                <Controller
+                  name="packageType"
+                  control={control}
+                  render={({ field }) => (
+                    <FormSelect
+                      value={field.value}
+                      onValueChange={field.onChange}
+                      options={packageTypeOptions}
+                      placeholder="Seleccionar tipo..."
+                      error={errors.packageType?.message}
+                    />
+                  )}
+                />
+              </FormField>
+              <FormField label="Cantidad de Unidades" required error={errors.quantity?.message}>
+                <FormInput
+                  {...register('quantity')}
+                  type="number"
+                  step="1"
+                  placeholder="Ej: 10, 50, 24"
+                  error={errors.quantity?.message}
+                />
+              </FormField>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField label="Tamaño por Unidad" required error={errors.packageSize?.message}>
+                <FormInput
+                  {...register('packageSize')}
+                  type="number"
+                  step="any"
+                  placeholder="Ej: 100, 1, 500"
+                  error={errors.packageSize?.message}
+                />
+              </FormField>
+              <FormField label="Unidad de Medida" required error={errors.packageSizeUnit?.message}>
+                <Controller
+                  name="packageSizeUnit"
+                  control={control}
+                  render={({ field }) => (
+                    <FormSelect
+                      value={field.value}
+                      onValueChange={field.onChange}
+                      options={packageSizeUnitOptions}
+                      placeholder="Seleccionar..."
+                      error={errors.packageSizeUnit?.message}
+                    />
+                  )}
+                />
+              </FormField>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField label="N° de Lote (opcional)" error={errors.batchNumber?.message}>
+                <FormInput
+                  {...register('batchNumber')}
+                  placeholder="Ej: LOT-2026-001"
+                  error={errors.batchNumber?.message}
+                />
+              </FormField>
+              <FormField label="Precio Unitario (₡)" required error={errors.unitPrice?.message}>
+                <FormInput
+                  {...register('unitPrice')}
+                  type="number"
+                  step="any"
+                  placeholder="Precio por unidad"
+                  error={errors.unitPrice?.message}
+                />
+              </FormField>
+            </div>
+
+            {/* Hidden unit field - will be computed from package info */}
+            <input type="hidden" {...register('unit')} value="unidad" />
+          </>
+        );
+
+      case 'animal_vivo':
+        return (
+          <>
+            {/* Animal vivo: Simple por unidad */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <FormField label="Cantidad" required error={errors.quantity?.message}>
+                <FormInput
+                  {...register('quantity')}
+                  type="number"
+                  step="1"
+                  placeholder="Generalmente 1"
+                  error={errors.quantity?.message}
+                />
+              </FormField>
+              <FormField label="Unidad" error={errors.unit?.message}>
+                <FormInput
+                  {...register('unit')}
+                  value="animal"
+                  readOnly
+                  className="bg-gray-50"
+                  error={errors.unit?.message}
+                />
+              </FormField>
+              <FormField label="Precio (₡)" required error={errors.unitPrice?.message}>
+                <FormInput
+                  {...register('unitPrice')}
+                  type="number"
+                  step="any"
+                  placeholder="Precio del animal"
+                  error={errors.unitPrice?.message}
+                />
+              </FormField>
+            </div>
+
+            <FormField label="Peso del Animal (opcional, kg)" error={errors.animalWeight?.message}>
+              <FormInput
+                {...register('animalWeight')}
+                type="number"
+                step="any"
+                placeholder="Peso de referencia"
+                error={errors.animalWeight?.message}
+              />
+            </FormField>
+          </>
+        );
+
+      case 'carnico':
+        return (
+          <>
+            {/* Carnico: Registro por peso */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <FormField label="Cantidad" required error={errors.quantity?.message}>
+                <FormInput
+                  {...register('quantity')}
+                  type="number"
+                  step="any"
+                  placeholder="Ej: 250"
+                  error={errors.quantity?.message}
+                />
+              </FormField>
+              <FormField label="Unidad de Peso" required error={errors.unit?.message}>
+                <Controller
+                  name="unit"
+                  control={control}
+                  render={({ field }) => (
+                    <FormSelect
+                      value={field.value}
+                      onValueChange={field.onChange}
+                      options={weightUnitOptions}
+                      placeholder="Seleccionar..."
+                      error={errors.unit?.message}
+                    />
+                  )}
+                />
+              </FormField>
+              <FormField label="Tipo de Precio" required error={errors.priceType?.message}>
+                <Controller
+                  name="priceType"
+                  control={control}
+                  render={({ field }) => (
+                    <FormSelect
+                      value={field.value}
+                      onValueChange={field.onChange}
+                      options={priceTypeSelectOptions}
+                      placeholder="Seleccionar..."
+                      error={errors.priceType?.message}
+                    />
+                  )}
+                />
+              </FormField>
+            </div>
+
+            {priceType && (
+              <FormField
+                label={priceType === 'per_kilo' ? 'Precio por Kilo (₡)' : 'Monto Total (₡)'}
+                required
+                error={errors.unitPrice?.message}
+              >
+                <FormInput
+                  {...register('unitPrice')}
+                  type="number"
+                  step="any"
+                  placeholder={priceType === 'per_kilo' ? 'Precio por kg' : 'Monto total de la venta'}
+                  error={errors.unitPrice?.message}
+                />
+              </FormField>
+            )}
+          </>
+        );
+
+      default:
+        return null;
+    }
+  };
+
   return (
     <Modal
       open={open}
@@ -130,134 +445,114 @@ export default function SaleRecordFormModal({
       size="lg"
     >
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-        {/* Row 1: Date, Invoice, Module */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <FormField label="Fecha" required error={errors.date?.message}>
-            <FormInput
-              {...register('date')}
-              type="date"
-              error={errors.date?.message}
-            />
-          </FormField>
-          <FormField label="N° Factura" required error={errors.invoiceNumber?.message}>
-            <FormInput
-              {...register('invoiceNumber')}
-              placeholder="Ej: FAC-2026-001"
-              error={errors.invoiceNumber?.message}
-            />
-          </FormField>
-          <FormField label="Módulo" required error={errors.moduleSource?.message}>
-            <Controller
-              name="moduleSource"
-              control={control}
-              render={({ field }) => (
-                <FormSelect
-                  value={field.value}
-                  onValueChange={field.onChange}
-                  options={moduleSourceSelectOptions}
-                  placeholder="Seleccionar..."
-                  error={errors.moduleSource?.message}
-                />
-              )}
-            />
-          </FormField>
-        </div>
-
-        {/* Row 2: Buyer */}
-        <FormField label="Comprador" required error={errors.buyerName?.message}>
-          <FormInput
-            {...register('buyerName')}
-            placeholder="Nombre del comprador"
-            error={errors.buyerName?.message}
+        {/* Row 1: Sale Type */}
+        <FormField label="Tipo de Venta" required error={errors.saleType?.message}>
+          <Controller
+            name="saleType"
+            control={control}
+            render={({ field }) => (
+              <FormSelect
+                value={field.value}
+                onValueChange={field.onChange}
+                options={saleTypeSelectOptions}
+                placeholder="Seleccionar tipo de venta..."
+                error={errors.saleType?.message}
+              />
+            )}
           />
         </FormField>
 
-        {/* Row 3: Product Description */}
-        <FormField label="Descripción del Producto" required error={errors.productDescription?.message}>
-          <FormInput
-            {...register('productDescription')}
-            placeholder="Ej: Tomate Roma - 150 kg"
-            error={errors.productDescription?.message}
-          />
-        </FormField>
-
-        {/* Row 4: Quantity, Unit, Unit Price */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <FormField label="Cantidad" required error={errors.quantity?.message}>
-            <FormInput
-              {...register('quantity')}
-              type="number"
-              step="any"
-              placeholder="Ej: 150"
-              error={errors.quantity?.message}
-            />
-          </FormField>
-          <FormField label="Unidad" required error={errors.unit?.message}>
-            <FormInput
-              {...register('unit')}
-              placeholder="Ej: kg, L, unidades"
-              error={errors.unit?.message}
-            />
-          </FormField>
-          <FormField label="Precio Unitario (₡)" required error={errors.unitPrice?.message}>
-            <FormInput
-              {...register('unitPrice')}
-              type="number"
-              step="any"
-              placeholder="Ej: 8000"
-              error={errors.unitPrice?.message}
-            />
-          </FormField>
-        </div>
-
-        {/* Row 5: Payment Status, Amount Paid, Due Date */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <FormField label="Estado de Pago" required error={errors.paymentStatus?.message}>
-            <Controller
-              name="paymentStatus"
-              control={control}
-              render={({ field }) => (
-                <FormSelect
-                  value={field.value}
-                  onValueChange={field.onChange}
-                  options={paymentStatusSelectOptions}
-                  placeholder="Seleccionar..."
-                  error={errors.paymentStatus?.message}
-                />
-              )}
-            />
-          </FormField>
-          {paymentStatus && paymentStatus !== 'paid' && (
-            <>
-              <FormField label="Monto Pagado (₡)" error={errors.amountPaid?.message}>
+        {saleType && (
+          <>
+            {/* Row 2: Date, Invoice */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField label="Fecha" required error={errors.date?.message}>
                 <FormInput
-                  {...register('amountPaid')}
-                  type="number"
-                  step="any"
-                  placeholder="Ej: 500000"
-                  error={errors.amountPaid?.message}
-                />
-              </FormField>
-              <FormField label="Fecha de Vencimiento" error={errors.dueDate?.message}>
-                <FormInput
-                  {...register('dueDate')}
+                  {...register('date')}
                   type="date"
-                  error={errors.dueDate?.message}
+                  error={errors.date?.message}
                 />
               </FormField>
-            </>
-          )}
-        </div>
+              <FormField label="N° Factura" required error={errors.invoiceNumber?.message}>
+                <FormInput
+                  {...register('invoiceNumber')}
+                  placeholder="Ej: FAC-2026-001"
+                  error={errors.invoiceNumber?.message}
+                />
+              </FormField>
+            </div>
 
-        {/* Notes */}
-        <FormField label="Notas" error={errors.notes?.message}>
-          <FormTextArea
-            {...register('notes')}
-            placeholder="Observaciones adicionales..."
-            rows={2}
-            error={errors.notes?.message}
-          />
-        </FormField>
+            {/* Row 3: Buyer */}
+            <FormField label="Cliente / Comprador" required error={errors.buyerName?.message}>
+              <FormInput
+                {...register('buyerName')}
+                placeholder="Nombre del comprador"
+                error={errors.buyerName?.message}
+              />
+            </FormField>
+
+            {/* Row 4: Product Description */}
+            <FormField label="Producto o Referencia" required error={errors.productDescription?.message}>
+              <FormInput
+                {...register('productDescription')}
+                placeholder="Descripción del producto vendido"
+                error={errors.productDescription?.message}
+              />
+            </FormField>
+
+            {/* Type-specific fields */}
+            {renderTypeSpecificFields()}
+
+            {/* Payment Status Section */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <FormField label="Estado de Pago" required error={errors.paymentStatus?.message}>
+                <Controller
+                  name="paymentStatus"
+                  control={control}
+                  render={({ field }) => (
+                    <FormSelect
+                      value={field.value}
+                      onValueChange={field.onChange}
+                      options={paymentStatusSelectOptions}
+                      placeholder="Seleccionar..."
+                      error={errors.paymentStatus?.message}
+                    />
+                  )}
+                />
+              </FormField>
+              {paymentStatus && paymentStatus !== 'paid' && (
+                <>
+                  <FormField label="Monto Pagado (₡)" error={errors.amountPaid?.message}>
+                    <FormInput
+                      {...register('amountPaid')}
+                      type="number"
+                      step="any"
+                      placeholder="Ej: 500000"
+                      error={errors.amountPaid?.message}
+                    />
+                  </FormField>
+                  <FormField label="Fecha de Vencimiento" error={errors.dueDate?.message}>
+                    <FormInput
+                      {...register('dueDate')}
+                      type="date"
+                      error={errors.dueDate?.message}
+                    />
+                  </FormField>
+                </>
+              )}
+            </div>
+
+            {/* Notes */}
+            <FormField label="Observaciones" error={errors.notes?.message}>
+              <FormTextArea
+                {...register('notes')}
+                placeholder="Observaciones adicionales..."
+                rows={2}
+                error={errors.notes?.message}
+              />
+            </FormField>
+          </>
+        )}
 
         {/* Actions */}
         <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
@@ -272,7 +567,7 @@ export default function SaleRecordFormModal({
           <button
             type="submit"
             className="btn-primary inline-flex items-center gap-2"
-            disabled={isLoading}
+            disabled={isLoading || !saleType}
           >
             {isLoading && <Loader2 className="w-4 h-4 animate-spin" />}
             {isEditing ? 'Guardar Cambios' : 'Registrar Venta'}

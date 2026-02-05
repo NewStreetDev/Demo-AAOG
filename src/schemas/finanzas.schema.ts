@@ -3,6 +3,9 @@ import { z } from 'zod';
 // Constants
 export const moduleSourceOptions = ['agro', 'pecuario', 'procesamiento'] as const;
 export const paymentStatusOptions = ['pending', 'partial', 'paid'] as const;
+export const saleTypeOptions = ['agricola', 'procesado', 'animal_vivo', 'carnico'] as const;
+export const quantityModeOptions = ['unidades', 'peso'] as const;
+export const priceTypeOptions = ['per_kilo', 'total'] as const;
 export const purchaseCategoryOptions = [
   'insumos',
   'mano_obra',
@@ -14,46 +17,34 @@ export const purchaseCategoryOptions = [
 
 // Sale Record Form Schema
 export const saleRecordFormSchema = z.object({
+  // Common fields
+  saleType: z.enum(saleTypeOptions, { message: 'Seleccione un tipo de venta' }),
   date: z.string().min(1, 'La fecha es requerida'),
-  invoiceNumber: z
-    .string()
-    .min(1, 'El número de factura es requerido')
-    .max(50, 'Máximo 50 caracteres'),
-  moduleSource: z.enum(moduleSourceOptions, {
-    message: 'Seleccione un módulo',
-  }),
-  productDescription: z
-    .string()
-    .min(2, 'La descripción debe tener al menos 2 caracteres')
-    .max(200, 'Máximo 200 caracteres'),
-  quantity: z
-    .string()
-    .min(1, 'La cantidad es requerida')
-    .refine((val) => !isNaN(parseFloat(val)) && parseFloat(val) > 0, 'Debe ser un número mayor a 0'),
-  unit: z
-    .string()
-    .min(1, 'La unidad es requerida')
-    .max(20, 'Máximo 20 caracteres'),
-  unitPrice: z
-    .string()
-    .min(1, 'El precio unitario es requerido')
-    .refine((val) => !isNaN(parseFloat(val)) && parseFloat(val) >= 0, 'Debe ser un número válido'),
-  buyerName: z
-    .string()
-    .min(2, 'El nombre del comprador debe tener al menos 2 caracteres')
-    .max(100, 'Máximo 100 caracteres'),
-  paymentStatus: z.enum(paymentStatusOptions, {
-    message: 'Seleccione un estado de pago',
-  }),
-  amountPaid: z
-    .string()
-    .optional()
-    .refine(
-      (val) => !val || (!isNaN(parseFloat(val)) && parseFloat(val) >= 0),
-      'Debe ser un número válido'
-    ),
+  invoiceNumber: z.string().min(1, 'El número de factura es requerido').max(50, 'Máximo 50 caracteres'),
+  productDescription: z.string().min(2, 'La descripción debe tener al menos 2 caracteres').max(200, 'Máximo 200 caracteres'),
+  buyerName: z.string().min(2, 'El nombre del comprador debe tener al menos 2 caracteres').max(100, 'Máximo 100 caracteres'),
+  quantity: z.string().min(1, 'La cantidad es requerida').refine((val) => !isNaN(parseFloat(val)) && parseFloat(val) > 0, 'Debe ser un número mayor a 0'),
+  unit: z.string().min(1, 'La unidad es requerida').max(20, 'Máximo 20 caracteres'),
+  unitPrice: z.string().min(1, 'El precio es requerido').refine((val) => !isNaN(parseFloat(val)) && parseFloat(val) >= 0, 'Debe ser un número válido'),
+  paymentStatus: z.enum(paymentStatusOptions, { message: 'Seleccione un estado de pago' }),
+  amountPaid: z.string().optional().refine((val) => !val || (!isNaN(parseFloat(val)) && parseFloat(val) >= 0), 'Debe ser un número válido'),
   dueDate: z.string().optional(),
   notes: z.string().optional(),
+
+  // Agricola-specific
+  quantityMode: z.enum(quantityModeOptions).optional(),
+
+  // Procesado-specific
+  packageType: z.string().optional(),
+  packageSize: z.string().optional().refine((val) => !val || (!isNaN(parseFloat(val)) && parseFloat(val) > 0), 'Debe ser un número mayor a 0'),
+  packageSizeUnit: z.string().optional(),
+  batchNumber: z.string().optional(),
+
+  // Animal vivo-specific
+  animalWeight: z.string().optional().refine((val) => !val || (!isNaN(parseFloat(val)) && parseFloat(val) > 0), 'Debe ser un número mayor a 0'),
+
+  // Carnico-specific
+  priceType: z.enum(priceTypeOptions).optional(),
 });
 
 export type SaleRecordFormData = z.infer<typeof saleRecordFormSchema>;
@@ -113,10 +104,21 @@ export const purchaseRecordFormSchema = z.object({
 export type PurchaseRecordFormData = z.infer<typeof purchaseRecordFormSchema>;
 
 // Select options for forms
-export const moduleSourceSelectOptions = [
-  { value: 'agro', label: 'Agrícola' },
-  { value: 'pecuario', label: 'Pecuario' },
-  { value: 'procesamiento', label: 'Procesamiento' },
+export const saleTypeSelectOptions = [
+  { value: 'agricola', label: 'Producto Agrícola' },
+  { value: 'procesado', label: 'Producto Procesado' },
+  { value: 'animal_vivo', label: 'Animal Vivo' },
+  { value: 'carnico', label: 'Producto Cárnico' },
+];
+
+export const quantityModeSelectOptions = [
+  { value: 'unidades', label: 'Por Unidades' },
+  { value: 'peso', label: 'Por Peso' },
+];
+
+export const priceTypeSelectOptions = [
+  { value: 'per_kilo', label: 'Precio por Kilo' },
+  { value: 'total', label: 'Monto Total' },
 ];
 
 export const paymentStatusSelectOptions = [

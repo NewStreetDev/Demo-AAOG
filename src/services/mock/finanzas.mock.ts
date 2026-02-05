@@ -27,14 +27,30 @@ let receivablesStore: AccountsReceivable[] = [];
 let payablesStore: AccountsPayable[] = [];
 let budgetsStore: Budget[] = [];
 
+// Helper to derive moduleSource from saleType
+function getModuleSourceFromSaleType(saleType: SaleRecord['saleType']): SaleRecord['moduleSource'] {
+  switch (saleType) {
+    case 'agricola':
+      return 'agro';
+    case 'procesado':
+      return 'procesamiento';
+    case 'animal_vivo':
+    case 'carnico':
+      return 'pecuario';
+    default:
+      return 'agro';
+  }
+}
+
 // Initial Sales Data
 const initialSales: SaleRecord[] = [
     {
       id: '1',
       date: new Date('2026-01-20'),
       invoiceNumber: 'FAC-2026-001',
+      saleType: 'agricola',
       moduleSource: 'agro',
-      productDescription: 'Tomate Roma - 150 kg',
+      productDescription: 'Tomate Roma',
       quantity: 150,
       unit: 'kg',
       unitPrice: 8000,
@@ -43,6 +59,7 @@ const initialSales: SaleRecord[] = [
       paymentStatus: 'paid',
       amountPaid: 1200000,
       notes: 'Entrega completa',
+      quantityMode: 'peso',
       createdAt: new Date('2026-01-20'),
       updatedAt: new Date('2026-01-20'),
     },
@@ -50,17 +67,19 @@ const initialSales: SaleRecord[] = [
       id: '2',
       date: new Date('2026-01-18'),
       invoiceNumber: 'FAC-2026-002',
+      saleType: 'animal_vivo',
       moduleSource: 'pecuario',
-      productDescription: 'Leche fresca - 500 L',
-      quantity: 500,
-      unit: 'L',
-      unitPrice: 1200,
+      productDescription: 'Vaca lechera Holstein',
+      quantity: 1,
+      unit: 'animal',
+      unitPrice: 600000,
       totalAmount: 600000,
       buyerName: 'Quesería Los Robles',
       paymentStatus: 'pending',
       amountPaid: 0,
       dueDate: new Date('2026-02-18'),
       notes: 'Plazo 30 días',
+      animalWeight: 450,
       createdAt: new Date('2026-01-18'),
       updatedAt: new Date('2026-01-18'),
     },
@@ -68,16 +87,21 @@ const initialSales: SaleRecord[] = [
       id: '3',
       date: new Date('2026-01-15'),
       invoiceNumber: 'FAC-2026-003',
+      saleType: 'procesado',
       moduleSource: 'procesamiento',
-      productDescription: 'Miel pura - 80 kg',
-      quantity: 80,
-      unit: 'kg',
+      productDescription: 'Miel pura envasada',
+      quantity: 50,
+      unit: 'unidad',
       unitPrice: 18000,
-      totalAmount: 1440000,
+      totalAmount: 900000,
       buyerName: 'Tienda Ecológica',
       paymentStatus: 'partial',
-      amountPaid: 720000,
+      amountPaid: 450000,
       dueDate: new Date('2026-02-15'),
+      packageType: 'frascos',
+      packageSize: 500,
+      packageSizeUnit: 'g',
+      batchNumber: 'LOT-2026-001',
       createdAt: new Date('2026-01-15'),
       updatedAt: new Date('2026-01-15'),
     },
@@ -85,8 +109,9 @@ const initialSales: SaleRecord[] = [
       id: '4',
       date: new Date('2026-01-12'),
       invoiceNumber: 'FAC-2026-004',
-      moduleSource: 'agro',
-      productDescription: 'Chile Jalapeño - 75 kg',
+      saleType: 'carnico',
+      moduleSource: 'pecuario',
+      productDescription: 'Carne de res',
       quantity: 75,
       unit: 'kg',
       unitPrice: 12000,
@@ -94,6 +119,7 @@ const initialSales: SaleRecord[] = [
       buyerName: 'Exportadora Agrícola',
       paymentStatus: 'paid',
       amountPaid: 900000,
+      priceType: 'per_kilo',
       createdAt: new Date('2026-01-12'),
       updatedAt: new Date('2026-01-12'),
     },
@@ -340,7 +366,8 @@ export const createMockSaleRecord = async (data: SaleRecordFormData): Promise<Sa
     id: String(Date.now()),
     date: new Date(data.date),
     invoiceNumber: data.invoiceNumber,
-    moduleSource: data.moduleSource,
+    saleType: data.saleType,
+    moduleSource: getModuleSourceFromSaleType(data.saleType),
     productDescription: data.productDescription,
     quantity,
     unit: data.unit,
@@ -351,6 +378,14 @@ export const createMockSaleRecord = async (data: SaleRecordFormData): Promise<Sa
     amountPaid,
     dueDate: data.dueDate ? new Date(data.dueDate) : undefined,
     notes: data.notes,
+    // Type-specific fields
+    quantityMode: data.quantityMode,
+    packageType: data.packageType || undefined,
+    packageSize: data.packageSize ? parseFloat(data.packageSize) : undefined,
+    packageSizeUnit: data.packageSizeUnit || undefined,
+    batchNumber: data.batchNumber || undefined,
+    animalWeight: data.animalWeight ? parseFloat(data.animalWeight) : undefined,
+    priceType: data.priceType,
     createdAt: new Date(),
     updatedAt: new Date(),
   };
@@ -375,7 +410,8 @@ export const updateMockSaleRecord = async (id: string, data: SaleRecordFormData)
     ...existingSale,
     date: new Date(data.date),
     invoiceNumber: data.invoiceNumber,
-    moduleSource: data.moduleSource,
+    saleType: data.saleType,
+    moduleSource: getModuleSourceFromSaleType(data.saleType),
     productDescription: data.productDescription,
     quantity,
     unit: data.unit,
@@ -386,6 +422,14 @@ export const updateMockSaleRecord = async (id: string, data: SaleRecordFormData)
     amountPaid,
     dueDate: data.dueDate ? new Date(data.dueDate) : undefined,
     notes: data.notes,
+    // Type-specific fields
+    quantityMode: data.quantityMode,
+    packageType: data.packageType || undefined,
+    packageSize: data.packageSize ? parseFloat(data.packageSize) : undefined,
+    packageSizeUnit: data.packageSizeUnit || undefined,
+    batchNumber: data.batchNumber || undefined,
+    animalWeight: data.animalWeight ? parseFloat(data.animalWeight) : undefined,
+    priceType: data.priceType,
     updatedAt: new Date(),
   };
   salesStore[index] = updatedSale;

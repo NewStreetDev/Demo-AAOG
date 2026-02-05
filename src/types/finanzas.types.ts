@@ -17,6 +17,7 @@ export type TransactionCategory =
 
 export type PaymentStatus = 'pending' | 'partial' | 'paid';
 export type ModuleSource = 'agro' | 'pecuario' | 'procesamiento';
+export type SaleType = 'agricola' | 'procesado' | 'animal_vivo' | 'carnico';
 
 // Sale Record
 export interface SaleRecord extends BaseEntity {
@@ -33,6 +34,24 @@ export interface SaleRecord extends BaseEntity {
   amountPaid: number;
   dueDate?: Date;
   notes?: string;
+
+  // Sale type
+  saleType: SaleType;
+
+  // Agricola-specific: which measurement mode was used
+  quantityMode?: 'unidades' | 'peso';
+
+  // Procesado-specific
+  packageType?: string;
+  packageSize?: number;
+  packageSizeUnit?: string;
+  batchNumber?: string;
+
+  // Animal vivo-specific
+  animalWeight?: number;
+
+  // Carnico-specific
+  priceType?: 'per_kilo' | 'total';
 }
 
 // Purchase/Expense Record

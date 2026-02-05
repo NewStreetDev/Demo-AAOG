@@ -9,6 +9,9 @@ import {
   Pencil,
   Trash2,
   Tag,
+  Scale,
+  Box,
+  Layers,
 } from 'lucide-react';
 import { Modal, ConfirmModal } from '../common/Modals';
 import { useDeleteSaleRecord } from '../../hooks/useFinanzasMutations';
@@ -31,13 +34,14 @@ function getPaymentStatusInfo(status: SaleRecord['paymentStatus']): { label: str
   return statusMap[status] || statusMap.pending;
 }
 
-function getModuleInfo(module: SaleRecord['moduleSource']): { label: string; color: string } {
-  const moduleMap = {
-    agro: { label: 'Agrícola', color: 'bg-green-100 text-green-700' },
-    pecuario: { label: 'Pecuario', color: 'bg-orange-100 text-orange-700' },
-    procesamiento: { label: 'Procesamiento', color: 'bg-purple-100 text-purple-700' },
+function getSaleTypeInfo(saleType: SaleRecord['saleType']): { label: string; color: string } {
+  const typeMap = {
+    agricola: { label: 'Producto Agrícola', color: 'bg-green-100 text-green-700' },
+    procesado: { label: 'Producto Procesado', color: 'bg-purple-100 text-purple-700' },
+    animal_vivo: { label: 'Animal Vivo', color: 'bg-orange-100 text-orange-700' },
+    carnico: { label: 'Producto Cárnico', color: 'bg-red-100 text-red-700' },
   };
-  return moduleMap[module] || moduleMap.agro;
+  return typeMap[saleType] || typeMap.agricola;
 }
 
 function formatDate(date: Date | string | undefined): string {
@@ -106,8 +110,30 @@ export default function SaleRecordDetailModal({
   };
 
   const statusInfo = getPaymentStatusInfo(saleRecord.paymentStatus);
-  const moduleInfo = getModuleInfo(saleRecord.moduleSource);
+  const saleTypeInfo = getSaleTypeInfo(saleRecord.saleType);
   const pendingAmount = saleRecord.totalAmount - saleRecord.amountPaid;
+
+  // Build quantity display based on sale type
+  const getQuantityDisplay = () => {
+    if (saleRecord.saleType === 'procesado' && saleRecord.packageType) {
+      const sizeInfo = saleRecord.packageSize && saleRecord.packageSizeUnit
+        ? ` de ${saleRecord.packageSize} ${saleRecord.packageSizeUnit}`
+        : '';
+      return `${saleRecord.quantity} ${saleRecord.packageType}${sizeInfo}`;
+    }
+    return `${saleRecord.quantity} ${saleRecord.unit}`;
+  };
+
+  // Get price label based on sale type
+  const getPriceLabel = () => {
+    if (saleRecord.saleType === 'carnico' && saleRecord.priceType === 'total') {
+      return 'Monto Total';
+    }
+    if (saleRecord.saleType === 'carnico' && saleRecord.priceType === 'per_kilo') {
+      return 'Precio por Kilo';
+    }
+    return 'Precio Unitario';
+  };
 
   return (
     <>
@@ -121,11 +147,11 @@ export default function SaleRecordDetailModal({
         <div className="space-y-1">
           {/* Status Badges */}
           <div className="flex items-center justify-center gap-3 mb-4">
+            <span className={`px-3 py-1 rounded-full text-sm font-semibold ${saleTypeInfo.color}`}>
+              {saleTypeInfo.label}
+            </span>
             <span className={`px-3 py-1 rounded-full text-sm font-semibold ${statusInfo.color}`}>
               {statusInfo.label}
-            </span>
-            <span className={`px-3 py-1 rounded-full text-sm font-semibold ${moduleInfo.color}`}>
-              {moduleInfo.label}
             </span>
           </div>
 
@@ -173,11 +199,11 @@ export default function SaleRecordDetailModal({
             <DetailRow
               icon={<Tag className="w-4 h-4" />}
               label="Cantidad"
-              value={`${saleRecord.quantity} ${saleRecord.unit}`}
+              value={getQuantityDisplay()}
             />
             <DetailRow
               icon={<Banknote className="w-4 h-4" />}
-              label="Precio Unitario"
+              label={getPriceLabel()}
               value={formatCurrency(saleRecord.unitPrice)}
             />
             <DetailRow
@@ -192,6 +218,31 @@ export default function SaleRecordDetailModal({
                 value={formatDate(saleRecord.dueDate)}
               />
             )}
+
+            {/* Type-specific details */}
+            {saleRecord.saleType === 'agricola' && saleRecord.quantityMode && (
+              <DetailRow
+                icon={<Layers className="w-4 h-4" />}
+                label="Modalidad de Registro"
+                value={saleRecord.quantityMode === 'unidades' ? 'Por Unidades' : 'Por Peso'}
+              />
+            )}
+
+            {saleRecord.saleType === 'procesado' && saleRecord.batchNumber && (
+              <DetailRow
+                icon={<Box className="w-4 h-4" />}
+                label="Número de Lote"
+                value={saleRecord.batchNumber}
+              />
+            )}
+
+            {saleRecord.saleType === 'animal_vivo' && saleRecord.animalWeight && (
+              <DetailRow
+                icon={<Scale className="w-4 h-4" />}
+                label="Peso del Animal"
+                value={`${saleRecord.animalWeight} kg`}
+              />
+            )}
           </div>
 
           {/* Notes */}
@@ -199,7 +250,7 @@ export default function SaleRecordDetailModal({
             <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-100">
               <div className="flex items-center gap-2 mb-1">
                 <FileText className="w-4 h-4 text-blue-600" />
-                <p className="text-xs text-blue-600 uppercase tracking-wide">Notas</p>
+                <p className="text-xs text-blue-600 uppercase tracking-wide">Observaciones</p>
               </div>
               <p className="text-sm text-blue-800">{saleRecord.notes}</p>
             </div>
