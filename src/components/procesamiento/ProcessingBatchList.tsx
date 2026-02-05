@@ -1,16 +1,13 @@
 import { useState } from 'react';
 import {
-  Clock,
   PlayCircle,
-  Shield,
   CheckCircle2,
-  XCircle,
-  Pause,
-  User,
   Calendar,
   ArrowRight,
   Package,
   Filter,
+  Award,
+  Link2,
 } from 'lucide-react';
 import type { ProcessingBatch } from '../../types/procesamiento.types';
 
@@ -20,76 +17,44 @@ interface ProcessingBatchListProps {
 }
 
 const statusConfig = {
-  pending: {
-    label: 'Pendiente',
-    color: 'text-gray-600',
-    bgColor: 'bg-gray-100',
-    icon: Clock,
-  },
-  in_progress: {
+  en_proceso: {
     label: 'En Proceso',
     color: 'text-orange-600',
     bgColor: 'bg-orange-100',
     icon: PlayCircle,
   },
-  quality_control: {
-    label: 'Control QC',
-    color: 'text-purple-600',
-    bgColor: 'bg-purple-100',
-    icon: Shield,
-  },
-  completed: {
+  completado: {
     label: 'Completado',
     color: 'text-green-600',
     bgColor: 'bg-green-100',
     icon: CheckCircle2,
   },
-  rejected: {
-    label: 'Rechazado',
-    color: 'text-red-600',
-    bgColor: 'bg-red-100',
-    icon: XCircle,
-  },
-  paused: {
-    label: 'Pausado',
-    color: 'text-amber-600',
-    bgColor: 'bg-amber-100',
-    icon: Pause,
-  },
 };
 
-const sourceModuleLabels: Record<string, string> = {
-  agro: 'Agricola',
-  pecuario: 'Pecuario',
-  apicultura: 'Apicultura',
-};
-
-type StatusFilter = 'all' | ProcessingBatch['status'];
+type StatusFilter = 'all' | ProcessingBatch['status'] | 'producto_final';
 
 export default function ProcessingBatchList({ batches, onBatchClick }: ProcessingBatchListProps) {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
 
   const filteredBatches = statusFilter === 'all'
     ? batches
+    : statusFilter === 'producto_final'
+    ? batches.filter(b => b.isFinalProduct && b.status === 'completado')
     : batches.filter(b => b.status === statusFilter);
 
   const formatDate = (date: Date | string) => {
     return new Date(date).toLocaleDateString('es-CR', {
       day: 'numeric',
       month: 'short',
-      hour: '2-digit',
-      minute: '2-digit',
+      year: 'numeric',
     });
   };
 
   const statusFilterOptions = [
     { value: 'all', label: 'Todos' },
-    { value: 'pending', label: 'Pendientes' },
-    { value: 'in_progress', label: 'En Proceso' },
-    { value: 'quality_control', label: 'Control QC' },
-    { value: 'completed', label: 'Completados' },
-    { value: 'rejected', label: 'Rechazados' },
-    { value: 'paused', label: 'Pausados' },
+    { value: 'en_proceso', label: 'En Proceso' },
+    { value: 'completado', label: 'Completados' },
+    { value: 'producto_final', label: 'Productos Finales' },
   ];
 
   if (batches.length === 0) {
@@ -104,6 +69,7 @@ export default function ProcessingBatchList({ batches, onBatchClick }: Processin
         <div className="text-center py-8 text-gray-500">
           <Package className="w-12 h-12 mx-auto mb-3 text-gray-300" />
           <p>No hay lotes de procesamiento registrados</p>
+          <p className="text-sm mt-1">Cree un nuevo lote para comenzar</p>
         </div>
       </div>
     );
@@ -153,62 +119,79 @@ export default function ProcessingBatchList({ batches, onBatchClick }: Processin
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1 flex-wrap">
+                    {/* Status and Badges Row */}
+                    <div className="flex items-center gap-2 mb-2 flex-wrap">
                       <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${status.bgColor} ${status.color}`}>
                         <StatusIcon className="w-3 h-3" />
                         {status.label}
                       </span>
-                      <span className="text-xs text-gray-500 font-mono">{batch.batchCode}</span>
                       <span className="px-2 py-0.5 rounded text-xs font-medium bg-blue-50 text-blue-600">
-                        {sourceModuleLabels[batch.sourceModule]}
+                        {batch.processType}
                       </span>
+                      {batch.isFinalProduct && (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">
+                          <Award className="w-3 h-3" />
+                          Producto Final
+                        </span>
+                      )}
+                      {batch.inputSourceType === 'lote_anterior' && (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-purple-50 text-purple-600">
+                          <Link2 className="w-3 h-3" />
+                          Encadenado
+                        </span>
+                      )}
                     </div>
 
                     {/* Product Flow */}
                     <div className="flex items-center gap-2 mt-1">
-                      <span className="font-medium text-gray-900">{batch.inputProductName}</span>
+                      <span className="font-medium text-gray-900">{batch.inputProduct}</span>
                       <ArrowRight className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
-                      <span className="text-gray-700">{batch.outputProductName || 'Procesando...'}</span>
+                      <span className={batch.outputProduct ? 'text-gray-700' : 'text-gray-400 italic'}>
+                        {batch.outputProduct || 'Pendiente...'}
+                      </span>
                     </div>
 
+                    {/* Info Row */}
                     <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2 text-sm text-gray-500">
                       <span className="inline-flex items-center gap-1">
                         <Calendar className="w-3.5 h-3.5" />
-                        {formatDate(batch.startDate)}
+                        {formatDate(batch.processDate)}
                       </span>
-                      {batch.processingLineName && (
-                        <span className="inline-flex items-center gap-1">
-                          <Package className="w-3.5 h-3.5" />
-                          {batch.processingLineName}
+                      {batch.batchCode && (
+                        <span className="font-mono text-xs bg-gray-100 px-2 py-0.5 rounded">
+                          {batch.batchCode}
                         </span>
                       )}
                       {batch.operator && (
-                        <span className="inline-flex items-center gap-1">
-                          <User className="w-3.5 h-3.5" />
-                          {batch.operator}
+                        <span className="text-xs text-gray-400">
+                          Op: {batch.operator}
                         </span>
                       )}
                     </div>
                   </div>
 
-                  <div className="flex flex-col items-end gap-1 flex-shrink-0">
-                    <p className="text-sm font-semibold text-gray-900">
-                      {batch.inputQuantity} {batch.inputUnit}
-                    </p>
-                    {batch.yieldPercentage !== undefined && (
-                      <p className="text-xs text-blue-600 font-medium">
-                        Rend: {batch.yieldPercentage.toFixed(1)}%
-                      </p>
-                    )}
-                    {batch.outputGrade && (
-                      <span className={`px-2 py-0.5 rounded text-xs font-medium ${
-                        batch.outputGrade === 'A' ? 'bg-green-100 text-green-700' :
-                        batch.outputGrade === 'B' ? 'bg-blue-100 text-blue-700' :
-                        batch.outputGrade === 'C' ? 'bg-amber-100 text-amber-700' :
-                        'bg-red-100 text-red-700'
-                      }`}>
-                        Grado {batch.outputGrade}
+                  {/* Right side: Quantities */}
+                  <div className="flex flex-col items-end gap-1 flex-shrink-0 text-right">
+                    <div className="text-sm">
+                      <span className="text-gray-500">Entrada: </span>
+                      <span className="font-semibold text-gray-900">
+                        {batch.inputQuantity} {batch.inputUnit}
                       </span>
+                    </div>
+                    {batch.status === 'completado' && batch.outputQuantity !== undefined && (
+                      <>
+                        <div className="text-sm">
+                          <span className="text-gray-500">Salida: </span>
+                          <span className="font-semibold text-green-600">
+                            {batch.outputQuantity} {batch.outputUnit}
+                          </span>
+                        </div>
+                        {batch.merma !== undefined && batch.merma > 0 && (
+                          <div className="text-xs text-red-500">
+                            Merma: {batch.merma} {batch.inputUnit} ({((batch.merma / batch.inputQuantity) * 100).toFixed(1)}%)
+                          </div>
+                        )}
+                      </>
                     )}
                   </div>
                 </div>

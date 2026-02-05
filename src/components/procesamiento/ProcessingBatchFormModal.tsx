@@ -1,7 +1,7 @@
-import { useEffect } from 'react';
-import { useForm, Controller, useFieldArray } from 'react-hook-form';
+import { useEffect, useState } from 'react';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Loader2, Plus, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
+import { Loader2, Plus, Check, Link2 } from 'lucide-react';
 import { Modal } from '../common/Modals';
 import {
   FormInput,
@@ -11,19 +11,17 @@ import {
 } from '../common/Forms';
 import {
   processingBatchFormSchema,
-  processingStatusOptions,
-  processingProductTypeOptions,
-  sourceModuleOptions,
-  qualityGradeOptions,
+  batchStatusOptions,
+  inputSourceTypeOptions,
   inputUnitOptions,
-  stageStatusOptions,
+  commonProcessTypes,
   type ProcessingBatchFormData,
 } from '../../schemas/procesamiento.schema';
 import {
   useCreateProcessingBatch,
   useUpdateProcessingBatch,
 } from '../../hooks/useProcesamientoMutations';
-import { useProcessingLines } from '../../hooks/useProcesamiento';
+import { useCompletedBatches } from '../../hooks/useProcesamiento';
 import type { ProcessingBatch } from '../../types/procesamiento.types';
 
 interface ProcessingBatchFormModalProps {
@@ -44,145 +42,129 @@ export default function ProcessingBatchFormModal({
   const updateMutation = useUpdateProcessingBatch();
   const isLoading = createMutation.isPending || updateMutation.isPending;
 
-  const { data: lines } = useProcessingLines();
-  const lineOptions = lines?.map(l => ({ value: l.id, label: `${l.lineCode} - ${l.name}` })) || [];
+  // Custom process type input
+  const [showCustomProcess, setShowCustomProcess] = useState(false);
+  const [customProcessType, setCustomProcessType] = useState('');
+
+  // Fetch completed batches for source selection
+  const { data: completedBatches } = useCompletedBatches();
+
+  // Create options for source batch dropdown
+  const sourceBatchOptions = completedBatches?.map(b => ({
+    value: b.id,
+    label: `${b.batchCode || 'Sin codigo'} - ${b.outputProduct || b.inputProduct} (${b.outputQuantity || 0} ${b.outputUnit || b.inputUnit})`,
+  })) || [];
 
   const {
     register,
     handleSubmit,
     control,
     reset,
+    watch,
+    setValue,
     formState: { errors },
   } = useForm<ProcessingBatchFormData>({
     resolver: zodResolver(processingBatchFormSchema),
     defaultValues: {
-      batchCode: '',
-      inputProductName: '',
-      inputProductType: undefined,
-      sourceModule: undefined,
-      sourceLocation: '',
+      processType: '',
+      processDescription: '',
+      processDate: '',
+      inputProduct: '',
       inputQuantity: '',
       inputUnit: '',
-      outputProductName: '',
+      inputSourceType: 'cosecha',
+      inputSourceBatchId: '',
+      outputProduct: '',
       outputQuantity: '',
       outputUnit: '',
-      outputGrade: undefined,
-      status: 'pending',
-      processingLineId: '',
-      startDate: '',
-      expectedEndDate: '',
-      actualEndDate: '',
+      status: 'en_proceso',
+      isFinalProduct: false,
       operator: '',
       supervisor: '',
-      temperature: '',
       storageLocation: '',
+      completionDate: '',
       notes: '',
-      stages: [],
     },
   });
 
-  const { fields: stageFields, append: appendStage, remove: removeStage, move: moveStage } = useFieldArray({
-    control,
-    name: 'stages',
-  });
+  const inputSourceType = watch('inputSourceType');
+  const status = watch('status');
+  const inputSourceBatchId = watch('inputSourceBatchId');
 
-  const addNewStage = () => {
-    appendStage({
-      id: `stage-${Date.now()}`,
-      order: stageFields.length + 1,
-      name: '',
-      description: '',
-      status: 'pending',
-      inputProductName: '',
-      inputQuantity: '',
-      outputProductName: '',
-      outputQuantity: '',
-      unit: '',
-      operator: '',
-      notes: '',
-    });
-  };
-
-  const moveStageUp = (index: number) => {
-    if (index > 0) {
-      moveStage(index, index - 1);
+  // Auto-fill input product when selecting a source batch
+  useEffect(() => {
+    if (inputSourceType === 'lote_anterior' && inputSourceBatchId && completedBatches) {
+      const sourceBatch = completedBatches.find(b => b.id === inputSourceBatchId);
+      if (sourceBatch) {
+        setValue('inputProduct', sourceBatch.outputProduct || sourceBatch.inputProduct);
+        setValue('inputUnit', sourceBatch.outputUnit || sourceBatch.inputUnit);
+        // Optionally pre-fill quantity with available amount
+        if (!watch('inputQuantity')) {
+          setValue('inputQuantity', String(sourceBatch.outputQuantity || 0));
+        }
+      }
     }
-  };
-
-  const moveStageDown = (index: number) => {
-    if (index < stageFields.length - 1) {
-      moveStage(index, index + 1);
-    }
-  };
+  }, [inputSourceBatchId, inputSourceType, completedBatches, setValue, watch]);
 
   useEffect(() => {
     if (open && batch) {
       reset({
-        batchCode: batch.batchCode,
-        inputProductName: batch.inputProductName,
-        inputProductType: batch.inputProductType,
-        sourceModule: batch.sourceModule,
-        sourceLocation: batch.sourceLocation || '',
+        processType: batch.processType,
+        processDescription: batch.processDescription || '',
+        processDate: new Date(batch.processDate).toISOString().slice(0, 16),
+        inputProduct: batch.inputProduct,
         inputQuantity: batch.inputQuantity.toString(),
         inputUnit: batch.inputUnit,
-        outputProductName: batch.outputProductName || '',
+        inputSourceType: batch.inputSourceType,
+        inputSourceBatchId: batch.inputSourceBatchId || '',
+        outputProduct: batch.outputProduct || '',
         outputQuantity: batch.outputQuantity?.toString() || '',
         outputUnit: batch.outputUnit || '',
-        outputGrade: batch.outputGrade,
         status: batch.status,
-        processingLineId: batch.processingLineId,
-        startDate: new Date(batch.startDate).toISOString().slice(0, 16),
-        expectedEndDate: new Date(batch.expectedEndDate).toISOString().slice(0, 16),
-        actualEndDate: batch.actualEndDate
-          ? new Date(batch.actualEndDate).toISOString().slice(0, 16)
-          : '',
+        isFinalProduct: batch.isFinalProduct,
         operator: batch.operator || '',
         supervisor: batch.supervisor || '',
-        temperature: batch.temperature?.toString() || '',
         storageLocation: batch.storageLocation || '',
+        completionDate: batch.completionDate
+          ? new Date(batch.completionDate).toISOString().slice(0, 16)
+          : '',
         notes: batch.notes || '',
-        stages: batch.stages?.map(s => ({
-          id: s.id,
-          order: s.order,
-          name: s.name,
-          description: s.description || '',
-          status: s.status,
-          inputProductName: s.inputProductName || '',
-          inputQuantity: s.inputQuantity?.toString() || '',
-          outputProductName: s.outputProductName || '',
-          outputQuantity: s.outputQuantity?.toString() || '',
-          unit: s.unit || '',
-          operator: s.operator || '',
-          notes: s.notes || '',
-        })) || [],
       });
+      setShowCustomProcess(false);
+      setCustomProcessType('');
     } else if (open && !batch) {
       reset({
-        batchCode: '',
-        inputProductName: '',
-        inputProductType: undefined,
-        sourceModule: undefined,
-        sourceLocation: '',
+        processType: '',
+        processDescription: '',
+        processDate: new Date().toISOString().slice(0, 16),
+        inputProduct: '',
         inputQuantity: '',
         inputUnit: '',
-        outputProductName: '',
+        inputSourceType: 'cosecha',
+        inputSourceBatchId: '',
+        outputProduct: '',
         outputQuantity: '',
         outputUnit: '',
-        outputGrade: undefined,
-        status: 'pending',
-        processingLineId: '',
-        startDate: '',
-        expectedEndDate: '',
-        actualEndDate: '',
+        status: 'en_proceso',
+        isFinalProduct: false,
         operator: '',
         supervisor: '',
-        temperature: '',
         storageLocation: '',
+        completionDate: '',
         notes: '',
-        stages: [],
       });
+      setShowCustomProcess(false);
+      setCustomProcessType('');
     }
   }, [open, batch, reset]);
+
+  const handleAddCustomProcess = () => {
+    if (customProcessType.trim()) {
+      setValue('processType', customProcessType.trim());
+      setShowCustomProcess(false);
+      setCustomProcessType('');
+    }
+  };
 
   const onSubmit = async (data: ProcessingBatchFormData) => {
     try {
@@ -205,20 +187,62 @@ export default function ProcessingBatchFormModal({
       title={isEditing ? 'Editar Lote de Procesamiento' : 'Nuevo Lote de Procesamiento'}
       description={
         isEditing
-          ? 'Modifica los datos del lote de procesamiento'
-          : 'Registra un nuevo lote de procesamiento'
+          ? `Editando lote ${batch?.batchCode || '(en proceso)'}`
+          : 'Registra un nuevo proceso sobre materia prima o lote anterior'
       }
       size="lg"
     >
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-        {/* Row 1: Batch Code and Status */}
+        {/* Process Info Section */}
+        <div className="border-b border-gray-100 pb-4">
+          <h3 className="text-sm font-semibold text-gray-700 mb-3">Informacion del Proceso</h3>
+        </div>
+
+        {/* Row 1: Process Type and Status */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField label="Codigo de Lote" required error={errors.batchCode?.message}>
-            <FormInput
-              {...register('batchCode')}
-              placeholder="Ej: PROC-2026-006"
-              error={errors.batchCode?.message}
-            />
+          <FormField label="Tipo de Proceso" required error={errors.processType?.message}>
+            {showCustomProcess ? (
+              <div className="flex gap-2">
+                <FormInput
+                  value={customProcessType}
+                  onChange={(e) => setCustomProcessType(e.target.value)}
+                  placeholder="Nombre del proceso..."
+                  className="flex-1"
+                />
+                <button
+                  type="button"
+                  onClick={handleAddCustomProcess}
+                  className="btn-secondary px-3"
+                >
+                  <Check className="w-4 h-4" />
+                </button>
+              </div>
+            ) : (
+              <div className="flex gap-2">
+                <Controller
+                  name="processType"
+                  control={control}
+                  render={({ field }) => (
+                    <FormSelect
+                      value={field.value}
+                      onValueChange={field.onChange}
+                      options={commonProcessTypes.map(p => ({ value: p, label: p }))}
+                      placeholder="Seleccionar proceso..."
+                      error={errors.processType?.message}
+                      className="flex-1"
+                    />
+                  )}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowCustomProcess(true)}
+                  className="btn-secondary px-3"
+                  title="Agregar proceso personalizado"
+                >
+                  <Plus className="w-4 h-4" />
+                </button>
+              </div>
+            )}
           </FormField>
           <FormField label="Estado" required error={errors.status?.message}>
             <Controller
@@ -228,7 +252,7 @@ export default function ProcessingBatchFormModal({
                 <FormSelect
                   value={field.value}
                   onValueChange={field.onChange}
-                  options={processingStatusOptions}
+                  options={batchStatusOptions}
                   placeholder="Seleccionar..."
                   error={errors.status?.message}
                 />
@@ -237,81 +261,100 @@ export default function ProcessingBatchFormModal({
           </FormField>
         </div>
 
-        {/* Row 2: Processing Line */}
-        <FormField label="Linea de Procesamiento" required error={errors.processingLineId?.message}>
+        {/* Row 2: Process Date and Description */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <FormField label="Fecha del Proceso" required error={errors.processDate?.message}>
+            <FormInput
+              {...register('processDate')}
+              type="datetime-local"
+              error={errors.processDate?.message}
+            />
+          </FormField>
+          <FormField label="Descripcion del Proceso" error={errors.processDescription?.message}>
+            <FormInput
+              {...register('processDescription')}
+              placeholder="Descripcion opcional..."
+              error={errors.processDescription?.message}
+            />
+          </FormField>
+        </div>
+
+        {/* Input Section */}
+        <div className="border-t border-gray-100 pt-4">
+          <h3 className="text-sm font-semibold text-gray-700 mb-3">Materia Prima (Entrada)</h3>
+        </div>
+
+        {/* Row 3: Input Source Type */}
+        <FormField label="Origen de la Materia Prima" required error={errors.inputSourceType?.message}>
           <Controller
-            name="processingLineId"
+            name="inputSourceType"
             control={control}
             render={({ field }) => (
               <FormSelect
                 value={field.value}
-                onValueChange={field.onChange}
-                options={lineOptions}
-                placeholder="Seleccionar linea..."
-                error={errors.processingLineId?.message}
+                onValueChange={(val) => {
+                  field.onChange(val);
+                  // Clear source batch if switching to cosecha
+                  if (val === 'cosecha') {
+                    setValue('inputSourceBatchId', '');
+                  }
+                }}
+                options={inputSourceTypeOptions}
+                placeholder="Seleccionar origen..."
+                error={errors.inputSourceType?.message}
               />
             )}
           />
         </FormField>
 
-        {/* Input Section Header */}
-        <div className="border-t border-gray-100 pt-4">
-          <h3 className="text-sm font-semibold text-gray-700 mb-3">Materia Prima</h3>
-        </div>
+        {/* Row 4: Source Batch (conditional) */}
+        {inputSourceType === 'lote_anterior' && (
+          <FormField
+            label="Lote de Origen"
+            required
+            error={errors.inputSourceBatchId?.message}
+          >
+            <Controller
+              name="inputSourceBatchId"
+              control={control}
+              render={({ field }) => (
+                <FormSelect
+                  value={field.value || ''}
+                  onValueChange={field.onChange}
+                  options={sourceBatchOptions}
+                  placeholder="Seleccionar lote completado..."
+                  error={errors.inputSourceBatchId?.message}
+                />
+              )}
+            />
+            {inputSourceBatchId && (
+              <p className="text-xs text-blue-600 mt-1 flex items-center gap-1">
+                <Link2 className="w-3 h-3" />
+                El producto de entrada se pre-llena automaticamente desde el lote seleccionado
+              </p>
+            )}
+          </FormField>
+        )}
 
-        {/* Row 3: Input Product */}
+        {/* Row 5: Input Product */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <FormField label="Producto de Entrada" required error={errors.inputProductName?.message}>
+          <FormField label="Producto de Entrada" required error={errors.inputProduct?.message}>
             <FormInput
-              {...register('inputProductName')}
-              placeholder="Ej: Tomate Roma"
-              error={errors.inputProductName?.message}
+              {...register('inputProduct')}
+              placeholder="Ej: Miel Cruda"
+              error={errors.inputProduct?.message}
             />
           </FormField>
-          <FormField label="Tipo de Producto" required error={errors.inputProductType?.message}>
-            <Controller
-              name="inputProductType"
-              control={control}
-              render={({ field }) => (
-                <FormSelect
-                  value={field.value}
-                  onValueChange={field.onChange}
-                  options={processingProductTypeOptions}
-                  placeholder="Seleccionar..."
-                  error={errors.inputProductType?.message}
-                />
-              )}
-            />
-          </FormField>
-          <FormField label="Modulo de Origen" required error={errors.sourceModule?.message}>
-            <Controller
-              name="sourceModule"
-              control={control}
-              render={({ field }) => (
-                <FormSelect
-                  value={field.value}
-                  onValueChange={field.onChange}
-                  options={sourceModuleOptions}
-                  placeholder="Seleccionar..."
-                  error={errors.sourceModule?.message}
-                />
-              )}
-            />
-          </FormField>
-        </div>
-
-        {/* Row 4: Input Quantity */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <FormField label="Cantidad de Entrada" required error={errors.inputQuantity?.message}>
+          <FormField label="Cantidad" required error={errors.inputQuantity?.message}>
             <FormInput
               {...register('inputQuantity')}
               type="number"
               step="0.01"
-              placeholder="Ej: 450"
+              placeholder="Ej: 50"
               error={errors.inputQuantity?.message}
             />
           </FormField>
-          <FormField label="Unidad de Entrada" required error={errors.inputUnit?.message}>
+          <FormField label="Unidad" required error={errors.inputUnit?.message}>
             <Controller
               name="inputUnit"
               control={control}
@@ -326,91 +369,104 @@ export default function ProcessingBatchFormModal({
               )}
             />
           </FormField>
-          <FormField label="Ubicacion de Origen" error={errors.sourceLocation?.message}>
-            <FormInput
-              {...register('sourceLocation')}
-              placeholder="Ej: Lote Norte"
-              error={errors.sourceLocation?.message}
-            />
-          </FormField>
         </div>
 
-        {/* Output Section Header */}
+        {/* Output Section */}
         <div className="border-t border-gray-100 pt-4">
-          <h3 className="text-sm font-semibold text-gray-700 mb-3">Producto de Salida</h3>
+          <h3 className="text-sm font-semibold text-gray-700 mb-3">
+            Producto de Salida
+            {status === 'completado' && (
+              <span className="text-red-500 ml-1">*</span>
+            )}
+            {status === 'en_proceso' && (
+              <span className="text-gray-400 text-xs font-normal ml-2">(completar al finalizar)</span>
+            )}
+          </h3>
         </div>
 
-        {/* Row 5: Output Product */}
+        {/* Row 6: Output Product */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <FormField label="Producto de Salida" error={errors.outputProductName?.message}>
+          <FormField
+            label="Producto de Salida"
+            required={status === 'completado'}
+            error={errors.outputProduct?.message}
+          >
             <FormInput
-              {...register('outputProductName')}
-              placeholder="Ej: Salsa de Tomate"
-              error={errors.outputProductName?.message}
+              {...register('outputProduct')}
+              placeholder="Ej: Miel Filtrada"
+              error={errors.outputProduct?.message}
             />
           </FormField>
-          <FormField label="Cantidad de Salida" error={errors.outputQuantity?.message}>
+          <FormField
+            label="Cantidad"
+            required={status === 'completado'}
+            error={errors.outputQuantity?.message}
+          >
             <FormInput
               {...register('outputQuantity')}
               type="number"
               step="0.01"
-              placeholder="Ej: 200"
+              placeholder="Ej: 48"
               error={errors.outputQuantity?.message}
             />
           </FormField>
-          <FormField label="Grado de Calidad" error={errors.outputGrade?.message}>
+          <FormField
+            label="Unidad"
+            required={status === 'completado'}
+            error={errors.outputUnit?.message}
+          >
             <Controller
-              name="outputGrade"
+              name="outputUnit"
               control={control}
               render={({ field }) => (
                 <FormSelect
-                  value={field.value}
+                  value={field.value || ''}
                   onValueChange={field.onChange}
-                  options={qualityGradeOptions}
+                  options={inputUnitOptions}
                   placeholder="Seleccionar..."
-                  error={errors.outputGrade?.message}
+                  error={errors.outputUnit?.message}
                 />
               )}
             />
           </FormField>
         </div>
 
-        {/* Dates Section */}
+        {/* Proceso Final Checkbox */}
+        <div className="bg-amber-50 rounded-lg p-4 border border-amber-200">
+          <label className="flex items-start gap-3 cursor-pointer">
+            <Controller
+              name="isFinalProduct"
+              control={control}
+              render={({ field }) => (
+                <input
+                  type="checkbox"
+                  checked={field.value}
+                  onChange={field.onChange}
+                  className="mt-1 w-4 h-4 rounded border-gray-300 text-amber-600 focus:ring-amber-500"
+                />
+              )}
+            />
+            <div>
+              <span className="font-medium text-amber-800">Proceso Final (Producto Terminado)</span>
+              <p className="text-sm text-amber-600 mt-0.5">
+                Marque si este es el ultimo proceso y el producto esta listo para venta.
+                Los lotes marcados como "producto final" generan boletas RG06 y quedan habilitados para ventas (RG07).
+              </p>
+            </div>
+          </label>
+        </div>
+
+        {/* Additional Info Section */}
         <div className="border-t border-gray-100 pt-4">
-          <h3 className="text-sm font-semibold text-gray-700 mb-3">Fechas y Operacion</h3>
+          <h3 className="text-sm font-semibold text-gray-700 mb-3">Informacion Adicional</h3>
         </div>
 
-        {/* Row 6: Dates */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <FormField label="Fecha de Inicio" required error={errors.startDate?.message}>
-            <FormInput
-              {...register('startDate')}
-              type="datetime-local"
-              error={errors.startDate?.message}
-            />
-          </FormField>
-          <FormField label="Fecha Esperada de Fin" required error={errors.expectedEndDate?.message}>
-            <FormInput
-              {...register('expectedEndDate')}
-              type="datetime-local"
-              error={errors.expectedEndDate?.message}
-            />
-          </FormField>
-          <FormField label="Fecha Real de Fin" error={errors.actualEndDate?.message}>
-            <FormInput
-              {...register('actualEndDate')}
-              type="datetime-local"
-              error={errors.actualEndDate?.message}
-            />
-          </FormField>
-        </div>
-
-        {/* Row 7: Operator, Supervisor, Temperature */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* Row 7: Operator, Supervisor */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField label="Operador" error={errors.operator?.message}>
             <FormInput
               {...register('operator')}
-              placeholder="Ej: Juan Perez"
+              placeholder="Ej: Ana Lopez"
               error={errors.operator?.message}
             />
           </FormField>
@@ -421,164 +477,25 @@ export default function ProcessingBatchFormModal({
               error={errors.supervisor?.message}
             />
           </FormField>
-          <FormField label="Temperatura (C)" error={errors.temperature?.message}>
-            <FormInput
-              {...register('temperature')}
-              type="number"
-              step="0.1"
-              placeholder="Ej: 85"
-              error={errors.temperature?.message}
-            />
-          </FormField>
         </div>
 
-        {/* Row 8: Storage Location */}
-        <FormField label="Ubicacion de Almacenamiento" error={errors.storageLocation?.message}>
-          <FormInput
-            {...register('storageLocation')}
-            placeholder="Ej: Bodega Fria A"
-            error={errors.storageLocation?.message}
-          />
-        </FormField>
-
-        {/* Stages Section */}
-        <div className="border-t border-gray-100 pt-4">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="text-sm font-semibold text-gray-700">Procesos</h3>
-            <button
-              type="button"
-              onClick={addNewStage}
-              className="btn-secondary text-sm py-1 px-3 inline-flex items-center gap-1"
-            >
-              <Plus className="w-4 h-4" />
-              Agregar Proceso
-            </button>
-          </div>
-
-          {stageFields.length === 0 ? (
-            <p className="text-sm text-gray-500 text-center py-4 bg-gray-50 rounded-lg">
-              No hay procesos definidos. Agrega procesos para seguir el flujo de procesamiento.
-            </p>
-          ) : (
-            <div className="space-y-3 max-h-64 overflow-y-auto">
-              {stageFields.map((field, index) => (
-                <div
-                  key={field.id}
-                  className="bg-gray-50 rounded-lg p-3 border border-gray-200"
-                >
-                  <div className="flex items-start gap-2">
-                    {/* Order controls */}
-                    <div className="flex flex-col gap-1 pt-1">
-                      <button
-                        type="button"
-                        onClick={() => moveStageUp(index)}
-                        disabled={index === 0}
-                        className="p-0.5 text-gray-400 hover:text-gray-600 disabled:opacity-30"
-                      >
-                        <ChevronUp className="w-4 h-4" />
-                      </button>
-                      <span className="text-xs font-medium text-gray-500 text-center">{index + 1}</span>
-                      <button
-                        type="button"
-                        onClick={() => moveStageDown(index)}
-                        disabled={index === stageFields.length - 1}
-                        className="p-0.5 text-gray-400 hover:text-gray-600 disabled:opacity-30"
-                      >
-                        <ChevronDown className="w-4 h-4" />
-                      </button>
-                    </div>
-
-                    {/* Stage content */}
-                    <div className="flex-1">
-                      {/* Row 1: Name, Status, Delete */}
-                      <div className="flex gap-2 items-center">
-                        <input
-                          {...register(`stages.${index}.name`)}
-                          placeholder="Nombre del proceso (ej: Lavado)"
-                          className="input-field text-sm flex-1"
-                        />
-                        <Controller
-                          name={`stages.${index}.status`}
-                          control={control}
-                          render={({ field: selectField }) => (
-                            <select
-                              value={selectField.value}
-                              onChange={selectField.onChange}
-                              className="input-field text-sm w-32"
-                            >
-                              {stageStatusOptions.map(opt => (
-                                <option key={opt.value} value={opt.value}>{opt.label}</option>
-                              ))}
-                            </select>
-                          )}
-                        />
-                        <button
-                          type="button"
-                          onClick={() => removeStage(index)}
-                          className="p-2 text-red-500 hover:bg-red-50 rounded flex-shrink-0"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-
-                      {/* Row 2: Input (name + qty) → Output (name + qty) */}
-                      <div className="grid grid-cols-2 gap-3 mt-2">
-                        {/* Input */}
-                        <div className="bg-blue-50 rounded p-2">
-                          <span className="text-xs text-blue-600 font-medium">Entrada</span>
-                          <div className="flex gap-1 mt-1">
-                            <input
-                              {...register(`stages.${index}.inputProductName`)}
-                              placeholder="Producto entrada"
-                              className="input-field text-sm flex-1"
-                            />
-                            <input
-                              {...register(`stages.${index}.inputQuantity`)}
-                              type="number"
-                              step="0.01"
-                              placeholder="Cant."
-                              className="input-field text-sm w-16"
-                            />
-                          </div>
-                        </div>
-                        {/* Output */}
-                        <div className="bg-green-50 rounded p-2">
-                          <span className="text-xs text-green-600 font-medium">Salida</span>
-                          <div className="flex gap-1 mt-1">
-                            <input
-                              {...register(`stages.${index}.outputProductName`)}
-                              placeholder="Producto salida"
-                              className="input-field text-sm flex-1"
-                            />
-                            <input
-                              {...register(`stages.${index}.outputQuantity`)}
-                              type="number"
-                              step="0.01"
-                              placeholder="Cant."
-                              className="input-field text-sm w-16"
-                            />
-                            <input
-                              {...register(`stages.${index}.unit`)}
-                              placeholder="Ud"
-                              className="input-field text-sm w-12"
-                            />
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Row 3: Description */}
-                      <div className="mt-2">
-                        <input
-                          {...register(`stages.${index}.description`)}
-                          placeholder="Descripcion o notas del proceso..."
-                          className="input-field text-sm text-gray-600 w-full"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
+        {/* Row 8: Storage Location and Completion Date */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <FormField label="Ubicacion de Almacenamiento" error={errors.storageLocation?.message}>
+            <FormInput
+              {...register('storageLocation')}
+              placeholder="Ej: Bodega Fria A"
+              error={errors.storageLocation?.message}
+            />
+          </FormField>
+          {status === 'completado' && (
+            <FormField label="Fecha de Finalizacion" error={errors.completionDate?.message}>
+              <FormInput
+                {...register('completionDate')}
+                type="datetime-local"
+                error={errors.completionDate?.message}
+              />
+            </FormField>
           )}
         </div>
 

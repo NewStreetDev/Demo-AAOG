@@ -123,7 +123,7 @@ export default function Procesamiento() {
               className="btn-primary inline-flex items-center gap-2"
             >
               <Plus className="w-4 h-4" />
-              Nuevo Proceso
+              Nuevo Lote
             </button>
           )}
         </div>

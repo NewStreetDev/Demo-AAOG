@@ -1,15 +1,13 @@
 import { useQuery } from '@tanstack/react-query';
 import {
   getMockProcessingBatches,
-  getMockProcessingLines,
-  getMockQualityControls,
+  getMockCompletedBatches,
   getMockProcesamientoStats,
-  getMockProcesamientoProduction,
-  getMockProductionByType,
-  getMockProcesamientoTasks,
-  getMockBatchSummaries,
 } from '../services/mock/procesamiento.mock';
 
+/**
+ * Fetch all processing batches
+ */
 export function useProcessingBatches() {
   return useQuery({
     queryKey: ['procesamiento', 'batches'],
@@ -17,51 +15,22 @@ export function useProcessingBatches() {
   });
 }
 
-export function useProcessingLines() {
+/**
+ * Fetch only completed batches (available as input for new processes)
+ */
+export function useCompletedBatches() {
   return useQuery({
-    queryKey: ['procesamiento', 'lines'],
-    queryFn: getMockProcessingLines,
+    queryKey: ['procesamiento', 'completedBatches'],
+    queryFn: getMockCompletedBatches,
   });
 }
 
-export function useQualityControls() {
-  return useQuery({
-    queryKey: ['procesamiento', 'qc'],
-    queryFn: getMockQualityControls,
-  });
-}
-
+/**
+ * Fetch procesamiento dashboard stats
+ */
 export function useProcesamientoStats() {
   return useQuery({
     queryKey: ['procesamiento', 'stats'],
     queryFn: getMockProcesamientoStats,
-  });
-}
-
-export function useProcesamientoProduction() {
-  return useQuery({
-    queryKey: ['procesamiento', 'production'],
-    queryFn: getMockProcesamientoProduction,
-  });
-}
-
-export function useProductionByType() {
-  return useQuery({
-    queryKey: ['procesamiento', 'byType'],
-    queryFn: getMockProductionByType,
-  });
-}
-
-export function useProcesamientoTasks() {
-  return useQuery({
-    queryKey: ['procesamiento', 'tasks'],
-    queryFn: getMockProcesamientoTasks,
-  });
-}
-
-export function useBatchSummaries() {
-  return useQuery({
-    queryKey: ['procesamiento', 'batchSummaries'],
-    queryFn: getMockBatchSummaries,
   });
 }

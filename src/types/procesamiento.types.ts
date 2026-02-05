@@ -1,174 +1,78 @@
 import type { BaseEntity } from './common.types';
 
-// Processing Status
-export type ProcessingStatus = 'pending' | 'in_progress' | 'quality_control' | 'completed' | 'rejected' | 'paused';
+// ========================================
+// Batch Status
+// ========================================
 
-// Product Type
-export type ProcessingProductType = 'tomate' | 'chile' | 'pepino' | 'leche' | 'carne' | 'miel' | 'cera' | 'polen';
+export type BatchStatus = 'en_proceso' | 'completado';
 
-// Quality Grade
-export type QualityGrade = 'A' | 'B' | 'C' | 'descarte';
+// ========================================
+// Input Source Types
+// ========================================
 
-// Processing Stage Status
-export type StageStatus = 'pending' | 'in_progress' | 'completed' | 'skipped';
+export type InputSourceType = 'cosecha' | 'lote_anterior';
 
-// Processing Stage - Individual step in the process
-export interface ProcessingStage {
-  id: string;
-  order: number;
-  name: string;
-  description?: string;
-  status: StageStatus;
-  // Input
-  inputProductName?: string;
-  inputQuantity?: number;
-  // Output
-  outputProductName?: string;
-  outputQuantity?: number;
-  unit?: string;
-  // Tracking
-  startedAt?: Date;
-  completedAt?: Date;
-  duration?: number; // minutes
-  operator?: string;
-  notes?: string;
-}
+// ========================================
+// Processing Batch (Lote de Procesamiento)
+// ========================================
 
-// Processing Line Status
-export type ProcessingLineStatus = 'active' | 'maintenance' | 'idle' | 'calibration';
-
-// Processing Batch
 export interface ProcessingBatch extends BaseEntity {
-  batchCode: string;
-  inputProductName: string;
-  inputProductType: ProcessingProductType;
-  sourceModule: 'agro' | 'pecuario' | 'apicultura';
-  sourceLocation?: string;
+  // Batch identification
+  batchCode: string; // Format: L-YYYYMMDD-FINCAID-CONSECUTIVO (generated on completion)
+
+  // Process info
+  processType: string; // Type of process (from catalog, e.g., "Lavado", "Secado", "Molienda")
+  processDescription?: string; // Optional description
+  processDate: Date; // Date when process started/occurred
+
+  // Input
+  inputProduct: string; // Product name entering the process
   inputQuantity: number;
   inputUnit: string;
+  inputSourceType: InputSourceType; // Fresh harvest or previous batch
+  inputSourceBatchId?: string; // If from previous batch, reference it
+  inputSourceBatchCode?: string; // Display code of source batch (denormalized for convenience)
+
+  // Output (filled when status = 'completado')
+  outputProduct?: string;
   outputQuantity?: number;
   outputUnit?: string;
-  yieldPercentage?: number;
-  status: ProcessingStatus;
-  processingLineId: string;
-  processingLineName?: string;
-  startDate: Date;
-  expectedEndDate: Date;
-  actualEndDate?: Date;
+
+  // Calculated (when completed)
+  merma?: number; // inputQuantity - outputQuantity
+
+  // State
+  status: BatchStatus;
+  isFinalProduct: boolean; // "Proceso Final" checkbox
+
+  // Additional info
   operator?: string;
   supervisor?: string;
-  temperature?: number;
-  outputProductCode?: string;
-  outputProductName?: string;
-  outputGrade?: QualityGrade;
   storageLocation?: string;
+  completionDate?: Date; // Date when batch was completed
+
+  // Notes
   notes?: string;
-  // Processing stages
-  stages?: ProcessingStage[];
-  currentStageIndex?: number;
 }
 
-// Processing Line
-export interface ProcessingLine extends BaseEntity {
-  lineCode: string;
+// ========================================
+// Process Type Catalog
+// ========================================
+
+export interface ProcessType {
+  id: string;
   name: string;
   description?: string;
-  productTypes: ProcessingProductType[];
-  status: ProcessingLineStatus;
-  capacity: number;
-  capacityUnit: string;
-  location: string;
-  lastMaintenance?: Date;
-  nextScheduledMaintenance?: Date;
-  operator?: string;
-  currentBatchId?: string;
-  currentBatchCode?: string;
-  utilizationPercentage: number;
-  notes?: string;
 }
 
-// Quality Control
-export interface QualityControl extends BaseEntity {
-  batchId: string;
-  batchCode: string;
-  inspectionDate: Date;
-  inspector: string;
-  overallResult: 'pass' | 'fail' | 'retest';
-  finalGrade: QualityGrade;
-  defectsFound?: {
-    type: string;
-    description: string;
-    severity: 'critical' | 'major' | 'minor';
-  }[];
-  approved: boolean;
-  approvedBy?: string;
-  notes?: string;
-}
+// ========================================
+// Dashboard Stats (simplified)
+// ========================================
 
-// Dashboard Stats
 export interface ProcesamientoDashboardStats {
-  activeBatches: number;
-  completedBatchesToday: number;
-  totalBatchesThisMonth: number;
-  totalProcessed: number;
-  processedUnit: string;
-  totalProduced: number;
-  producedUnit: string;
-  utilizationRate: number;
-  qualityPassRate: number;
-  averageYield: number;
-  pendingQualityControl: number;
-  rejectedBatches: number;
-  activeProcessingLines: number;
-  totalProcessingLines: number;
-  linesUnderMaintenance: number;
-}
-
-// Production Data for Charts
-export interface ProcesamientoProductionData {
-  month: string;
-  processed: number;
-  produced: number;
-  yieldRate: number;
-}
-
-// Output by Product Type
-export interface ProductionByType {
-  productType: string;
-  quantity: number;
-  unit: string;
-  percentage: number;
-  color: string;
-}
-
-// Task
-export interface ProcesamientoTask {
-  id: string;
-  title: string;
-  type: 'quality_control' | 'line_maintenance' | 'batch_processing' | 'equipment_calibration';
-  batchCode?: string;
-  lineCode?: string;
-  description?: string;
-  dueDate: Date;
-  priority: 'high' | 'medium' | 'low';
-  status: 'pending' | 'in_progress' | 'completed';
-  assignedTo?: string;
-}
-
-// Batch Summary for Lists
-export interface BatchSummary {
-  id: string;
-  batchCode: string;
-  inputProductName: string;
-  inputProductType: ProcessingProductType;
-  inputQuantity: number;
-  inputUnit: string;
-  outputProductName?: string;
-  status: ProcessingStatus;
-  processingLineName: string;
-  startDate: Date;
-  expectedEndDate: Date;
-  progress: number;
-  operator?: string;
-  qualityStatus?: 'pending' | 'pass' | 'fail';
+  batchesEnProceso: number;
+  batchesCompletados: number;
+  batchesProductoFinal: number;
+  totalMerma: number;
+  mermaUnit: string;
 }
