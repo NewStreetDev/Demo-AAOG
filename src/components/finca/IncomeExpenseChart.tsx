@@ -27,7 +27,7 @@ function formatCurrency(value: number): string {
 export default function IncomeExpenseChart({ data }: IncomeExpenseChartProps) {
   const chartData = data.map(item => ({
     ...item,
-    totalIncome: item.agroRevenue + item.pecuarioRevenue + item.apiculturaRevenue,
+    totalIncome: item.agroRevenue + item.pecuarioRevenue + item.procesamientoRevenue,
   }));
 
   return (

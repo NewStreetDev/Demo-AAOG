@@ -201,6 +201,7 @@ export interface PecuarioTask {
   type: 'health' | 'reproduction' | 'rotation' | 'sale' | 'checkup';
   livestockTag?: string;
   potreroName?: string;
+  description?: string;
   dueDate: Date;
   priority: 'high' | 'medium' | 'low';
   status: 'pending' | 'in_progress' | 'completed';

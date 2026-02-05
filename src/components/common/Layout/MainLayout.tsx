@@ -1,26 +1,18 @@
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
-import { Home, Sprout, Beef, Flower2, Factory, DollarSign, FileText, ChevronDown, Users, Building, Package, Box, Bell, Settings, User, Map, LogOut } from 'lucide-react';
+import { Home, Sprout, Beef, Factory, DollarSign, ChevronDown, Bell, User, Map, LogOut, BookOpen, BarChart3 } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import Breadcrumbs from '../Breadcrumbs';
 import FincaSelector from '../FincaSelector';
 import { useAuth } from '../../../contexts/AuthContext';
 
 const navigation = [
-  { name: 'Inicio', href: '/', icon: Home },
-  { name: 'Finca', href: '/finca', icon: Map },
-  { name: 'Agricultura', href: '/agro', icon: Sprout },
+  { name: 'Mi Finca', href: '/finca', icon: Map },
+  { name: 'Agrícola', href: '/agro', icon: Sprout },
   { name: 'Pecuario', href: '/pecuario', icon: Beef },
-  { name: 'Apicultura', href: '/apicultura', icon: Flower2 },
   { name: 'Procesamiento', href: '/procesamiento', icon: Factory },
   { name: 'Finanzas', href: '/finanzas', icon: DollarSign },
-  { name: 'Reportes', href: '/reportes', icon: FileText },
-];
-
-const administrationItems = [
-  { name: 'Trabajadores', href: '/trabajadores', icon: Users },
-  { name: 'Infraestructura', href: '/infraestructura', icon: Building },
-  { name: 'Activos', href: '/activos', icon: Package },
-  { name: 'Insumos', href: '/insumos', icon: Box },
+  { name: 'Reglamentos', href: '/reglamentos', icon: BookOpen },
+  { name: 'Reportes y Análisis', href: '/reportes', icon: BarChart3 },
 ];
 
 export default function MainLayout() {
@@ -29,29 +21,6 @@ export default function MainLayout() {
   const { user, logout } = useAuth();
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
-
-  // Check if any administration route is active
-  const isAdminRouteActive = administrationItems.some(
-    item => location.pathname === item.href
-  );
-
-  // Initialize state from localStorage or auto-open if admin route is active
-  const [adminOpen, setAdminOpen] = useState(() => {
-    const stored = localStorage.getItem('adminMenuOpen');
-    return stored ? JSON.parse(stored) : isAdminRouteActive;
-  });
-
-  // Auto-expand if admin route becomes active
-  useEffect(() => {
-    if (isAdminRouteActive && !adminOpen) {
-      setAdminOpen(true);
-    }
-  }, [isAdminRouteActive, adminOpen]);
-
-  // Persist state to localStorage
-  useEffect(() => {
-    localStorage.setItem('adminMenuOpen', JSON.stringify(adminOpen));
-  }, [adminOpen]);
 
   // Close user menu when clicking outside
   useEffect(() => {
@@ -122,48 +91,6 @@ export default function MainLayout() {
             );
           })}
 
-          {/* Administration Dropdown */}
-          <div className="pt-2">
-            <button
-              onClick={() => setAdminOpen(!adminOpen)}
-              className={`group flex items-center justify-between w-full px-4 py-3 rounded-xl transition-all duration-200 text-sm ${
-                isAdminRouteActive
-                  ? 'bg-white/15 text-white shadow-lg backdrop-blur-sm ring-1 ring-white/20'
-                  : 'text-green-50 hover:bg-white/10 hover:text-white'
-              }`}
-              aria-expanded={adminOpen}
-              aria-label="Menú de administración"
-            >
-              <div className="flex items-center gap-3">
-                <Settings className={`w-5 h-5 transition-transform duration-200 ${isAdminRouteActive ? 'scale-110 rotate-90' : 'group-hover:scale-110 group-hover:rotate-90'}`} strokeWidth={2} />
-                <span className="font-semibold">Administración</span>
-              </div>
-              <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${adminOpen ? 'rotate-180' : ''}`} strokeWidth={2.5} />
-            </button>
-            {adminOpen && (
-              <div className="mt-2 ml-4 space-y-1 animate-slide-down">
-                {administrationItems.map((item) => {
-                  const Icon = item.icon;
-                  const isActive = location.pathname === item.href;
-
-                  return (
-                    <Link
-                      key={item.name}
-                      to={item.href}
-                      className={`group flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all duration-200 text-sm ${
-                        isActive
-                          ? 'bg-white/10 text-white shadow-sm'
-                          : 'text-green-100 hover:bg-white/5 hover:text-white hover:translate-x-1'
-                      }`}
-                    >
-                      <Icon className="w-4 h-4 transition-transform duration-200 group-hover:scale-110" strokeWidth={2} />
-                      <span className="font-medium">{item.name}</span>
-                    </Link>
-                  );
-                })}
-              </div>
-            )}
-          </div>
         </nav>
 
         {/* Bottom decoration */}
@@ -238,7 +165,7 @@ export default function MainLayout() {
                     className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors"
                   >
                     <LogOut className="w-4 h-4" />
-                    Cerrar Sesion
+                    Cerrar Sesión
                   </button>
                 </div>
               )}

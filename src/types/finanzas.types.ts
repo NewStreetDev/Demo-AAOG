@@ -16,7 +16,7 @@ export type TransactionCategory =
   | 'otros_gastos';
 
 export type PaymentStatus = 'pending' | 'partial' | 'paid';
-export type ModuleSource = 'agro' | 'pecuario' | 'apicultura' | 'general';
+export type ModuleSource = 'agro' | 'pecuario' | 'procesamiento';
 
 // Sale Record
 export interface SaleRecord extends BaseEntity {
@@ -164,6 +164,7 @@ export interface FinanzasTask {
   title: string;
   type: 'payment_due' | 'collection_due' | 'budget_alert' | 'reconciliation';
   relatedRecordId?: string;
+  description?: string;
   dueDate: Date;
   priority: 'high' | 'medium' | 'low';
   status: 'pending' | 'in_progress' | 'completed';

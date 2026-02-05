@@ -1,18 +1,26 @@
-import { Wheat, Beef, Bug, Users, Package, Building, Landmark, DollarSign } from 'lucide-react';
+import { Wheat, Beef, Factory, DollarSign } from 'lucide-react';
 import type { FincaDashboardStats, MonthlyAggregatedData, AggregatedTask, Finca } from '../../types/finca.types';
+import type { WeatherData } from '../../types/dashboard.types';
+import type { SystemModule } from '../../types/common.types';
 import FincaStatCard from './FincaStatCard';
 import FincaOverviewCard from './FincaOverviewCard';
 import ModuleSummaryCard from './ModuleSummaryCard';
 import AggregatedTaskList from './AggregatedTaskList';
 import IncomeExpenseChart from './IncomeExpenseChart';
 import RevenueByModuleChart from './RevenueByModuleChart';
+import WeatherWidget from '../common/Cards/WeatherWidget';
+import FincaMapCard from './FincaMapCard';
 
 interface FincaDashboardProps {
   finca: Finca;
   stats: FincaDashboardStats;
   monthlyData: MonthlyAggregatedData[];
   tasks: AggregatedTask[];
+  weather?: WeatherData;
   onEditFinca: () => void;
+  onTaskClick?: (task: AggregatedTask) => void;
+  onModuleClick?: (module: SystemModule) => void;
+  onViewAllTasks?: () => void;
 }
 
 function formatCurrency(value: number): string {
@@ -30,7 +38,11 @@ export default function FincaDashboard({
   stats,
   monthlyData,
   tasks,
+  weather,
   onEditFinca,
+  onTaskClick,
+  onModuleClick,
+  onViewAllTasks,
 }: FincaDashboardProps) {
   return (
     <div className="space-y-6">
@@ -115,19 +127,18 @@ export default function FincaDashboard({
           />
 
           <ModuleSummaryCard
-            title="Apicultura"
-            module="apicultura"
-            icon={<Bug className="w-5 h-5" />}
-            mainValue={stats.apicultura.totalColmenas}
-            mainLabel="Colmenas totales"
+            title="Procesamiento"
+            module="procesamiento"
+            icon={<Factory className="w-5 h-5" />}
+            mainValue={stats.procesamiento.activeBatches}
+            mainLabel="Lotes activos"
             secondaryItems={[
-              { label: 'Apiarios', value: stats.apicultura.totalApiarios },
-              { label: 'Miel/mes', value: `${stats.apicultura.monthlyHoneyProduction} kg` },
+              { label: 'Produccion/mes', value: `${formatCurrency(stats.procesamiento.monthlyProduction)} kg` },
             ]}
-            pendingTasks={stats.apicultura.pendingTasks}
-            status={stats.apicultura.pendingTasks > 4 ? 'warning' : 'good'}
-            path="/apicultura"
-            color="bg-amber-100 text-amber-600"
+            pendingTasks={stats.procesamiento.pendingTasks}
+            status={stats.procesamiento.pendingTasks > 3 ? 'warning' : 'good'}
+            path="/procesamiento"
+            color="bg-purple-100 text-purple-600"
           />
 
           <ModuleSummaryCard
@@ -144,73 +155,26 @@ export default function FincaDashboard({
             path="/finanzas"
             color="bg-emerald-100 text-emerald-600"
           />
+        </div>
+      </div>
 
-          <ModuleSummaryCard
-            title="Trabajadores"
-            module="trabajadores"
-            icon={<Users className="w-5 h-5" />}
-            mainValue={stats.trabajadores.activeWorkers}
-            mainLabel="Trabajadores activos"
-            secondaryItems={[
-              { label: 'Total', value: stats.trabajadores.totalWorkers },
-              { label: 'Asistencia', value: `${stats.trabajadores.averageAttendance}%` },
-            ]}
-            pendingTasks={stats.trabajadores.pendingTasks}
-            path="/trabajadores"
-            color="bg-indigo-100 text-indigo-600"
-          />
-
-          <ModuleSummaryCard
-            title="Insumos"
-            module="insumos"
-            icon={<Package className="w-5 h-5" />}
-            mainValue={stats.insumos.totalItems}
-            mainLabel="Items en inventario"
-            secondaryItems={[
-              { label: 'Stock bajo', value: stats.insumos.lowStockItems },
-              { label: 'Critico', value: stats.insumos.criticalStockItems },
-            ]}
-            status={stats.insumos.criticalStockItems > 0 ? 'critical' : stats.insumos.lowStockItems > 3 ? 'warning' : 'good'}
-            path="/insumos"
-            color="bg-purple-100 text-purple-600"
-          />
-
-          <ModuleSummaryCard
-            title="Infraestructura"
-            module="infraestructura"
-            icon={<Building className="w-5 h-5" />}
-            mainValue={stats.infraestructura.operationalFacilities}
-            mainLabel="Instalaciones operativas"
-            secondaryItems={[
-              { label: 'Total', value: stats.infraestructura.totalFacilities },
-              { label: 'Mant. pendiente', value: stats.infraestructura.pendingMaintenances },
-            ]}
-            pendingTasks={stats.infraestructura.pendingMaintenances}
-            status={stats.infraestructura.pendingMaintenances > 2 ? 'warning' : 'good'}
-            path="/infraestructura"
-            color="bg-slate-100 text-slate-600"
-          />
-
-          <ModuleSummaryCard
-            title="Activos"
-            module="activos"
-            icon={<Landmark className="w-5 h-5" />}
-            mainValue={stats.activos.activeAssets}
-            mainLabel="Activos en uso"
-            secondaryItems={[
-              { label: 'Total', value: stats.activos.totalAssets },
-              { label: 'Valor', value: formatCurrency(stats.activos.totalValue) },
-            ]}
-            path="/activos"
-            color="bg-cyan-100 text-cyan-600"
+      {/* Map and Weather Row */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <FincaMapCard finca={finca} />
+        {weather && <WeatherWidget weather={weather} />}
+        <div className={weather ? '' : 'lg:col-span-2'}>
+          <AggregatedTaskList
+            tasks={tasks}
+            maxItems={6}
+            onTaskClick={onTaskClick}
+            onModuleClick={onModuleClick}
+            onViewAll={onViewAllTasks}
           />
         </div>
       </div>
 
-      {/* Tasks and Plans */}
+      {/* Quick Summary */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <AggregatedTaskList tasks={tasks} maxItems={8} />
-
         <div className="bg-white rounded-xl border border-gray-200 p-5">
           <div className="mb-4">
             <h3 className="text-lg font-semibold text-gray-900">Resumen Rapido</h3>
@@ -244,19 +208,19 @@ export default function FincaDashboard({
                   href="/pecuario"
                   className="p-2 text-sm text-center bg-orange-50 text-orange-700 rounded-lg hover:bg-orange-100 transition-colors"
                 >
-                  Registrar Ordeno
+                  Inventario Animal
                 </a>
                 <a
                   href="/agro"
                   className="p-2 text-sm text-center bg-lime-50 text-lime-700 rounded-lg hover:bg-lime-100 transition-colors"
                 >
-                  Ver Cultivos
+                  Planificacion Agro
                 </a>
                 <a
-                  href="/trabajadores"
-                  className="p-2 text-sm text-center bg-indigo-50 text-indigo-700 rounded-lg hover:bg-indigo-100 transition-colors"
+                  href="/procesamiento"
+                  className="p-2 text-sm text-center bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 transition-colors"
                 >
-                  Asistencia
+                  Ver Procesos
                 </a>
               </div>
             </div>

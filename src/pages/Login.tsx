@@ -65,12 +65,12 @@ export default function Login() {
             <Leaf className="w-8 h-8 text-white" />
           </div>
           <h1 className="text-2xl font-bold text-gray-900">AAOG</h1>
-          <p className="text-gray-500 mt-1">Sistema de Gestion Agropecuaria</p>
+          <p className="text-gray-500 mt-1">Sistema de Gestión Agropecuaria</p>
         </div>
 
         {/* Login Card */}
         <div className="bg-white rounded-2xl shadow-xl p-8">
-          <h2 className="text-xl font-semibold text-gray-900 mb-6">Iniciar Sesion</h2>
+          <h2 className="text-xl font-semibold text-gray-900 mb-6">Iniciar Sesión</h2>
 
           {error && (
             <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
@@ -82,7 +82,7 @@ export default function Login() {
             {/* Email Field */}
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1.5">
-                Correo electronico
+                Correo electrónico
               </label>
               <input
                 id="email"
@@ -102,7 +102,7 @@ export default function Login() {
             {/* Password Field */}
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1.5">
-                Contrasena
+                Contraseña
               </label>
               <div className="relative">
                 <input
@@ -147,7 +147,7 @@ export default function Login() {
 
           {/* Demo Account Info */}
           <div className="mt-6 pt-6 border-t border-gray-100">
-            <p className="text-sm text-gray-500 text-center mb-3">Cuenta de demostacion:</p>
+            <p className="text-sm text-gray-500 text-center mb-3">Cuenta de demostración:</p>
             <button
               type="button"
               onClick={fillDemoCredentials}
@@ -160,7 +160,7 @@ export default function Login() {
 
         {/* Footer */}
         <p className="text-center text-sm text-gray-400 mt-6">
-          AAOG v1.0 - Sistema de Gestion Agropecuaria
+          AAOG v1.0 - Sistema de Gestión Agropecuaria
         </p>
       </div>
     </div>

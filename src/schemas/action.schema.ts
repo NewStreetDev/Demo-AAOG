@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export const systemModules = ['agro', 'pecuario', 'apicultura', 'procesamiento', 'activos', 'infraestructura', 'general'] as const;
+export const systemModules = ['agro', 'pecuario', 'procesamiento', 'finanzas', 'general'] as const;
 
 // Tipos de acción por módulo
 export const actionTypesByModule = {
@@ -26,19 +26,6 @@ export const actionTypesByModule = {
     { value: 'breeding', label: 'Monta/Inseminación' },
     { value: 'other', label: 'Otra' },
   ],
-  apicultura: [
-    { value: 'revision', label: 'Revisión' },
-    { value: 'feeding', label: 'Alimentación' },
-    { value: 'medication', label: 'Aplicación de Medicamento' },
-    { value: 'panel_change', label: 'Cambio de Panales' },
-    { value: 'queen_change', label: 'Cambio de Reina' },
-    { value: 'harvest', label: 'Cosecha' },
-    { value: 'free_mating', label: 'Apareamiento Libre' },
-    { value: 'insemination', label: 'Inseminación' },
-    { value: 'queen_introduction', label: 'Introducción de Reina' },
-    { value: 'queen_raising', label: 'Crianza de Reinas' },
-    { value: 'other', label: 'Otra' },
-  ],
   procesamiento: [
     { value: 'processing', label: 'Procesamiento' },
     { value: 'packaging', label: 'Empaque' },
@@ -46,22 +33,6 @@ export const actionTypesByModule = {
     { value: 'quality_control', label: 'Control de Calidad' },
     { value: 'storage', label: 'Almacenamiento' },
     { value: 'cleaning', label: 'Limpieza' },
-    { value: 'other', label: 'Otra' },
-  ],
-  activos: [
-    { value: 'maintenance', label: 'Mantenimiento' },
-    { value: 'repair', label: 'Reparación' },
-    { value: 'inspection', label: 'Inspección' },
-    { value: 'cleaning', label: 'Limpieza' },
-    { value: 'calibration', label: 'Calibración' },
-    { value: 'other', label: 'Otra' },
-  ],
-  infraestructura: [
-    { value: 'maintenance', label: 'Mantenimiento' },
-    { value: 'repair', label: 'Reparación' },
-    { value: 'inspection', label: 'Inspección' },
-    { value: 'cleaning', label: 'Limpieza' },
-    { value: 'installation', label: 'Instalación' },
     { value: 'other', label: 'Otra' },
   ],
   general: [
@@ -119,9 +90,6 @@ export function getActionTypeLabel(module: string, actionType: string): string {
 export const moduleOptions = [
   { value: 'agro', label: 'Agricultura' },
   { value: 'pecuario', label: 'Pecuario' },
-  { value: 'apicultura', label: 'Apicultura' },
   { value: 'procesamiento', label: 'Procesamiento' },
-  { value: 'activos', label: 'Activos' },
-  { value: 'infraestructura', label: 'Infraestructura' },
   { value: 'general', label: 'General' },
 ];

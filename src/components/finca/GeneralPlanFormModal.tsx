@@ -20,7 +20,7 @@ interface GeneralPlanFormModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   plan?: GeneralPlan | null;
-  defaultModule?: 'pecuario' | 'apicultura' | 'agro' | 'procesamiento';
+  defaultModule?: 'pecuario' | 'agro' | 'procesamiento' | 'general';
   preselectedDate?: Date | null;
   onSuccess?: () => void;
   // Annual planning props

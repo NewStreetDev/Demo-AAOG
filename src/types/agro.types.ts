@@ -149,6 +149,7 @@ export interface AgroTask {
   type: 'planting' | 'irrigation' | 'fertilization' | 'pesticide' | 'harvest' | 'maintenance';
   cropName?: string;
   loteName?: string;
+  description?: string;
   dueDate: Date;
   priority: 'high' | 'medium' | 'low';
   status: 'pending' | 'in_progress' | 'completed';

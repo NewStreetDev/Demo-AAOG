@@ -9,6 +9,7 @@ import {
   getMockFinanzasTasks,
   getMockAccountsReceivable,
   getMockAccountsPayable,
+  getMockBudgets,
 } from '../services/mock/finanzas.mock';
 
 export function useFinanzasStats() {
@@ -71,5 +72,12 @@ export function useAccountsPayable() {
   return useQuery({
     queryKey: ['finanzas', 'payable'],
     queryFn: getMockAccountsPayable,
+  });
+}
+
+export function useBudgets() {
+  return useQuery({
+    queryKey: ['finanzas', 'budgetsList'],
+    queryFn: getMockBudgets,
   });
 }

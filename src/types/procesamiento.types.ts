@@ -148,6 +148,7 @@ export interface ProcesamientoTask {
   type: 'quality_control' | 'line_maintenance' | 'batch_processing' | 'equipment_calibration';
   batchCode?: string;
   lineCode?: string;
+  description?: string;
   dueDate: Date;
   priority: 'high' | 'medium' | 'low';
   status: 'pending' | 'in_progress' | 'completed';

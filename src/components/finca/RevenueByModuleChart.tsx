@@ -53,7 +53,7 @@ export default function RevenueByModuleChart({ data }: RevenueByModuleChartProps
                 const labels: Record<string, string> = {
                   agroRevenue: 'Agricultura',
                   pecuarioRevenue: 'Pecuario',
-                  apiculturaRevenue: 'Apicultura',
+                  procesamientoRevenue: 'Procesamiento',
                 };
                 return [
                   new Intl.NumberFormat('es-CR', {
@@ -76,7 +76,7 @@ export default function RevenueByModuleChart({ data }: RevenueByModuleChartProps
                 const labels: Record<string, string> = {
                   agroRevenue: 'Agricultura',
                   pecuarioRevenue: 'Pecuario',
-                  apiculturaRevenue: 'Apicultura',
+                  procesamientoRevenue: 'Procesamiento',
                 };
                 return labels[value] || value;
               }}
@@ -95,8 +95,8 @@ export default function RevenueByModuleChart({ data }: RevenueByModuleChartProps
               stackId="revenue"
             />
             <Bar
-              dataKey="apiculturaRevenue"
-              fill="#fbbf24"
+              dataKey="procesamientoRevenue"
+              fill="#a855f7"
               radius={[4, 4, 0, 0]}
               stackId="revenue"
             />

@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Plus, Stethoscope, Users, Heart, Droplets, LayoutDashboard, Beef, MapPin, FolderOpen, CalendarDays } from 'lucide-react';
+import { Plus, Stethoscope, Users, Heart, Beef, MapPin, CalendarDays } from 'lucide-react';
 import {
   PecuarioStatCard,
   LivestockTable,
@@ -18,13 +18,6 @@ import {
   ReproductionFormModal,
   ReproductionDetailModal,
   ReproductionList,
-  MilkProductionFormModal,
-  MilkProductionDetailModal,
-  MilkProductionList,
-  PecuarioDashboard,
-  LivestockGroupFormModal,
-  LivestockGroupDetailModal,
-  LivestockGroupList,
 } from '../components/pecuario';
 import StatCardSkeleton from '../components/common/Skeletons/StatCardSkeleton';
 import ChartSkeleton from '../components/common/Skeletons/ChartSkeleton';
@@ -38,21 +31,17 @@ import {
   useCategoryDistribution,
   useHealthRecords,
   useReproductionRecords,
-  useMilkProduction,
-  usePecuarioDashboard,
-  usePecuarioProductionData,
-  useLivestockGroups,
 } from '../hooks/usePecuario';
-import type { Livestock, LivestockGroup, Potrero, HealthRecord, ReproductionRecord, MilkProduction } from '../types/pecuario.types';
+import type { Livestock, Potrero, HealthRecord, ReproductionRecord } from '../types/pecuario.types';
 import type { GeneralPlan } from '../types/finca.types';
 import { GeneralPlanFormModal, GeneralPlanDetailModal } from '../components/finca';
 import { CalendarView } from '../components/common/Calendar';
 import { useGeneralPlans } from '../hooks/useFinca';
 
-type TabType = 'dashboard' | 'inventario' | 'grupos' | 'salud' | 'reproduccion' | 'produccion' | 'planificacion';
+type TabType = 'planificacion' | 'inventario' | 'salud' | 'reproduccion' | 'potreros';
 
 export default function Pecuario() {
-  const [activeTab, setActiveTab] = useState<TabType>('dashboard');
+  const [activeTab, setActiveTab] = useState<TabType>('planificacion');
 
   // Modal state for Livestock
   const [selectedLivestock, setSelectedLivestock] = useState<Livestock | null>(null);
@@ -78,16 +67,6 @@ export default function Pecuario() {
   const [reproductionFormModalOpen, setReproductionFormModalOpen] = useState(false);
   const [reproductionDetailModalOpen, setReproductionDetailModalOpen] = useState(false);
   const [preselectedCowForReproduction, setPreselectedCowForReproduction] = useState<Livestock | null>(null);
-
-  // Modal state for Milk Production
-  const [selectedMilkProduction, setSelectedMilkProduction] = useState<MilkProduction | null>(null);
-  const [milkProductionFormModalOpen, setMilkProductionFormModalOpen] = useState(false);
-  const [milkProductionDetailModalOpen, setMilkProductionDetailModalOpen] = useState(false);
-
-  // Modal state for Livestock Groups
-  const [selectedLivestockGroup, setSelectedLivestockGroup] = useState<LivestockGroup | null>(null);
-  const [livestockGroupFormModalOpen, setLivestockGroupFormModalOpen] = useState(false);
-  const [livestockGroupDetailModalOpen, setLivestockGroupDetailModalOpen] = useState(false);
 
   // Modal state for Plans
   const [selectedPlan, setSelectedPlan] = useState<GeneralPlan | null>(null);
@@ -181,40 +160,6 @@ export default function Pecuario() {
     setReproductionFormModalOpen(true);
   };
 
-  // Milk Production handlers
-  const handleMilkProductionClick = (record: MilkProduction) => {
-    setSelectedMilkProduction(record);
-    setMilkProductionDetailModalOpen(true);
-  };
-
-  const handleMilkProductionEdit = (record: MilkProduction) => {
-    setSelectedMilkProduction(record);
-    setMilkProductionDetailModalOpen(false);
-    setMilkProductionFormModalOpen(true);
-  };
-
-  const handleNewMilkProduction = () => {
-    setSelectedMilkProduction(null);
-    setMilkProductionFormModalOpen(true);
-  };
-
-  // Livestock Group handlers
-  const handleLivestockGroupClick = (group: LivestockGroup) => {
-    setSelectedLivestockGroup(group);
-    setLivestockGroupDetailModalOpen(true);
-  };
-
-  const handleLivestockGroupEdit = (group: LivestockGroup) => {
-    setSelectedLivestockGroup(group);
-    setLivestockGroupDetailModalOpen(false);
-    setLivestockGroupFormModalOpen(true);
-  };
-
-  const handleNewLivestockGroup = () => {
-    setSelectedLivestockGroup(null);
-    setLivestockGroupFormModalOpen(true);
-  };
-
   // Plan handlers
   const handlePlanClick = (_plan: GeneralPlan) => {
     // Popover handles this - no action needed here
@@ -253,10 +198,6 @@ export default function Pecuario() {
   const { data: categoryDist, isLoading: categoryLoading } = useCategoryDistribution();
   const { data: healthRecords, isLoading: healthRecordsLoading } = useHealthRecords();
   const { data: reproductionRecords, isLoading: reproductionLoading } = useReproductionRecords();
-  const { data: milkProduction, isLoading: milkProductionLoading } = useMilkProduction();
-  const { data: dashboardStats, isLoading: dashboardStatsLoading } = usePecuarioDashboard();
-  const { data: dashboardProductionData, isLoading: dashboardProductionLoading } = usePecuarioProductionData();
-  const { data: livestockGroups, isLoading: livestockGroupsLoading } = useLivestockGroups();
   const { data: allPlans, isLoading: plansLoading } = useGeneralPlans();
 
   // Filter plans for pecuario module
@@ -265,42 +206,16 @@ export default function Pecuario() {
     return allPlans.filter(plan => plan.targetModule === 'pecuario');
   }, [allPlans]);
 
-  const tabs: { id: TabType; label: string; icon: typeof LayoutDashboard }[] = [
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { id: 'planificacion', label: 'Planificacion', icon: CalendarDays },
-    { id: 'inventario', label: 'Inventario', icon: Beef },
-    { id: 'grupos', label: 'Grupos', icon: FolderOpen },
-    { id: 'salud', label: 'Salud', icon: Stethoscope },
-    { id: 'reproduccion', label: 'Reproduccion', icon: Heart },
-    { id: 'produccion', label: 'Produccion', icon: Droplets },
+  const tabs: { id: TabType; label: string; icon: typeof CalendarDays }[] = [
+    { id: 'planificacion', label: 'Planificación', icon: CalendarDays },
+    { id: 'inventario', label: 'Inventario e Identificación', icon: Beef },
+    { id: 'salud', label: 'Salud Animal', icon: Stethoscope },
+    { id: 'reproduccion', label: 'Reproducción y Control de Partos', icon: Heart },
+    { id: 'potreros', label: 'Gestión de Potreros', icon: MapPin },
   ];
 
   const renderTabContent = () => {
     switch (activeTab) {
-      case 'dashboard':
-        return (
-          <>
-            {(dashboardStatsLoading || dashboardProductionLoading) ? (
-              <div className="space-y-6">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                  {[...Array(4)].map((_, i) => (
-                    <StatCardSkeleton key={i} />
-                  ))}
-                </div>
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                  <ChartSkeleton />
-                  <ChartSkeleton />
-                </div>
-              </div>
-            ) : dashboardStats && dashboardProductionData ? (
-              <PecuarioDashboard
-                stats={dashboardStats}
-                productionData={dashboardProductionData}
-              />
-            ) : null}
-          </>
-        );
-
       case 'inventario':
         return (
           <div className="space-y-6">
@@ -363,78 +278,13 @@ export default function Pecuario() {
               </div>
             </div>
 
-            {/* Potreros */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-              <div className="lg:col-span-2">
-                {productionLoading ? (
-                  <ChartSkeleton />
-                ) : production ? (
-                  <PecuarioProductionChart data={production} />
-                ) : null}
-              </div>
-              <div>
-                <div className="bg-white rounded-xl border border-gray-200 p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-emerald-100 rounded-lg">
-                        <MapPin className="w-5 h-5 text-emerald-600" />
-                      </div>
-                      <h3 className="text-lg font-semibold text-gray-900">Potreros</h3>
-                    </div>
-                    <button
-                      onClick={handleNewPotrero}
-                      className="text-sm text-blue-600 hover:text-blue-700 font-medium"
-                    >
-                      + Nuevo
-                    </button>
-                  </div>
-                  <div className="space-y-3">
-                    {potrerosLoading ? (
-                      <>
-                        {[...Array(3)].map((_, i) => (
-                          <div key={i} className="h-20 bg-gray-100 rounded-lg animate-pulse" />
-                        ))}
-                      </>
-                    ) : potreros ? (
-                      potreros.slice(0, 4).map((potrero) => (
-                        <PotreroCard
-                          key={potrero.id}
-                          potrero={potrero}
-                          onClick={() => handlePotreroClick(potrero)}
-                        />
-                      ))
-                    ) : null}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        );
-
-      case 'grupos':
-        return (
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-              <div className="lg:col-span-2">
-                {livestockGroupsLoading ? (
-                  <ListCardSkeleton itemCount={5} />
-                ) : livestockGroups ? (
-                  <LivestockGroupList
-                    livestockGroups={livestockGroups}
-                    onGroupClick={handleLivestockGroupClick}
-                    showFilters={true}
-                  />
-                ) : null}
-              </div>
-              <div>
-                {tasksLoading ? (
-                  <ListCardSkeleton itemCount={5} />
-                ) : tasks ? (
-                  <PecuarioTaskList
-                    tasks={tasks.filter(t => t.type === 'health' || t.type === 'checkup')}
-                  />
-                ) : null}
-              </div>
+            {/* Production Chart */}
+            <div className="grid grid-cols-1 gap-4">
+              {productionLoading ? (
+                <ChartSkeleton />
+              ) : production ? (
+                <PecuarioProductionChart data={production} />
+              ) : null}
             </div>
           </div>
         );
@@ -494,28 +344,26 @@ export default function Pecuario() {
           </div>
         );
 
-      case 'produccion':
+      case 'potreros':
         return (
           <div className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-              <div className="lg:col-span-2">
-                {milkProductionLoading ? (
-                  <ListCardSkeleton itemCount={5} />
-                ) : milkProduction ? (
-                  <MilkProductionList
-                    milkProduction={milkProduction}
-                    onRecordClick={handleMilkProductionClick}
-                    showFilters={true}
+            {/* Potreros Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {potrerosLoading ? (
+                <>
+                  {[...Array(6)].map((_, i) => (
+                    <div key={i} className="h-32 bg-gray-100 rounded-lg animate-pulse" />
+                  ))}
+                </>
+              ) : potreros ? (
+                potreros.map((potrero) => (
+                  <PotreroCard
+                    key={potrero.id}
+                    potrero={potrero}
+                    onClick={() => handlePotreroClick(potrero)}
                   />
-                ) : null}
-              </div>
-              <div>
-                {productionLoading ? (
-                  <ChartSkeleton />
-                ) : production ? (
-                  <PecuarioProductionChart data={production} />
-                ) : null}
-              </div>
+                ))
+              ) : null}
             </div>
           </div>
         );
@@ -553,59 +401,24 @@ export default function Pecuario() {
 
   const getActionButtons = () => {
     switch (activeTab) {
-      case 'dashboard':
-        return (
-          <>
-            <button
-              onClick={() => handleNewHealthRecord()}
-              className="btn-secondary inline-flex items-center gap-2"
-            >
-              <Plus className="w-4 h-4" />
-              Registro Salud
-            </button>
-            <button
-              onClick={handleNewMilkProduction}
-              className="btn-secondary inline-flex items-center gap-2"
-            >
-              <Plus className="w-4 h-4" />
-              Registrar Ordeño
-            </button>
-            <button
-              onClick={handleNewLivestock}
-              className="btn-primary inline-flex items-center gap-2"
-            >
-              <Plus className="w-4 h-4" />
-              Nuevo Animal
-            </button>
-          </>
-        );
       case 'inventario':
         return (
-          <>
-            <button
-              onClick={handleNewPotrero}
-              className="btn-secondary inline-flex items-center gap-2"
-            >
-              <Plus className="w-4 h-4" />
-              Nuevo Potrero
-            </button>
-            <button
-              onClick={handleNewLivestock}
-              className="btn-primary inline-flex items-center gap-2"
-            >
-              <Plus className="w-4 h-4" />
-              Nuevo Animal
-            </button>
-          </>
-        );
-      case 'grupos':
-        return (
           <button
-            onClick={handleNewLivestockGroup}
+            onClick={handleNewLivestock}
             className="btn-primary inline-flex items-center gap-2"
           >
             <Plus className="w-4 h-4" />
-            Nuevo Grupo
+            Nuevo Animal
+          </button>
+        );
+      case 'potreros':
+        return (
+          <button
+            onClick={handleNewPotrero}
+            className="btn-primary inline-flex items-center gap-2"
+          >
+            <Plus className="w-4 h-4" />
+            Nuevo Potrero
           </button>
         );
       case 'salud':
@@ -616,7 +429,7 @@ export default function Pecuario() {
               className="btn-ghost inline-flex items-center gap-2"
             >
               <Users className="w-4 h-4" />
-              Accion Grupal
+              Acción Grupal
             </button>
             <button
               onClick={() => handleNewHealthRecord()}
@@ -637,16 +450,6 @@ export default function Pecuario() {
             Nuevo Registro
           </button>
         );
-      case 'produccion':
-        return (
-          <button
-            onClick={handleNewMilkProduction}
-            className="btn-primary inline-flex items-center gap-2"
-          >
-            <Plus className="w-4 h-4" />
-            Registrar Ordeno
-          </button>
-        );
       case 'planificacion':
         return (
           <button
@@ -654,7 +457,7 @@ export default function Pecuario() {
             className="btn-primary inline-flex items-center gap-2"
           >
             <Plus className="w-4 h-4" />
-            Nueva Accion
+            Nueva Acción
           </button>
         );
       default:
@@ -671,7 +474,7 @@ export default function Pecuario() {
             Pecuario
           </h1>
           <p className="text-sm text-gray-600">
-            Gestion de ganado, salud animal, reproduccion y produccion
+            Gestión de ganado, salud animal y reproducción
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -791,35 +594,6 @@ export default function Pecuario() {
         onOpenChange={setReproductionDetailModalOpen}
         reproductionRecord={selectedReproductionRecord}
         onEdit={handleReproductionRecordEdit}
-      />
-
-      {/* Milk Production Modals */}
-      <MilkProductionFormModal
-        open={milkProductionFormModalOpen}
-        onOpenChange={setMilkProductionFormModalOpen}
-        milkProduction={selectedMilkProduction}
-        onSuccess={() => setSelectedMilkProduction(null)}
-      />
-      <MilkProductionDetailModal
-        open={milkProductionDetailModalOpen}
-        onOpenChange={setMilkProductionDetailModalOpen}
-        milkProduction={selectedMilkProduction}
-        onEdit={handleMilkProductionEdit}
-      />
-
-      {/* Livestock Group Modals */}
-      <LivestockGroupFormModal
-        open={livestockGroupFormModalOpen}
-        onOpenChange={setLivestockGroupFormModalOpen}
-        livestockGroup={selectedLivestockGroup}
-        onSuccess={() => setSelectedLivestockGroup(null)}
-      />
-      <LivestockGroupDetailModal
-        open={livestockGroupDetailModalOpen}
-        onOpenChange={setLivestockGroupDetailModalOpen}
-        livestockGroup={selectedLivestockGroup}
-        onEdit={handleLivestockGroupEdit}
-        onDeleteSuccess={() => setSelectedLivestockGroup(null)}
       />
 
       {/* Plan Modals - filtered to pecuario module */}

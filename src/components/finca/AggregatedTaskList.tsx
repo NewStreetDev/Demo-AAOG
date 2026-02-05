@@ -1,9 +1,13 @@
 import { Calendar, Clock, User, ChevronRight, AlertCircle, CheckCircle2 } from 'lucide-react';
 import type { AggregatedTask } from '../../types/finca.types';
+import type { SystemModule } from '../../types/common.types';
 
 interface AggregatedTaskListProps {
   tasks: AggregatedTask[];
   maxItems?: number;
+  onTaskClick?: (task: AggregatedTask) => void;
+  onModuleClick?: (module: SystemModule) => void;
+  onViewAll?: () => void;
 }
 
 const priorityColors = {
@@ -30,9 +34,21 @@ const moduleColors: Record<string, string> = {
   pecuario: 'border-l-orange-500',
   apicultura: 'border-l-amber-500',
   procesamiento: 'border-l-purple-500',
+  finanzas: 'border-l-emerald-500',
   activos: 'border-l-cyan-500',
   infraestructura: 'border-l-slate-500',
   general: 'border-l-blue-500',
+};
+
+const moduleBadgeColors: Record<string, string> = {
+  agro: 'bg-lime-100 text-lime-700 hover:bg-lime-200',
+  pecuario: 'bg-orange-100 text-orange-700 hover:bg-orange-200',
+  apicultura: 'bg-amber-100 text-amber-700 hover:bg-amber-200',
+  procesamiento: 'bg-purple-100 text-purple-700 hover:bg-purple-200',
+  finanzas: 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200',
+  activos: 'bg-cyan-100 text-cyan-700 hover:bg-cyan-200',
+  infraestructura: 'bg-slate-100 text-slate-700 hover:bg-slate-200',
+  general: 'bg-blue-100 text-blue-700 hover:bg-blue-200',
 };
 
 function formatDate(date: Date): string {
@@ -59,7 +75,13 @@ function isOverdue(date: Date, status: string): boolean {
   return new Date(date) < new Date();
 }
 
-export default function AggregatedTaskList({ tasks, maxItems = 10 }: AggregatedTaskListProps) {
+export default function AggregatedTaskList({
+  tasks,
+  maxItems = 10,
+  onTaskClick,
+  onModuleClick,
+  onViewAll,
+}: AggregatedTaskListProps) {
   const displayTasks = tasks.slice(0, maxItems);
 
   if (displayTasks.length === 0) {
@@ -85,11 +107,13 @@ export default function AggregatedTaskList({ tasks, maxItems = 10 }: AggregatedT
         {displayTasks.map((task) => {
           const overdue = isOverdue(task.dueDate, task.status);
           const borderColor = moduleColors[task.module] || moduleColors.general;
+          const badgeColor = moduleBadgeColors[task.module] || moduleBadgeColors.general;
 
           return (
             <div
               key={task.id}
-              className={`p-4 hover:bg-gray-50 transition-colors border-l-4 ${borderColor}`}
+              onClick={() => onTaskClick?.(task)}
+              className={`p-4 hover:bg-gray-50 transition-colors border-l-4 ${borderColor} ${onTaskClick ? 'cursor-pointer' : ''}`}
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="flex items-start gap-3 flex-1 min-w-0">
@@ -99,9 +123,17 @@ export default function AggregatedTaskList({ tasks, maxItems = 10 }: AggregatedT
                       {task.title}
                     </p>
                     <div className="flex items-center gap-2 mt-1 flex-wrap">
-                      <span className="text-xs px-2 py-0.5 bg-gray-100 text-gray-600 rounded-full">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onModuleClick?.(task.module);
+                        }}
+                        className={`text-xs px-2 py-0.5 rounded-full transition-colors ${
+                          onModuleClick ? badgeColor : 'bg-gray-100 text-gray-600'
+                        }`}
+                      >
                         {task.moduleName}
-                      </span>
+                      </button>
                       <span className={`text-xs px-2 py-0.5 rounded-full ${priorityColors[task.priority]}`}>
                         {priorityLabels[task.priority]}
                       </span>
@@ -131,7 +163,10 @@ export default function AggregatedTaskList({ tasks, maxItems = 10 }: AggregatedT
 
       {tasks.length > maxItems && (
         <div className="p-3 border-t border-gray-100 text-center">
-          <button className="text-sm text-blue-600 hover:text-blue-700 font-medium inline-flex items-center gap-1">
+          <button
+            onClick={() => onViewAll?.()}
+            className="text-sm text-blue-600 hover:text-blue-700 font-medium inline-flex items-center gap-1"
+          >
             Ver todas ({tasks.length})
             <ChevronRight className="w-4 h-4" />
           </button>

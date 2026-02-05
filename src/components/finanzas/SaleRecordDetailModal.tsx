@@ -33,12 +33,11 @@ function getPaymentStatusInfo(status: SaleRecord['paymentStatus']): { label: str
 
 function getModuleInfo(module: SaleRecord['moduleSource']): { label: string; color: string } {
   const moduleMap = {
-    agro: { label: 'Agricultura', color: 'bg-green-100 text-green-700' },
+    agro: { label: 'Agrícola', color: 'bg-green-100 text-green-700' },
     pecuario: { label: 'Pecuario', color: 'bg-orange-100 text-orange-700' },
-    apicultura: { label: 'Apicultura', color: 'bg-amber-100 text-amber-700' },
-    general: { label: 'General', color: 'bg-gray-100 text-gray-600' },
+    procesamiento: { label: 'Procesamiento', color: 'bg-purple-100 text-purple-700' },
   };
-  return moduleMap[module] || moduleMap.general;
+  return moduleMap[module] || moduleMap.agro;
 }
 
 function formatDate(date: Date | string | undefined): string {

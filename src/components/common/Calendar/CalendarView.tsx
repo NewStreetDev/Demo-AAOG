@@ -48,24 +48,20 @@ interface CalendarViewProps {
   showPlanningIndicators?: boolean;  // Show unplanned/rescheduled indicators (default: auto-detect based on plans)
 }
 
-const moduleColors: Record<SystemModule | 'general', string> = {
+const moduleColors: Record<SystemModule, string> = {
   general: 'bg-green-500',
   agro: 'bg-blue-500',
   pecuario: 'bg-yellow-500',
-  apicultura: 'bg-amber-500',
   procesamiento: 'bg-purple-500',
-  activos: 'bg-gray-500',
-  infraestructura: 'bg-teal-500',
+  finanzas: 'bg-emerald-500',
 };
 
-const moduleColorsBorder: Record<SystemModule | 'general', string> = {
+const moduleColorsBorder: Record<SystemModule, string> = {
   general: 'border-l-green-500',
   agro: 'border-l-blue-500',
   pecuario: 'border-l-yellow-500',
-  apicultura: 'border-l-amber-500',
   procesamiento: 'border-l-purple-500',
-  activos: 'border-l-gray-500',
-  infraestructura: 'border-l-teal-500',
+  finanzas: 'border-l-emerald-500',
 };
 
 const dayNamesShort = ['Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab', 'Dom'];

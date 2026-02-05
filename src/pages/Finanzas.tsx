@@ -67,7 +67,7 @@ export default function Finanzas() {
   const totalVentas = sales?.reduce((sum, s) => sum + s.totalAmount, 0) || 0;
 
   const ventasPorModulo = sales?.reduce((acc, sale) => {
-    const mod = sale.moduleSource || 'general';
+    const mod = sale.moduleSource || 'agro';
     acc[mod] = (acc[mod] || 0) + sale.totalAmount;
     return acc;
   }, {} as Record<string, number>) || {};

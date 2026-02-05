@@ -9,15 +9,11 @@ import type {
 } from '../../types/finca.types';
 import type { FincaFormData, DivisionFormData, GeneralPlanFormData } from '../../schemas/finca.schema';
 
-// Import stats from other modules
-import { getMockApiculturaStats, getMockApiculturaTasks } from './apicultura.mock';
+// Import stats from MVP modules
 import { getMockPecuarioStats, getMockPecuarioTasks } from './pecuario.mock';
 import { getMockAgroStats, getMockAgroTasks } from './agro.mock';
 import { getMockFinanzasStats, getMockFinanzasTasks } from './finanzas.mock';
-import { getMockTrabajadoresStats, getMockTrabajadoresTasks } from './trabajadores.mock';
-import { getMockInsumosStats } from './insumos.mock';
-import { getMockInfraestructuraStats } from './infraestructura.mock';
-import { getMockActivosStats } from './activos.mock';
+import { getMockProcesamientoStats, getMockProcesamientoTasks } from './procesamiento.mock';
 import { initializeAnnualPlanStoreConnection } from './annualPlan.mock';
 
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
@@ -141,40 +137,14 @@ const initialDivisions: Division[] = [
   },
   {
     id: '7',
-    name: 'Apiario El Roble',
-    code: 'API-001',
-    type: 'apiario',
-    area: 0.5,
-    status: 'active',
-    coordinates: { lat: 10.26, lng: -84.12 },
-    moduleAssociation: 'apicultura',
-    description: 'Apiario principal con 25 colmenas',
-    createdAt: new Date('2024-01-01'),
-    updatedAt: new Date('2026-01-15'),
-  },
-  {
-    id: '8',
-    name: 'Apiario Las Brisas',
-    code: 'API-002',
-    type: 'apiario',
-    area: 0.3,
-    status: 'active',
-    coordinates: { lat: 10.23, lng: -84.17 },
-    moduleAssociation: 'apicultura',
-    description: 'Apiario secundario con 18 colmenas',
-    createdAt: new Date('2024-03-15'),
-    updatedAt: new Date('2026-01-18'),
-  },
-  {
-    id: '9',
-    name: 'Zona de Infraestructura',
-    code: 'INF-001',
+    name: 'Planta de Procesamiento',
+    code: 'PROC-001',
     type: 'infraestructura',
-    area: 2.0,
+    area: 1.5,
     status: 'active',
     coordinates: { lat: 10.25, lng: -84.15 },
-    moduleAssociation: 'infraestructura',
-    description: 'Area de bodegas, corrales y procesamiento',
+    moduleAssociation: 'procesamiento',
+    description: 'Area de procesamiento de productos agricolas y pecuarios',
     createdAt: new Date('2015-03-15'),
     updatedAt: new Date('2026-01-05'),
   },
@@ -301,10 +271,10 @@ const initialGeneralPlans: GeneralPlan[] = [
   },
   {
     id: '6',
-    title: 'Cosecha de miel - Temporada alta',
-    description: 'Extraccion de miel de todos los apiarios',
-    actionType: 'cosecha',
-    targetModule: 'apicultura',
+    title: 'Procesamiento de leche - Lote mensual',
+    description: 'Procesamiento de productos lacteos del mes',
+    actionType: 'otro',
+    targetModule: 'procesamiento',
     scheduledDate: new Date('2026-02-10'),
     estimatedDuration: 16,
     assignedTo: 'Carlos Rodriguez',
@@ -338,14 +308,14 @@ const initialGeneralPlans: GeneralPlan[] = [
   },
   {
     id: '8',
-    title: 'Capacitacion en apicultura 2025',
-    description: 'Curso de manejo de colmenas para nuevos trabajadores',
+    title: 'Capacitacion en manejo de ganado 2025',
+    description: 'Curso de bienestar animal para trabajadores',
     actionType: 'capacitacion',
-    targetModule: 'apicultura',
+    targetModule: 'pecuario',
     scheduledDate: new Date('2025-02-15'),
     estimatedDuration: 16,
     estimatedCost: 100000,
-    assignedTo: 'Carlos Rodriguez',
+    assignedTo: 'Maria Lopez',
     priority: 'high',
     status: 'completed',
     completedDate: new Date('2025-02-15'),
@@ -382,14 +352,14 @@ const initialGeneralPlans: GeneralPlan[] = [
   },
   {
     id: 'exec-8-2025',
-    title: 'Capacitacion en apicultura 2025',
-    description: 'Curso de manejo de colmenas para nuevos trabajadores',
+    title: 'Capacitacion en manejo de ganado 2025',
+    description: 'Curso de bienestar animal para trabajadores',
     actionType: 'capacitacion',
-    targetModule: 'apicultura',
+    targetModule: 'pecuario',
     scheduledDate: new Date('2025-02-15'),
     estimatedDuration: 16,
     estimatedCost: 100000,
-    assignedTo: 'Carlos Rodriguez',
+    assignedTo: 'Maria Lopez',
     priority: 'high',
     status: 'completed',
     completedDate: new Date('2025-02-15'),
@@ -408,7 +378,7 @@ const initialGeneralPlans: GeneralPlan[] = [
     title: 'Reparacion urgente de bomba de agua',
     description: 'Reparacion no planificada de bomba principal',
     actionType: 'reparacion',
-    targetModule: 'infraestructura',
+    targetModule: 'general',
     scheduledDate: new Date('2025-06-10'),
     estimatedDuration: 4,
     estimatedCost: 150000,
@@ -716,25 +686,17 @@ export const getMockFincaDashboardStats = async (): Promise<FincaDashboardStats>
   initializeDivisionsStore();
   initializeGeneralPlansStore();
 
-  // Get stats from all modules
+  // Get stats from MVP modules
   const [
-    apiculturaStats,
     pecuarioStats,
     agroStats,
     finanzasStats,
-    trabajadoresStats,
-    insumosStats,
-    infraestructuraStats,
-    activosStats,
+    procesamientoStats,
   ] = await Promise.all([
-    getMockApiculturaStats(),
     getMockPecuarioStats(),
     getMockAgroStats(),
     getMockFinanzasStats(),
-    getMockTrabajadoresStats(),
-    getMockInsumosStats(),
-    getMockInfraestructuraStats(),
-    getMockActivosStats(),
+    getMockProcesamientoStats(),
   ]);
 
   // Count pending plans
@@ -764,14 +726,7 @@ export const getMockFincaDashboardStats = async (): Promise<FincaDashboardStats>
       ? Math.round((finanzasStats.netProfit / finanzasStats.totalIncome) * 100)
       : 0,
 
-    // Module summaries
-    apicultura: {
-      totalApiarios: apiculturaStats.totalApiarios,
-      totalColmenas: apiculturaStats.totalColmenas,
-      activeColmenas: apiculturaStats.activeColmenas,
-      monthlyHoneyProduction: apiculturaStats.monthlyProduction.honey,
-      pendingTasks: apiculturaStats.pendingRevisions,
-    },
+    // Module summaries (MVP)
     pecuario: {
       totalLivestock: pecuarioStats.totalLivestock,
       bySpecies: {
@@ -798,27 +753,10 @@ export const getMockFincaDashboardStats = async (): Promise<FincaDashboardStats>
       pendingReceivables: finanzasStats.pendingReceivables,
       pendingPayables: finanzasStats.pendingPayables,
     },
-    trabajadores: {
-      totalWorkers: trabajadoresStats.totalWorkers,
-      activeWorkers: trabajadoresStats.activeWorkers,
-      averageAttendance: trabajadoresStats.averageAttendance,
-      pendingTasks: trabajadoresStats.pendingTasks,
-    },
-    insumos: {
-      totalItems: insumosStats.totalInsumosCount,
-      lowStockItems: insumosStats.bajoStock,
-      criticalStockItems: insumosStats.criticoStock,
-      totalValue: insumosStats.totalInventoryValue,
-    },
-    infraestructura: {
-      totalFacilities: infraestructuraStats.totalFacilities,
-      operationalFacilities: infraestructuraStats.operationalFacilities,
-      pendingMaintenances: infraestructuraStats.pendingMaintenances,
-    },
-    activos: {
-      totalAssets: activosStats.totalAssets,
-      activeAssets: activosStats.activeAssets,
-      totalValue: activosStats.totalCurrentValue,
+    procesamiento: {
+      activeBatches: procesamientoStats.activeBatches,
+      monthlyProduction: procesamientoStats.totalProduced,
+      pendingTasks: procesamientoStats.pendingQualityControl,
     },
 
     // Aggregated counts
@@ -835,7 +773,7 @@ export const getMockMonthlyAggregatedData = async (): Promise<MonthlyAggregatedD
       month: 'Ago',
       agroRevenue: 5950000,
       pecuarioRevenue: 1800000,
-      apiculturaRevenue: 980000,
+      procesamientoRevenue: 980000,
       totalExpenses: 1920000,
       netProfit: 6810000,
     },
@@ -843,7 +781,7 @@ export const getMockMonthlyAggregatedData = async (): Promise<MonthlyAggregatedD
       month: 'Sep',
       agroRevenue: 7140000,
       pecuarioRevenue: 2100000,
-      apiculturaRevenue: 1050000,
+      procesamientoRevenue: 1050000,
       totalExpenses: 2100000,
       netProfit: 8190000,
     },
@@ -851,7 +789,7 @@ export const getMockMonthlyAggregatedData = async (): Promise<MonthlyAggregatedD
       month: 'Oct',
       agroRevenue: 8260000,
       pecuarioRevenue: 1950000,
-      apiculturaRevenue: 975000,
+      procesamientoRevenue: 975000,
       totalExpenses: 1950000,
       netProfit: 9235000,
     },
@@ -859,7 +797,7 @@ export const getMockMonthlyAggregatedData = async (): Promise<MonthlyAggregatedD
       month: 'Nov',
       agroRevenue: 6650000,
       pecuarioRevenue: 2250000,
-      apiculturaRevenue: 1200000,
+      procesamientoRevenue: 1200000,
       totalExpenses: 2250000,
       netProfit: 7850000,
     },
@@ -867,7 +805,7 @@ export const getMockMonthlyAggregatedData = async (): Promise<MonthlyAggregatedD
       month: 'Dic',
       agroRevenue: 5040000,
       pecuarioRevenue: 1825000,
-      apiculturaRevenue: 1400000,
+      procesamientoRevenue: 1400000,
       totalExpenses: 1825000,
       netProfit: 6440000,
     },
@@ -875,7 +813,7 @@ export const getMockMonthlyAggregatedData = async (): Promise<MonthlyAggregatedD
       month: 'Ene',
       agroRevenue: 8750000,
       pecuarioRevenue: 2200000,
-      apiculturaRevenue: 1300000,
+      procesamientoRevenue: 1300000,
       totalExpenses: 2900000,
       netProfit: 9350000,
     },
@@ -886,36 +824,20 @@ export const getMockAggregatedTasks = async (): Promise<AggregatedTask[]> => {
   await delay(400);
   initializeGeneralPlansStore();
 
-  // Get tasks from all modules
+  // Get tasks from MVP modules
   const [
-    apiculturaTasks,
     pecuarioTasks,
     agroTasks,
     finanzasTasks,
-    trabajadoresTasks,
+    procesamientoTasks,
   ] = await Promise.all([
-    getMockApiculturaTasks(),
     getMockPecuarioTasks(),
     getMockAgroTasks(),
     getMockFinanzasTasks(),
-    getMockTrabajadoresTasks(),
+    getMockProcesamientoTasks(),
   ]);
 
   const aggregatedTasks: AggregatedTask[] = [];
-
-  // Add apicultura tasks
-  apiculturaTasks.slice(0, 3).forEach(task => {
-    aggregatedTasks.push({
-      id: `api-${task.id}`,
-      title: task.title,
-      module: 'apicultura',
-      moduleName: 'Apicultura',
-      type: task.type,
-      dueDate: task.dueDate,
-      priority: task.priority,
-      status: task.status,
-    });
-  });
 
   // Add pecuario tasks
   pecuarioTasks.slice(0, 3).forEach(task => {
@@ -928,6 +850,9 @@ export const getMockAggregatedTasks = async (): Promise<AggregatedTask[]> => {
       dueDate: task.dueDate,
       priority: task.priority,
       status: task.status,
+      description: (task as { description?: string }).description,
+      sourceId: task.id,
+      sourceType: 'task',
     });
   });
 
@@ -942,34 +867,44 @@ export const getMockAggregatedTasks = async (): Promise<AggregatedTask[]> => {
       dueDate: task.dueDate,
       priority: task.priority,
       status: task.status,
+      description: (task as { description?: string }).description,
+      sourceId: task.id,
+      sourceType: 'task',
     });
   });
 
   // Add finanzas tasks
-  finanzasTasks.slice(0, 2).forEach(task => {
+  finanzasTasks.slice(0, 3).forEach(task => {
     aggregatedTasks.push({
       id: `fin-${task.id}`,
       title: task.title,
-      module: 'general',
+      module: 'finanzas',
       moduleName: 'Finanzas',
       type: task.type,
       dueDate: task.dueDate,
       priority: task.priority,
       status: task.status,
+      description: (task as { description?: string }).description,
+      sourceId: task.id,
+      sourceType: 'task',
     });
   });
 
-  // Add trabajadores tasks
-  trabajadoresTasks.slice(0, 2).forEach(task => {
+  // Add procesamiento tasks
+  procesamientoTasks.slice(0, 3).forEach(task => {
     aggregatedTasks.push({
-      id: `trab-${task.id}`,
+      id: `proc-${task.id}`,
       title: task.title,
-      module: 'general',
-      moduleName: 'Trabajadores',
-      type: 'task',
+      module: 'procesamiento',
+      moduleName: 'Procesamiento',
+      type: task.type,
       dueDate: task.dueDate,
       priority: task.priority,
       status: task.status,
+      description: (task as { description?: string }).description,
+      assignedTo: task.assignedTo,
+      sourceId: task.id,
+      sourceType: 'task',
     });
   });
 
@@ -988,6 +923,9 @@ export const getMockAggregatedTasks = async (): Promise<AggregatedTask[]> => {
         priority: plan.priority,
         status: plan.status,
         assignedTo: plan.assignedTo,
+        description: plan.description,
+        sourceId: plan.id,
+        sourceType: 'plan',
       });
     });
 

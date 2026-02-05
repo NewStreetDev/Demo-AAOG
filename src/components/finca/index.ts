@@ -6,6 +6,8 @@ export { default as ModuleSummaryCard } from './ModuleSummaryCard';
 export { default as AggregatedTaskList } from './AggregatedTaskList';
 export { default as IncomeExpenseChart } from './IncomeExpenseChart';
 export { default as RevenueByModuleChart } from './RevenueByModuleChart';
+export { default as FincaMapCard } from './FincaMapCard';
+export { default as TaskDetailModal } from './TaskDetailModal';
 
 // Finca
 export { default as FincaFormModal } from './FincaFormModal';

@@ -9,7 +9,10 @@
       "Bash(tree:*)",
       "Bash(find:*)",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(npm run type-check:*)",
+      "Bash(npm run:*)",
+      "Bash(grep:*)"
     ]
   }
 }

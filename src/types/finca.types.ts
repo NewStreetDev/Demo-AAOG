@@ -133,7 +133,7 @@ export interface ModuleSummary {
   pendingTasks: number;
 }
 
-// Finca Dashboard Stats - Aggregated data from all modules
+// Finca Dashboard Stats - Aggregated data from MVP modules
 export interface FincaDashboardStats {
   // Finca info
   fincaName: string;
@@ -146,14 +146,7 @@ export interface FincaDashboardStats {
   netProfit: number;
   profitMargin: number;
 
-  // Module summaries
-  apicultura: {
-    totalApiarios: number;
-    totalColmenas: number;
-    activeColmenas: number;
-    monthlyHoneyProduction: number;
-    pendingTasks: number;
-  };
+  // Module summaries (MVP)
   pecuario: {
     totalLivestock: number;
     bySpecies: {
@@ -180,27 +173,10 @@ export interface FincaDashboardStats {
     pendingReceivables: number;
     pendingPayables: number;
   };
-  trabajadores: {
-    totalWorkers: number;
-    activeWorkers: number;
-    averageAttendance: number;
+  procesamiento: {
+    activeBatches: number;
+    monthlyProduction: number;
     pendingTasks: number;
-  };
-  insumos: {
-    totalItems: number;
-    lowStockItems: number;
-    criticalStockItems: number;
-    totalValue: number;
-  };
-  infraestructura: {
-    totalFacilities: number;
-    operationalFacilities: number;
-    pendingMaintenances: number;
-  };
-  activos: {
-    totalAssets: number;
-    activeAssets: number;
-    totalValue: number;
   };
 
   // Aggregated counts
@@ -214,7 +190,7 @@ export interface MonthlyAggregatedData {
   month: string;
   agroRevenue: number;
   pecuarioRevenue: number;
-  apiculturaRevenue: number;
+  procesamientoRevenue: number;
   totalExpenses: number;
   netProfit: number;
 }
@@ -230,6 +206,10 @@ export interface AggregatedTask {
   priority: PlanPriority;
   status: PlanStatus;
   assignedTo?: string;
+  // Additional fields for detail view
+  description?: string;
+  sourceId?: string;
+  sourceType?: 'plan' | 'task';
 }
 
 // Division summary for map/grid

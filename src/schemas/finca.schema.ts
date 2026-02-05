@@ -72,10 +72,8 @@ export const divisionStatuses = ['active', 'inactive', 'maintenance', 'resting']
 export const moduleAssociations = [
   'agro',
   'pecuario',
-  'apicultura',
   'procesamiento',
-  'activos',
-  'infraestructura',
+  'finanzas',
   'general',
 ] as const;
 
@@ -144,10 +142,8 @@ export const divisionStatusOptions = [
 export const moduleAssociationOptions = [
   { value: 'agro', label: 'Agricultura' },
   { value: 'pecuario', label: 'Pecuario' },
-  { value: 'apicultura', label: 'Apicultura' },
   { value: 'procesamiento', label: 'Procesamiento' },
-  { value: 'activos', label: 'Activos' },
-  { value: 'infraestructura', label: 'Infraestructura' },
+  { value: 'finanzas', label: 'Finanzas' },
   { value: 'general', label: 'General' },
 ];
 

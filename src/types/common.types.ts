@@ -17,8 +17,8 @@ export interface Farm {
 
 export type Status = 'active' | 'inactive' | 'pending';
 
-// Módulos del sistema
-export type SystemModule = 'agro' | 'pecuario' | 'apicultura' | 'procesamiento' | 'activos' | 'infraestructura' | 'general';
+// Módulos del sistema (MVP)
+export type SystemModule = 'agro' | 'pecuario' | 'procesamiento' | 'finanzas' | 'general';
 
 // Insumo usado en una acción
 export interface ActionInsumo {
