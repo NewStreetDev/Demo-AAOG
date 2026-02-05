@@ -252,7 +252,7 @@ export default function Reportes() {
       {/* Page header */}
       <div className="space-y-1 animate-fade-in">
         <h1 className="text-3xl font-bold text-gray-900 tracking-tight">
-          Reportes e Informes
+          Reportes y Análisis
         </h1>
         <p className="text-sm text-gray-600">
           Generación de reportes y consolidación de datos de la finca

@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Plus, Map, CalendarDays, Calendar } from 'lucide-react';
+import { Plus, Map, CalendarDays, Calendar, Info, Pencil } from 'lucide-react';
 import {
   FincaFormModal,
   DivisionList,
@@ -26,7 +26,7 @@ import {
 } from '../hooks/useAnnualPlan';
 import type { Division, GeneralPlan, AnnualPlan, PlanPhase } from '../types/finca.types';
 
-type TabType = 'divisiones' | 'planificacion';
+type TabType = 'info' | 'divisiones' | 'planificacion';
 
 export default function Finca() {
   const [activeTab, setActiveTab] = useState<TabType>('planificacion');
@@ -199,6 +199,7 @@ export default function Finca() {
   };
 
   const tabs: { id: TabType; label: string; icon: typeof Map }[] = [
+    { id: 'info', label: 'Información General', icon: Info },
     { id: 'divisiones', label: 'Divisiones', icon: Map },
     { id: 'planificacion', label: 'Planificación', icon: CalendarDays },
   ];
@@ -349,6 +350,102 @@ export default function Finca() {
 
   const renderTabContent = () => {
     switch (activeTab) {
+      case 'info':
+        return (
+          <div className="space-y-6">
+            {finca ? (
+              <div className="card p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-lg font-bold text-gray-900">Datos de la Finca</h3>
+                  <button
+                    onClick={handleEditFinca}
+                    className="btn-secondary inline-flex items-center gap-2 text-sm"
+                  >
+                    <Pencil className="w-4 h-4" />
+                    Editar
+                  </button>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <div>
+                    <p className="text-sm text-gray-500 mb-1">Nombre</p>
+                    <p className="font-medium text-gray-900">{finca.name}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500 mb-1">Área Total</p>
+                    <p className="font-medium text-gray-900">{finca.totalArea} hectáreas</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500 mb-1">Propietario</p>
+                    <p className="font-medium text-gray-900">{finca.owner}</p>
+                  </div>
+                  {finca.location?.address && (
+                    <div>
+                      <p className="text-sm text-gray-500 mb-1">Dirección</p>
+                      <p className="font-medium text-gray-900">{finca.location.address}</p>
+                    </div>
+                  )}
+                  {finca.location?.department && (
+                    <div>
+                      <p className="text-sm text-gray-500 mb-1">Provincia</p>
+                      <p className="font-medium text-gray-900">{finca.location.department}</p>
+                    </div>
+                  )}
+                  {finca.location?.municipality && (
+                    <div>
+                      <p className="text-sm text-gray-500 mb-1">Cantón</p>
+                      <p className="font-medium text-gray-900">{finca.location.municipality}</p>
+                    </div>
+                  )}
+                  {finca.contactPhone && (
+                    <div>
+                      <p className="text-sm text-gray-500 mb-1">Teléfono</p>
+                      <p className="font-medium text-gray-900">{finca.contactPhone}</p>
+                    </div>
+                  )}
+                  {finca.contactEmail && (
+                    <div>
+                      <p className="text-sm text-gray-500 mb-1">Correo</p>
+                      <p className="font-medium text-gray-900">{finca.contactEmail}</p>
+                    </div>
+                  )}
+                  <div>
+                    <p className="text-sm text-gray-500 mb-1">Estado</p>
+                    <span className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${
+                      finca.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'
+                    }`}>
+                      {finca.status === 'active' ? 'Activa' : 'Inactiva'}
+                    </span>
+                  </div>
+                </div>
+                {finca.description && (
+                  <div className="mt-6 pt-6 border-t border-gray-100">
+                    <p className="text-sm text-gray-500 mb-1">Descripción</p>
+                    <p className="text-gray-700">{finca.description}</p>
+                  </div>
+                )}
+                {finca.notes && (
+                  <div className="mt-4">
+                    <p className="text-sm text-gray-500 mb-1">Notas</p>
+                    <p className="text-gray-700">{finca.notes}</p>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="card p-8 text-center">
+                <Info className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                <p className="text-gray-500 mb-4">No hay información de la finca registrada</p>
+                <button
+                  onClick={handleEditFinca}
+                  className="btn-primary inline-flex items-center gap-2"
+                >
+                  <Plus className="w-4 h-4" />
+                  Registrar Finca
+                </button>
+              </div>
+            )}
+          </div>
+        );
+
       case 'divisiones':
         return (
           <>
@@ -374,6 +471,8 @@ export default function Finca() {
 
   const getActionButtons = () => {
     switch (activeTab) {
+      case 'info':
+        return null;
       case 'divisiones':
         return (
           <button
