@@ -16,6 +16,7 @@ import {
   type LoteFormData,
 } from '../../schemas/agro.schema';
 import { useCreateLote, useUpdateLote } from '../../hooks/useAgroMutations';
+import { useDivisions } from '../../hooks/useFinca';
 import type { Lote } from '../../types/agro.types';
 
 interface LoteFormModalProps {
@@ -34,7 +35,16 @@ export default function LoteFormModal({
   const isEditing = !!lote;
   const createMutation = useCreateLote();
   const updateMutation = useUpdateLote();
+  const { data: divisions } = useDivisions();
   const isLoading = createMutation.isPending || updateMutation.isPending;
+
+  // Filter divisions by type 'lote_agricola' for agricultural lots
+  const divisionOptions = [
+    { value: '', label: 'Sin asignar' },
+    ...(divisions || [])
+      .filter(d => d.type === 'lote_agricola')
+      .map(d => ({ value: d.id, label: d.name })),
+  ];
 
   const {
     register,
@@ -51,6 +61,7 @@ export default function LoteFormModal({
       soilType: '',
       irrigationType: undefined,
       status: undefined,
+      divisionId: '',
       notes: '',
     },
   });
@@ -64,6 +75,7 @@ export default function LoteFormModal({
         soilType: lote.soilType || '',
         irrigationType: lote.irrigationType,
         status: lote.status,
+        divisionId: lote.divisionId || '',
         notes: lote.notes || '',
       });
     } else if (open && !lote) {
@@ -74,6 +86,7 @@ export default function LoteFormModal({
         soilType: '',
         irrigationType: undefined,
         status: undefined,
+        divisionId: '',
         notes: '',
       });
     }
@@ -178,6 +191,22 @@ export default function LoteFormModal({
             />
           </FormField>
         </div>
+
+        {/* Row 4: Division */}
+        <FormField label="Division (Mi Finca)" error={errors.divisionId?.message}>
+          <Controller
+            name="divisionId"
+            control={control}
+            render={({ field }) => (
+              <FormSelect
+                value={field.value || ''}
+                onValueChange={field.onChange}
+                options={divisionOptions}
+                placeholder="Vincular a division..."
+              />
+            )}
+          />
+        </FormField>
 
         {/* Notes */}
         <FormField label="Notas" error={errors.notes?.message}>

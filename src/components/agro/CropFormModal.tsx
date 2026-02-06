@@ -15,10 +15,12 @@ import {
   cropStatusOptions,
   productTypeOptions,
   yieldUnitOptions,
+  planPhaseOptions,
   type CropFormData,
 } from '../../schemas/agro.schema';
 import { useCreateCrop, useUpdateCrop } from '../../hooks/useAgroMutations';
 import { useLotes } from '../../hooks/useAgro';
+import { useDivisions } from '../../hooks/useFinca';
 import type { Crop } from '../../types/agro.types';
 
 interface CropFormModalProps {
@@ -45,11 +47,20 @@ export default function CropFormModal({
   const updateMutation = useUpdateCrop();
   const isLoading = createMutation.isPending || updateMutation.isPending;
   const { data: lotes } = useLotes();
+  const { data: divisions } = useDivisions();
 
   const loteOptions = (lotes || []).map(l => ({
     value: l.id,
     label: `${l.name} (${l.code})`,
   }));
+
+  // Filter divisions by type 'lote_agricola'
+  const divisionOptions = [
+    { value: '', label: 'Sin asignar' },
+    ...(divisions || [])
+      .filter(d => d.type === 'lote_agricola')
+      .map(d => ({ value: d.id, label: d.name })),
+  ];
 
   const {
     register,
@@ -74,6 +85,10 @@ export default function CropFormModal({
       estimatedYield: '',
       actualYield: '',
       yieldUnit: '',
+      divisionId: '',
+      annualPlanId: '',
+      planPhase: undefined,
+      isFromPlanning: false,
       notes: '',
     },
   });
@@ -95,6 +110,10 @@ export default function CropFormModal({
         estimatedYield: crop.estimatedYield?.toString() || '',
         actualYield: crop.actualYield?.toString() || '',
         yieldUnit: crop.yieldUnit || '',
+        divisionId: crop.divisionId || '',
+        annualPlanId: crop.annualPlanId || '',
+        planPhase: crop.planPhase,
+        isFromPlanning: crop.isFromPlanning || false,
         notes: crop.notes || '',
       });
     } else if (open && !crop) {
@@ -113,6 +132,10 @@ export default function CropFormModal({
         estimatedYield: '',
         actualYield: '',
         yieldUnit: '',
+        divisionId: '',
+        annualPlanId: '',
+        planPhase: undefined,
+        isFromPlanning: false,
         notes: '',
       });
     }
@@ -298,6 +321,41 @@ export default function CropFormModal({
               )}
             />
           </FormField>
+        </div>
+
+        {/* Row 7: Planning Fields */}
+        <div className="border-t border-gray-100 pt-4">
+          <h4 className="text-sm font-medium text-gray-700 mb-3">Vinculacion con Planificacion</h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FormField label="Division (Mi Finca)" error={errors.divisionId?.message}>
+              <Controller
+                name="divisionId"
+                control={control}
+                render={({ field }) => (
+                  <FormSelect
+                    value={field.value || ''}
+                    onValueChange={field.onChange}
+                    options={divisionOptions}
+                    placeholder="Vincular a division..."
+                  />
+                )}
+              />
+            </FormField>
+            <FormField label="Fase del Plan" error={errors.planPhase?.message}>
+              <Controller
+                name="planPhase"
+                control={control}
+                render={({ field }) => (
+                  <FormSelect
+                    value={field.value || ''}
+                    onValueChange={field.onChange}
+                    options={planPhaseOptions}
+                    placeholder="Seleccionar fase..."
+                  />
+                )}
+              />
+            </FormField>
+          </div>
         </div>
 
         {/* Notes */}

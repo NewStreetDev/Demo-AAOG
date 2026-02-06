@@ -18,6 +18,7 @@ import {
 } from '../../schemas/agro.schema';
 import { useCreateHarvest, useUpdateHarvest } from '../../hooks/useAgroMutations';
 import { useLotes, useCrops } from '../../hooks/useAgro';
+import { useProcessingBatches } from '../../hooks/useProcesamiento';
 import type { Harvest, Lote, Crop } from '../../types/agro.types';
 
 interface HarvestFormModalProps {
@@ -44,8 +45,17 @@ export default function HarvestFormModal({
 
   const { data: lotes } = useLotes();
   const { data: crops } = useCrops();
+  const { data: processingBatches } = useProcessingBatches();
 
   const loteOptions = lotes?.map(l => ({ value: l.id, label: `${l.code} - ${l.name}` })) || [];
+
+  // Processing batch options for when destination='procesamiento'
+  const batchOptions = [
+    { value: '', label: 'Sin asignar a lote' },
+    ...(processingBatches || [])
+      .filter(b => b.status === 'in_progress' || b.status === 'pending')
+      .map(b => ({ value: b.id, label: `${b.batchCode} - ${b.processTypeName || 'Procesamiento'}` })),
+  ];
 
   const {
     register,
@@ -64,6 +74,7 @@ export default function HarvestFormModal({
       unit: '',
       quality: undefined,
       destination: undefined,
+      batchId: '',
       pricePerUnit: '',
       harvestedBy: '',
       notes: '',
@@ -80,6 +91,8 @@ export default function HarvestFormModal({
     label: `${c.name} - ${c.variety}${selectedLoteId ? '' : ` (${c.loteName})`}`
   }));
 
+  const selectedDestination = watch('destination');
+
   useEffect(() => {
     if (open && harvest) {
       reset({
@@ -92,6 +105,7 @@ export default function HarvestFormModal({
         unit: harvest.unit,
         quality: harvest.quality,
         destination: harvest.destination,
+        batchId: harvest.batchId || '',
         pricePerUnit: harvest.pricePerUnit?.toString() || '',
         harvestedBy: harvest.harvestedBy || '',
         notes: harvest.notes || '',
@@ -105,6 +119,7 @@ export default function HarvestFormModal({
         unit: 'kg',
         quality: undefined,
         destination: undefined,
+        batchId: '',
         pricePerUnit: '',
         harvestedBy: '',
         notes: '',
@@ -245,6 +260,25 @@ export default function HarvestFormModal({
             />
           </FormField>
         </div>
+
+        {/* Conditional: Batch selection when destination is 'procesamiento' */}
+        {selectedDestination === 'procesamiento' && (
+          <FormField label="Lote de Procesamiento" error={errors.batchId?.message}>
+            <Controller
+              name="batchId"
+              control={control}
+              render={({ field }) => (
+                <FormSelect
+                  value={field.value || ''}
+                  onValueChange={field.onChange}
+                  options={batchOptions}
+                  placeholder="Asignar a lote de procesamiento..."
+                  error={errors.batchId?.message}
+                />
+              )}
+            />
+          </FormField>
+        )}
 
         {/* Row 5: Price and Harvested By */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

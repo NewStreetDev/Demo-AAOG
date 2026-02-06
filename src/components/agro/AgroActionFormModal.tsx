@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm, Controller, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Plus, Trash2, Package, Wrench } from 'lucide-react';
 import { Modal } from '../common/Modals';
 import {
   FormInput,
@@ -12,7 +12,10 @@ import {
 import {
   agroActionFormSchema,
   agroActionTypeOptions,
+  agroActionStatusOptions,
+  agroActionPriorityOptions,
   weatherConditionOptions,
+  planPhaseOptions,
   type AgroActionFormData,
 } from '../../schemas/agro.schema';
 import { useCreateAgroAction, useUpdateAgroAction } from '../../hooks/useAgroMutations';
@@ -60,15 +63,33 @@ export default function AgroActionFormModal({
       cropId: '',
       type: undefined,
       date: '',
+      status: 'pending',
+      priority: undefined,
       description: '',
+      insumos: [],
+      herramientas: [],
       insumoUsed: '',
       quantity: '',
       unit: '',
       cost: '',
       performedBy: '',
       weatherConditions: '',
+      annualPlanId: '',
+      planPhase: undefined,
+      linkedPlanId: '',
+      isFromPlanning: false,
       notes: '',
     },
+  });
+
+  const { fields: insumoFields, append: appendInsumo, remove: removeInsumo } = useFieldArray({
+    control,
+    name: 'insumos',
+  });
+
+  const { fields: herramientaFields, append: appendHerramienta, remove: removeHerramienta } = useFieldArray({
+    control,
+    name: 'herramientas',
   });
 
   const selectedLoteId = watch('loteId');
@@ -93,13 +114,29 @@ export default function AgroActionFormModal({
         date: action.date
           ? new Date(action.date).toISOString().split('T')[0]
           : '',
+        status: action.status,
+        priority: action.priority,
         description: action.description,
+        insumos: action.insumos?.map(i => ({
+          nombre: i.nombre,
+          cantidad: i.cantidad.toString(),
+          unidad: i.unidad,
+          costo: i.costo?.toString() || '',
+        })) || [],
+        herramientas: action.herramientas?.map(h => ({
+          nombre: h.nombre,
+          descripcion: h.descripcion || '',
+        })) || [],
         insumoUsed: action.insumoUsed || '',
         quantity: action.quantity?.toString() || '',
         unit: action.unit || '',
         cost: action.cost?.toString() || '',
         performedBy: action.performedBy,
         weatherConditions: action.weatherConditions || '',
+        annualPlanId: action.annualPlanId || '',
+        planPhase: action.planPhase,
+        linkedPlanId: action.linkedPlanId || '',
+        isFromPlanning: action.isFromPlanning || false,
         notes: action.notes || '',
       });
     } else if (open && !action) {
@@ -108,13 +145,21 @@ export default function AgroActionFormModal({
         cropId: preselectedCrop?.id || '',
         type: undefined,
         date: new Date().toISOString().split('T')[0],
+        status: 'pending',
+        priority: undefined,
         description: '',
+        insumos: [],
+        herramientas: [],
         insumoUsed: '',
         quantity: '',
         unit: '',
         cost: '',
         performedBy: '',
         weatherConditions: '',
+        annualPlanId: '',
+        planPhase: undefined,
+        linkedPlanId: '',
+        isFromPlanning: false,
         notes: '',
       });
     }
@@ -144,7 +189,7 @@ export default function AgroActionFormModal({
           ? 'Modifica los datos de la accion'
           : 'Registra una nueva accion agricola'
       }
-      size="md"
+      size="lg"
     >
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
         {/* Row 1: Lote and Crop */}
@@ -183,8 +228,8 @@ export default function AgroActionFormModal({
           </FormField>
         </div>
 
-        {/* Row 2: Type and Date */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Row 2: Type, Date, Status, Priority */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <FormField label="Tipo de Accion" required error={errors.type?.message}>
             <Controller
               name="type"
@@ -205,6 +250,36 @@ export default function AgroActionFormModal({
               {...register('date')}
               type="date"
               error={errors.date?.message}
+            />
+          </FormField>
+          <FormField label="Estado" required error={errors.status?.message}>
+            <Controller
+              name="status"
+              control={control}
+              render={({ field }) => (
+                <FormSelect
+                  value={field.value}
+                  onValueChange={field.onChange}
+                  options={agroActionStatusOptions}
+                  placeholder="Seleccionar..."
+                  error={errors.status?.message}
+                />
+              )}
+            />
+          </FormField>
+          <FormField label="Prioridad" error={errors.priority?.message}>
+            <Controller
+              name="priority"
+              control={control}
+              render={({ field }) => (
+                <FormSelect
+                  value={field.value}
+                  onValueChange={field.onChange}
+                  options={agroActionPriorityOptions}
+                  placeholder="Seleccionar..."
+                  error={errors.priority?.message}
+                />
+              )}
             />
           </FormField>
         </div>
@@ -245,43 +320,127 @@ export default function AgroActionFormModal({
           />
         </FormField>
 
-        {/* Row 5: Insumo and Quantity */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <FormField label="Insumo Utilizado" error={errors.insumoUsed?.message}>
-            <FormInput
-              {...register('insumoUsed')}
-              placeholder="Ej: Fertilizante NPK"
-              error={errors.insumoUsed?.message}
-            />
-          </FormField>
-          <FormField label="Cantidad" error={errors.quantity?.message}>
-            <FormInput
-              {...register('quantity')}
-              type="number"
-              step="0.1"
-              placeholder="Ej: 50"
-              error={errors.quantity?.message}
-            />
-          </FormField>
-          <FormField label="Unidad" error={errors.unit?.message}>
-            <FormInput
-              {...register('unit')}
-              placeholder="Ej: kg, L, unidades"
-              error={errors.unit?.message}
-            />
-          </FormField>
+        {/* Insumos - Dynamic Array */}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
+              <Package className="w-4 h-4" />
+              Insumos Utilizados
+            </label>
+            <button
+              type="button"
+              onClick={() => appendInsumo({ nombre: '', cantidad: '', unidad: '', costo: '' })}
+              className="text-sm text-green-600 hover:text-green-700 flex items-center gap-1"
+            >
+              <Plus className="w-4 h-4" />
+              Agregar Insumo
+            </button>
+          </div>
+
+          {insumoFields.length === 0 ? (
+            <p className="text-sm text-gray-500 italic">No hay insumos registrados</p>
+          ) : (
+            <div className="space-y-3">
+              {insumoFields.map((field, index) => (
+                <div key={field.id} className="grid grid-cols-12 gap-2 items-start p-3 bg-gray-50 rounded-lg">
+                  <div className="col-span-12 md:col-span-4">
+                    <FormInput
+                      {...register(`insumos.${index}.nombre`)}
+                      placeholder="Nombre del insumo"
+                      error={errors.insumos?.[index]?.nombre?.message}
+                    />
+                  </div>
+                  <div className="col-span-4 md:col-span-2">
+                    <FormInput
+                      {...register(`insumos.${index}.cantidad`)}
+                      type="number"
+                      step="0.1"
+                      placeholder="Cantidad"
+                      error={errors.insumos?.[index]?.cantidad?.message}
+                    />
+                  </div>
+                  <div className="col-span-4 md:col-span-2">
+                    <FormInput
+                      {...register(`insumos.${index}.unidad`)}
+                      placeholder="Unidad"
+                      error={errors.insumos?.[index]?.unidad?.message}
+                    />
+                  </div>
+                  <div className="col-span-3 md:col-span-3">
+                    <FormInput
+                      {...register(`insumos.${index}.costo`)}
+                      type="number"
+                      step="100"
+                      placeholder="Costo"
+                      error={errors.insumos?.[index]?.costo?.message}
+                    />
+                  </div>
+                  <div className="col-span-1 flex justify-center">
+                    <button
+                      type="button"
+                      onClick={() => removeInsumo(index)}
+                      className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
-        {/* Row 6: Cost */}
-        <FormField label="Costo (colones)" error={errors.cost?.message}>
-          <FormInput
-            {...register('cost')}
-            type="number"
-            step="100"
-            placeholder="Ej: 45000"
-            error={errors.cost?.message}
-          />
-        </FormField>
+        {/* Herramientas - Dynamic Array */}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
+              <Wrench className="w-4 h-4" />
+              Herramientas Utilizadas
+            </label>
+            <button
+              type="button"
+              onClick={() => appendHerramienta({ nombre: '', descripcion: '' })}
+              className="text-sm text-green-600 hover:text-green-700 flex items-center gap-1"
+            >
+              <Plus className="w-4 h-4" />
+              Agregar Herramienta
+            </button>
+          </div>
+
+          {herramientaFields.length === 0 ? (
+            <p className="text-sm text-gray-500 italic">No hay herramientas registradas</p>
+          ) : (
+            <div className="space-y-3">
+              {herramientaFields.map((field, index) => (
+                <div key={field.id} className="grid grid-cols-12 gap-2 items-start p-3 bg-gray-50 rounded-lg">
+                  <div className="col-span-12 md:col-span-5">
+                    <FormInput
+                      {...register(`herramientas.${index}.nombre`)}
+                      placeholder="Nombre de la herramienta"
+                      error={errors.herramientas?.[index]?.nombre?.message}
+                    />
+                  </div>
+                  <div className="col-span-11 md:col-span-6">
+                    <FormInput
+                      {...register(`herramientas.${index}.descripcion`)}
+                      placeholder="Descripcion (opcional)"
+                      error={errors.herramientas?.[index]?.descripcion?.message}
+                    />
+                  </div>
+                  <div className="col-span-1 flex justify-center">
+                    <button
+                      type="button"
+                      onClick={() => removeHerramienta(index)}
+                      className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
 
         {/* Notes */}
         <FormField label="Notas" error={errors.notes?.message}>
