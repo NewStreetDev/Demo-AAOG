@@ -362,21 +362,3 @@ export {
   REPORT_ROLE_PERMISSIONS,
 } from './reportes.types';
 
-// ============================================================================
-// TIPOS ADICIONALES (si existen)
-// ============================================================================
-
-// Dashboard general
-export type * from './dashboard.types';
-
-// Trabajadores
-export type * from './trabajadores.types';
-
-// Infraestructura
-export type * from './infraestructura.types';
-
-// Activos
-export type * from './activos.types';
-
-// Insumos (catálogo)
-export type * from './insumos.types';
