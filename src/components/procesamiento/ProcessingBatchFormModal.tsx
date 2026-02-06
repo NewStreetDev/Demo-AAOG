@@ -64,10 +64,10 @@ export default function ProcessingBatchFormModal({
     setValue,
     formState: { errors },
   } = useForm<ProcessingBatchFormData>({
-    resolver: zodResolver(processingBatchFormSchema),
+    resolver: zodResolver(processingBatchFormSchema) as never,
     defaultValues: {
-      processType: '',
-      processDescription: '',
+      processTypeId: '',
+      processTypeName: '',
       processDate: '',
       inputProduct: '',
       inputQuantity: '',
@@ -109,8 +109,8 @@ export default function ProcessingBatchFormModal({
   useEffect(() => {
     if (open && batch) {
       reset({
-        processType: batch.processType,
-        processDescription: batch.processDescription || '',
+        processTypeId: batch.processTypeId || batch.processType || '',
+        processTypeName: batch.processTypeName || '',
         processDate: new Date(batch.processDate).toISOString().slice(0, 16),
         inputProduct: batch.inputProduct,
         inputQuantity: batch.inputQuantity.toString(),
@@ -134,8 +134,8 @@ export default function ProcessingBatchFormModal({
       setCustomProcessType('');
     } else if (open && !batch) {
       reset({
-        processType: '',
-        processDescription: '',
+        processTypeId: '',
+        processTypeName: '',
         processDate: new Date().toISOString().slice(0, 16),
         inputProduct: '',
         inputQuantity: '',
@@ -160,7 +160,9 @@ export default function ProcessingBatchFormModal({
 
   const handleAddCustomProcess = () => {
     if (customProcessType.trim()) {
-      setValue('processType', customProcessType.trim());
+      const trimmed = customProcessType.trim();
+      setValue('processTypeId', trimmed);
+      setValue('processTypeName', trimmed);
       setShowCustomProcess(false);
       setCustomProcessType('');
     }
@@ -200,7 +202,7 @@ export default function ProcessingBatchFormModal({
 
         {/* Row 1: Process Type and Status */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField label="Tipo de Proceso" required error={errors.processType?.message}>
+          <FormField label="Tipo de Proceso" required error={errors.processTypeId?.message}>
             {showCustomProcess ? (
               <div className="flex gap-2">
                 <FormInput
@@ -220,15 +222,18 @@ export default function ProcessingBatchFormModal({
             ) : (
               <div className="flex gap-2">
                 <Controller
-                  name="processType"
+                  name="processTypeId"
                   control={control}
                   render={({ field }) => (
                     <FormSelect
                       value={field.value}
-                      onValueChange={field.onChange}
+                      onValueChange={(val) => {
+                        field.onChange(val);
+                        setValue('processTypeName', val);
+                      }}
                       options={commonProcessTypes.map(p => ({ value: p, label: p }))}
                       placeholder="Seleccionar proceso..."
-                      error={errors.processType?.message}
+                      error={errors.processTypeId?.message}
                       className="flex-1"
                     />
                   )}
@@ -261,23 +266,14 @@ export default function ProcessingBatchFormModal({
           </FormField>
         </div>
 
-        {/* Row 2: Process Date and Description */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField label="Fecha del Proceso" required error={errors.processDate?.message}>
-            <FormInput
-              {...register('processDate')}
-              type="datetime-local"
-              error={errors.processDate?.message}
-            />
-          </FormField>
-          <FormField label="Descripcion del Proceso" error={errors.processDescription?.message}>
-            <FormInput
-              {...register('processDescription')}
-              placeholder="Descripcion opcional..."
-              error={errors.processDescription?.message}
-            />
-          </FormField>
-        </div>
+        {/* Row 2: Process Date */}
+        <FormField label="Fecha del Proceso" required error={errors.processDate?.message}>
+          <FormInput
+            {...register('processDate')}
+            type="datetime-local"
+            error={errors.processDate?.message}
+          />
+        </FormField>
 
         {/* Input Section */}
         <div className="border-t border-gray-100 pt-4">

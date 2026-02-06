@@ -52,7 +52,7 @@ export default function ProcessingBatchDetailModal({
 
   if (!batch) return null;
 
-  const status = statusConfig[batch.status];
+  const status = statusConfig[batch.status] || statusConfig.en_proceso;
   const StatusIcon = status.icon;
 
   const handleDelete = async () => {
@@ -248,14 +248,6 @@ export default function ProcessingBatchDetailModal({
             </div>
           )}
         </div>
-
-        {/* Process Description */}
-        {batch.processDescription && (
-          <div>
-            <h3 className="text-sm font-medium text-gray-500 mb-2">Descripcion del Proceso</h3>
-            <p className="text-gray-700 bg-gray-50 rounded-lg p-3">{batch.processDescription}</p>
-          </div>
-        )}
 
         {/* Notes */}
         {batch.notes && (

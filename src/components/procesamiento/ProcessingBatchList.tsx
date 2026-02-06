@@ -108,7 +108,7 @@ export default function ProcessingBatchList({ batches, onBatchClick }: Processin
       <div className="space-y-3 max-h-[600px] overflow-y-auto">
         {filteredBatches.length > 0 ? (
           filteredBatches.map((batch) => {
-            const status = statusConfig[batch.status];
+            const status = statusConfig[batch.status] || statusConfig.en_proceso;
             const StatusIcon = status.icon;
 
             return (
