@@ -1,4 +1,4 @@
-import { Edit, Trash2, Calendar, Clock, User, DollarSign, Tag, MapPin, CheckCircle, Link2, AlertCircle } from 'lucide-react';
+import { Edit, Trash2, Calendar, Clock, User, DollarSign, Tag, MapPin, CheckCircle, Link2, AlertCircle, Package, Wrench } from 'lucide-react';
 import Modal from '../common/Modals/Modal';
 import type { GeneralPlan } from '../../types/finca.types';
 import { useDeleteGeneralPlan } from '../../hooks/useFincaMutations';
@@ -284,6 +284,64 @@ export default function GeneralPlanDetailModal({
             <p className="text-xs text-amber-600 mt-1">
               Esta accion no estaba en la planificacion inicial y fue agregada durante la fase de ejecucion.
             </p>
+          </div>
+        )}
+
+        {/* Insumos Utilizados */}
+        {plan.insumos && plan.insumos.length > 0 && (
+          <div>
+            <div className="flex items-center gap-2 mb-3">
+              <Package className="w-4 h-4 text-green-600" />
+              <h4 className="text-sm font-medium text-gray-700">Insumos Utilizados</h4>
+            </div>
+            <div className="bg-green-50 rounded-lg p-3">
+              <div className="space-y-2">
+                {plan.insumos.map((insumo, index) => (
+                  <div key={index} className="flex items-center justify-between text-sm">
+                    <span className="text-gray-900">{insumo.nombre}</span>
+                    <div className="flex items-center gap-4">
+                      <span className="text-gray-600">{insumo.cantidad} {insumo.unidad}</span>
+                      {insumo.costo && (
+                        <span className="text-green-700 font-medium">
+                          {formatCurrency(insumo.costo)}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {/* Total de costos de insumos */}
+              {plan.insumos.some(i => i.costo) && (
+                <div className="border-t border-green-200 mt-2 pt-2 flex justify-between text-sm font-medium">
+                  <span className="text-green-800">Total Insumos:</span>
+                  <span className="text-green-700">
+                    {formatCurrency(plan.insumos.reduce((sum, i) => sum + (i.costo || 0), 0))}
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Herramientas Utilizadas */}
+        {plan.herramientas && plan.herramientas.length > 0 && (
+          <div>
+            <div className="flex items-center gap-2 mb-3">
+              <Wrench className="w-4 h-4 text-blue-600" />
+              <h4 className="text-sm font-medium text-gray-700">Herramientas Utilizadas</h4>
+            </div>
+            <div className="bg-blue-50 rounded-lg p-3">
+              <div className="space-y-2">
+                {plan.herramientas.map((herramienta, index) => (
+                  <div key={index} className="text-sm">
+                    <span className="text-gray-900 font-medium">{herramienta.nombre}</span>
+                    {herramienta.descripcion && (
+                      <span className="text-gray-600"> - {herramienta.descripcion}</span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         )}
 

@@ -48,11 +48,12 @@ export default function FincaFormModal({
         address: finca.location.address || '',
         department: finca.location.department || '',
         municipality: finca.location.municipality || '',
-        owner: finca.owner,
+        owner: finca.ownerName,
         contactPhone: finca.contactPhone || '',
         contactEmail: finca.contactEmail || '',
         status: finca.status,
         description: finca.description || '',
+        imageUrl: finca.imageUrl || '',
         notes: finca.notes || '',
       });
     }
@@ -199,6 +200,14 @@ export default function FincaFormModal({
             {...register('description')}
             placeholder="Descripcion de la finca..."
             rows={3}
+          />
+        </FormField>
+
+        <FormField label="URL de Imagen" error={errors.imageUrl?.message}>
+          <FormInput
+            {...register('imageUrl')}
+            placeholder="https://ejemplo.com/imagen.jpg"
+            error={errors.imageUrl?.message}
           />
         </FormField>
 

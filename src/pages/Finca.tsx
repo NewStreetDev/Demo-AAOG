@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { Plus, Map, CalendarDays, Calendar, Info, Pencil } from 'lucide-react';
 import {
   FincaFormModal,
+  FincaMapCard,
   DivisionList,
   DivisionFormModal,
   DivisionDetailModal,
@@ -12,6 +13,8 @@ import {
   AnnualPlanFormModal,
   AnnualPlanDetailModal,
 } from '../components/finca';
+import WeatherWidget from '../components/common/Cards/WeatherWidget';
+import { useWeather } from '../hooks/useDashboard';
 import { CalendarView } from '../components/common/Calendar';
 import ListCardSkeleton from '../components/common/Skeletons/ListCardSkeleton';
 import { cn } from '../utils/cn';
@@ -55,6 +58,7 @@ export default function Finca() {
   // Queries
   const { data: finca } = useFinca();
   const { data: divisions, isLoading: divisionsLoading } = useDivisions();
+  const { data: weather, isLoading: weatherLoading } = useWeather();
 
   // Annual plan queries
   const { data: annualPlans, isLoading: annualPlansLoading } = useAnnualPlans();
@@ -354,86 +358,111 @@ export default function Finca() {
         return (
           <div className="space-y-6">
             {finca ? (
-              <div className="card p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-lg font-bold text-gray-900">Datos de la Finca</h3>
-                  <button
-                    onClick={handleEditFinca}
-                    className="btn-secondary inline-flex items-center gap-2 text-sm"
-                  >
-                    <Pencil className="w-4 h-4" />
-                    Editar
-                  </button>
+              <>
+                {/* Datos de la Finca */}
+                <div className="card p-6">
+                  <div className="flex items-center justify-between mb-6">
+                    <h3 className="text-lg font-bold text-gray-900">Datos de la Finca</h3>
+                    <button
+                      onClick={handleEditFinca}
+                      className="btn-secondary inline-flex items-center gap-2 text-sm"
+                    >
+                      <Pencil className="w-4 h-4" />
+                      Editar
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div>
+                      <p className="text-sm text-gray-500 mb-1">Nombre</p>
+                      <p className="font-medium text-gray-900">{finca.name}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500 mb-1">Area Total</p>
+                      <p className="font-medium text-gray-900">{finca.totalArea} hectareas</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500 mb-1">Propietario</p>
+                      <p className="font-medium text-gray-900">{finca.ownerName}</p>
+                    </div>
+                    {finca.location?.address && (
+                      <div>
+                        <p className="text-sm text-gray-500 mb-1">Direccion</p>
+                        <p className="font-medium text-gray-900">{finca.location.address}</p>
+                      </div>
+                    )}
+                    {finca.location?.department && (
+                      <div>
+                        <p className="text-sm text-gray-500 mb-1">Provincia</p>
+                        <p className="font-medium text-gray-900">{finca.location.department}</p>
+                      </div>
+                    )}
+                    {finca.location?.municipality && (
+                      <div>
+                        <p className="text-sm text-gray-500 mb-1">Canton</p>
+                        <p className="font-medium text-gray-900">{finca.location.municipality}</p>
+                      </div>
+                    )}
+                    {finca.contactPhone && (
+                      <div>
+                        <p className="text-sm text-gray-500 mb-1">Telefono</p>
+                        <p className="font-medium text-gray-900">{finca.contactPhone}</p>
+                      </div>
+                    )}
+                    {finca.contactEmail && (
+                      <div>
+                        <p className="text-sm text-gray-500 mb-1">Correo</p>
+                        <p className="font-medium text-gray-900">{finca.contactEmail}</p>
+                      </div>
+                    )}
+                    <div>
+                      <p className="text-sm text-gray-500 mb-1">Estado</p>
+                      <span className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${
+                        finca.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'
+                      }`}>
+                        {finca.status === 'active' ? 'Activa' : 'Inactiva'}
+                      </span>
+                    </div>
+                  </div>
+                  {finca.description && (
+                    <div className="mt-6 pt-6 border-t border-gray-100">
+                      <p className="text-sm text-gray-500 mb-1">Descripcion</p>
+                      <p className="text-gray-700">{finca.description}</p>
+                    </div>
+                  )}
+                  {finca.notes && (
+                    <div className="mt-4">
+                      <p className="text-sm text-gray-500 mb-1">Notas</p>
+                      <p className="text-gray-700">{finca.notes}</p>
+                    </div>
+                  )}
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  <div>
-                    <p className="text-sm text-gray-500 mb-1">Nombre</p>
-                    <p className="font-medium text-gray-900">{finca.name}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500 mb-1">Área Total</p>
-                    <p className="font-medium text-gray-900">{finca.totalArea} hectáreas</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500 mb-1">Propietario</p>
-                    <p className="font-medium text-gray-900">{finca.owner}</p>
-                  </div>
-                  {finca.location?.address && (
-                    <div>
-                      <p className="text-sm text-gray-500 mb-1">Dirección</p>
-                      <p className="font-medium text-gray-900">{finca.location.address}</p>
+
+                {/* Mapa y Clima - Informacion Geografica */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {/* Mapa de ubicacion */}
+                  <FincaMapCard finca={finca} />
+
+                  {/* Widget de clima */}
+                  {weatherLoading ? (
+                    <div className="card p-6 animate-pulse">
+                      <div className="h-6 w-32 bg-gray-200 rounded mb-4" />
+                      <div className="h-16 w-24 bg-gray-200 rounded mb-4" />
+                      <div className="h-4 w-48 bg-gray-200 rounded mb-6" />
+                      <div className="grid grid-cols-4 gap-3">
+                        {[...Array(4)].map((_, i) => (
+                          <div key={i} className="h-24 bg-gray-200 rounded" />
+                        ))}
+                      </div>
                     </div>
-                  )}
-                  {finca.location?.department && (
-                    <div>
-                      <p className="text-sm text-gray-500 mb-1">Provincia</p>
-                      <p className="font-medium text-gray-900">{finca.location.department}</p>
-                    </div>
-                  )}
-                  {finca.location?.municipality && (
-                    <div>
-                      <p className="text-sm text-gray-500 mb-1">Cantón</p>
-                      <p className="font-medium text-gray-900">{finca.location.municipality}</p>
-                    </div>
-                  )}
-                  {finca.contactPhone && (
-                    <div>
-                      <p className="text-sm text-gray-500 mb-1">Teléfono</p>
-                      <p className="font-medium text-gray-900">{finca.contactPhone}</p>
-                    </div>
-                  )}
-                  {finca.contactEmail && (
-                    <div>
-                      <p className="text-sm text-gray-500 mb-1">Correo</p>
-                      <p className="font-medium text-gray-900">{finca.contactEmail}</p>
-                    </div>
-                  )}
-                  <div>
-                    <p className="text-sm text-gray-500 mb-1">Estado</p>
-                    <span className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${
-                      finca.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'
-                    }`}>
-                      {finca.status === 'active' ? 'Activa' : 'Inactiva'}
-                    </span>
-                  </div>
+                  ) : weather ? (
+                    <WeatherWidget weather={weather} />
+                  ) : null}
                 </div>
-                {finca.description && (
-                  <div className="mt-6 pt-6 border-t border-gray-100">
-                    <p className="text-sm text-gray-500 mb-1">Descripción</p>
-                    <p className="text-gray-700">{finca.description}</p>
-                  </div>
-                )}
-                {finca.notes && (
-                  <div className="mt-4">
-                    <p className="text-sm text-gray-500 mb-1">Notas</p>
-                    <p className="text-gray-700">{finca.notes}</p>
-                  </div>
-                )}
-              </div>
+              </>
             ) : (
               <div className="card p-8 text-center">
                 <Info className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-                <p className="text-gray-500 mb-4">No hay información de la finca registrada</p>
+                <p className="text-gray-500 mb-4">No hay informacion de la finca registrada</p>
                 <button
                   onClick={handleEditFinca}
                   className="btn-primary inline-flex items-center gap-2"

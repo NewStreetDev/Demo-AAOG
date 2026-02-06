@@ -111,12 +111,12 @@ export default function DivisionDetailModal({
           )}
         </div>
 
-        {/* Module association */}
-        {division.moduleAssociation && (
+        {/* Module associations */}
+        {division.moduleAssociations && division.moduleAssociations.length > 0 && (
           <div className="flex items-center gap-2 text-gray-600">
             <Link2 className="w-4 h-4" />
             <span className="text-sm">
-              Asociado a: <strong>{moduleLabels[division.moduleAssociation]}</strong>
+              Asociado a: <strong>{division.moduleAssociations.map(m => moduleLabels[m]).join(', ')}</strong>
             </span>
           </div>
         )}

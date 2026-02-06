@@ -3,12 +3,13 @@ import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Loader2 } from 'lucide-react';
 import { Modal } from '../common/Modals';
-import { FormInput, FormField, FormSelect, FormTextArea } from '../common/Forms';
+import { FormInput, FormField, FormSelect, FormTextArea, FormCheckbox } from '../common/Forms';
 import {
   divisionFormSchema,
   divisionTypeOptions,
   divisionStatusOptions,
   moduleAssociationOptions,
+  moduleAssociations,
   type DivisionFormData,
 } from '../../schemas/finca.schema';
 import { useCreateDivision, useUpdateDivision } from '../../hooks/useFincaMutations';
@@ -52,7 +53,7 @@ export default function DivisionFormModal({
       lat: '',
       lng: '',
       parentDivisionId: '',
-      moduleAssociation: undefined,
+      moduleAssociations: [],
       description: '',
       notes: '',
     },
@@ -69,7 +70,7 @@ export default function DivisionFormModal({
         lat: division.coordinates?.lat ? String(division.coordinates.lat) : '',
         lng: division.coordinates?.lng ? String(division.coordinates.lng) : '',
         parentDivisionId: division.parentDivisionId || '',
-        moduleAssociation: division.moduleAssociation || undefined,
+        moduleAssociations: division.moduleAssociations || [],
         description: division.description || '',
         notes: division.notes || '',
       });
@@ -83,7 +84,7 @@ export default function DivisionFormModal({
         lat: '',
         lng: '',
         parentDivisionId: '',
-        moduleAssociation: undefined,
+        moduleAssociations: [],
         description: '',
         notes: '',
       });
@@ -184,20 +185,28 @@ export default function DivisionFormModal({
             />
           </FormField>
 
-          <FormField label="Modulo Asociado" error={errors.moduleAssociation?.message}>
+          <FormField label="Modulos Asociados" error={errors.moduleAssociations?.message}>
             <Controller
-              name="moduleAssociation"
+              name="moduleAssociations"
               control={control}
               render={({ field }) => (
-                <FormSelect
-                  value={field.value || ''}
-                  onValueChange={field.onChange}
-                  options={[
-                    { value: '', label: 'Ninguno' },
-                    ...moduleAssociationOptions,
-                  ]}
-                  placeholder="Seleccionar modulo..."
-                />
+                <div className="flex flex-wrap gap-3 pt-1">
+                  {moduleAssociationOptions.map((option) => (
+                    <FormCheckbox
+                      key={option.value}
+                      label={option.label}
+                      checked={field.value?.includes(option.value as typeof moduleAssociations[number]) || false}
+                      onCheckedChange={(checked) => {
+                        const currentValues = field.value || [];
+                        if (checked) {
+                          field.onChange([...currentValues, option.value]);
+                        } else {
+                          field.onChange(currentValues.filter((v: string) => v !== option.value));
+                        }
+                      }}
+                    />
+                  ))}
+                </div>
               )}
             />
           </FormField>

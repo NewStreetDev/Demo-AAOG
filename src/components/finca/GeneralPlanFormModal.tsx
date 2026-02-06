@@ -1,7 +1,7 @@
-import { useEffect } from 'react';
-import { useForm, Controller } from 'react-hook-form';
+import { useEffect, useState } from 'react';
+import { useForm, Controller, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Plus, Trash2, Package, Wrench } from 'lucide-react';
 import { Modal } from '../common/Modals';
 import { FormInput, FormField, FormSelect, FormSelectWithAdd, FormTextArea, FormDatePicker } from '../common/Forms';
 import {
@@ -9,6 +9,7 @@ import {
   priorityOptions,
   planStatusOptions,
   moduleAssociationOptions,
+  unidadOptions,
   type GeneralPlanFormData,
 } from '../../schemas/finca.schema';
 import { useCreateGeneralPlan, useUpdateGeneralPlan } from '../../hooks/useFincaMutations';
@@ -86,10 +87,49 @@ export default function GeneralPlanFormModal({
       priority: 'medium',
       status: 'pending',
       notes: '',
+      insumos: [],
+      herramientas: [],
     },
   });
 
+  // Field arrays para insumos y herramientas
+  const { fields: insumosFields, append: appendInsumo, remove: removeInsumo } = useFieldArray({
+    control,
+    name: 'insumos',
+  });
+
+  const { fields: herramientasFields, append: appendHerramienta, remove: removeHerramienta } = useFieldArray({
+    control,
+    name: 'herramientas',
+  });
+
   const selectedStatus = watch('status');
+
+  // Estados locales para el formulario de agregar
+  const [newInsumo, setNewInsumo] = useState({ nombre: '', cantidad: '', unidad: 'kg', costo: '' });
+  const [newHerramienta, setNewHerramienta] = useState({ nombre: '', descripcion: '' });
+
+  const handleAddInsumo = () => {
+    if (newInsumo.nombre && newInsumo.cantidad && newInsumo.unidad) {
+      appendInsumo({
+        nombre: newInsumo.nombre,
+        cantidad: parseFloat(newInsumo.cantidad),
+        unidad: newInsumo.unidad,
+        costo: newInsumo.costo ? parseFloat(newInsumo.costo) : undefined,
+      });
+      setNewInsumo({ nombre: '', cantidad: '', unidad: 'kg', costo: '' });
+    }
+  };
+
+  const handleAddHerramienta = () => {
+    if (newHerramienta.nombre) {
+      appendHerramienta({
+        nombre: newHerramienta.nombre,
+        descripcion: newHerramienta.descripcion || undefined,
+      });
+      setNewHerramienta({ nombre: '', descripcion: '' });
+    }
+  };
 
   useEffect(() => {
     if (open && plan) {
@@ -108,7 +148,12 @@ export default function GeneralPlanFormModal({
         priority: plan.priority,
         status: plan.status,
         notes: plan.notes || '',
+        insumos: plan.insumos || [],
+        herramientas: plan.herramientas || [],
       });
+      // Reset local state
+      setNewInsumo({ nombre: '', cantidad: '', unidad: 'kg', costo: '' });
+      setNewHerramienta({ nombre: '', descripcion: '' });
     } else if (open && !plan) {
       const dateToUse = preselectedDate
         ? formatDateForInput(preselectedDate)
@@ -128,7 +173,12 @@ export default function GeneralPlanFormModal({
         priority: 'medium',
         status: 'pending',
         notes: '',
+        insumos: [],
+        herramientas: [],
       });
+      // Reset local state
+      setNewInsumo({ nombre: '', cantidad: '', unidad: 'kg', costo: '' });
+      setNewHerramienta({ nombre: '', descripcion: '' });
     }
   }, [open, plan, defaultModule, preselectedDate, reset]);
 
@@ -322,6 +372,158 @@ export default function GeneralPlanFormModal({
               )}
             />
           </FormField>
+        </div>
+
+        {/* Seccion de Insumos Utilizados */}
+        <div className="border border-gray-200 rounded-lg p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <Package className="w-5 h-5 text-green-600" />
+            <h4 className="font-medium text-gray-900">Insumos Utilizados</h4>
+          </div>
+
+          {/* Lista de insumos agregados */}
+          {insumosFields.length > 0 && (
+            <div className="space-y-2 mb-3">
+              {insumosFields.map((field, index) => (
+                <div key={field.id} className="flex items-center gap-2 bg-gray-50 rounded-lg p-2">
+                  <div className="flex-1 text-sm">
+                    <span className="font-medium">{field.nombre}</span>
+                    <span className="text-gray-600"> - {field.cantidad} {field.unidad}</span>
+                    {field.costo && (
+                      <span className="text-gray-500"> (${field.costo.toLocaleString()})</span>
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => removeInsumo(index)}
+                    className="p-1 text-red-500 hover:bg-red-50 rounded"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Formulario para agregar nuevo insumo */}
+          <div className="grid grid-cols-12 gap-2">
+            <div className="col-span-4">
+              <input
+                type="text"
+                value={newInsumo.nombre}
+                onChange={(e) => setNewInsumo({ ...newInsumo, nombre: e.target.value })}
+                placeholder="Nombre del insumo"
+                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+              />
+            </div>
+            <div className="col-span-2">
+              <input
+                type="number"
+                value={newInsumo.cantidad}
+                onChange={(e) => setNewInsumo({ ...newInsumo, cantidad: e.target.value })}
+                placeholder="Cantidad"
+                step="0.01"
+                min="0"
+                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+              />
+            </div>
+            <div className="col-span-2">
+              <select
+                value={newInsumo.unidad}
+                onChange={(e) => setNewInsumo({ ...newInsumo, unidad: e.target.value })}
+                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+              >
+                {unidadOptions.map(opt => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
+              </select>
+            </div>
+            <div className="col-span-2">
+              <input
+                type="number"
+                value={newInsumo.costo}
+                onChange={(e) => setNewInsumo({ ...newInsumo, costo: e.target.value })}
+                placeholder="Costo"
+                min="0"
+                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+              />
+            </div>
+            <div className="col-span-2">
+              <button
+                type="button"
+                onClick={handleAddInsumo}
+                disabled={!newInsumo.nombre || !newInsumo.cantidad}
+                className="w-full px-3 py-2 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-center gap-1"
+              >
+                <Plus className="w-4 h-4" />
+                Agregar
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Seccion de Herramientas Utilizadas */}
+        <div className="border border-gray-200 rounded-lg p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <Wrench className="w-5 h-5 text-blue-600" />
+            <h4 className="font-medium text-gray-900">Herramientas Utilizadas</h4>
+          </div>
+
+          {/* Lista de herramientas agregadas */}
+          {herramientasFields.length > 0 && (
+            <div className="space-y-2 mb-3">
+              {herramientasFields.map((field, index) => (
+                <div key={field.id} className="flex items-center gap-2 bg-gray-50 rounded-lg p-2">
+                  <div className="flex-1 text-sm">
+                    <span className="font-medium">{field.nombre}</span>
+                    {field.descripcion && (
+                      <span className="text-gray-600"> - {field.descripcion}</span>
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => removeHerramienta(index)}
+                    className="p-1 text-red-500 hover:bg-red-50 rounded"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Formulario para agregar nueva herramienta */}
+          <div className="grid grid-cols-12 gap-2">
+            <div className="col-span-5">
+              <input
+                type="text"
+                value={newHerramienta.nombre}
+                onChange={(e) => setNewHerramienta({ ...newHerramienta, nombre: e.target.value })}
+                placeholder="Nombre de la herramienta"
+                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
+            <div className="col-span-5">
+              <input
+                type="text"
+                value={newHerramienta.descripcion}
+                onChange={(e) => setNewHerramienta({ ...newHerramienta, descripcion: e.target.value })}
+                placeholder="Descripcion (opcional)"
+                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
+            <div className="col-span-2">
+              <button
+                type="button"
+                onClick={handleAddHerramienta}
+                disabled={!newHerramienta.nombre}
+                className="w-full px-3 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-center gap-1"
+              >
+                <Plus className="w-4 h-4" />
+                Agregar
+              </button>
+            </div>
+          </div>
         </div>
 
         <FormField label="Notas">
