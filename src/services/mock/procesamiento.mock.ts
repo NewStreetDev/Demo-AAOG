@@ -58,9 +58,10 @@ const initialBatches: ProcessingBatch[] = [
   // Batch 1: Completed batch from fresh harvest (Miel filtrada)
   {
     id: '1',
+    fincaId: '1',
     batchCode: 'L-20260115-001-001',
-    processType: 'Filtracion',
-    processDescription: 'Filtracion de miel cruda para remover impurezas',
+    processTypeId: 'proc-filtracion',
+    processTypeName: 'Filtracion',
     processDate: new Date('2026-01-15T08:00:00'),
     inputProduct: 'Miel Cruda',
     inputQuantity: 50,
@@ -82,9 +83,10 @@ const initialBatches: ProcessingBatch[] = [
   // Batch 2: Completed batch using batch 1 output (Miel envasada - PRODUCTO FINAL)
   {
     id: '2',
+    fincaId: '1',
     batchCode: 'L-20260118-001-001',
-    processType: 'Envasado',
-    processDescription: 'Envasado de miel en frascos de 500g',
+    processTypeId: 'proc-envasado',
+    processTypeName: 'Envasado',
     processDate: new Date('2026-01-18T07:00:00'),
     inputProduct: 'Miel Filtrada',
     inputQuantity: 48,
@@ -109,9 +111,10 @@ const initialBatches: ProcessingBatch[] = [
   // Batch 3: En proceso - Secado de jengibre
   {
     id: '3',
+    fincaId: '1',
     batchCode: '', // Will be generated on completion
-    processType: 'Secado',
-    processDescription: 'Secado solar de jengibre en laminas',
+    processTypeId: 'proc-secado',
+    processTypeName: 'Secado',
     processDate: new Date('2026-01-28T08:00:00'),
     inputProduct: 'Jengibre en Laminas',
     inputQuantity: 45,
@@ -127,9 +130,10 @@ const initialBatches: ProcessingBatch[] = [
   // Batch 4: Completed - Queso fresco (PRODUCTO FINAL)
   {
     id: '4',
+    fincaId: '1',
     batchCode: 'L-20260120-001-001',
-    processType: 'Pasteurizacion',
-    processDescription: 'Elaboracion de queso fresco a partir de leche',
+    processTypeId: 'proc-pasteurizacion',
+    processTypeName: 'Pasteurizacion',
     processDate: new Date('2026-01-20T05:00:00'),
     inputProduct: 'Leche Fresca',
     inputQuantity: 100,
@@ -230,9 +234,10 @@ export const createMockProcessingBatch = async (data: ProcessingBatchFormData): 
 
   const newBatch: ProcessingBatch = {
     id: String(Date.now()),
+    fincaId: '1', // Default finca for mock
     batchCode,
-    processType: data.processType,
-    processDescription: data.processDescription,
+    processTypeId: `proc-${data.processType.toLowerCase().replace(/\s+/g, '-')}`,
+    processTypeName: data.processType,
     processDate,
     inputProduct: data.inputProduct,
     inputQuantity: inputQty,
@@ -296,8 +301,8 @@ export const updateMockProcessingBatch = async (id: string, data: ProcessingBatc
   const updated: ProcessingBatch = {
     ...existing,
     batchCode,
-    processType: data.processType,
-    processDescription: data.processDescription,
+    processTypeId: `proc-${data.processType.toLowerCase().replace(/\s+/g, '-')}`,
+    processTypeName: data.processType,
     processDate,
     inputProduct: data.inputProduct,
     inputQuantity: inputQty,
@@ -355,4 +360,36 @@ export const getMockProcesamientoStats = async (): Promise<ProcesamientoDashboar
     totalMerma,
     mermaUnit: 'kg',
   };
+};
+
+// ========================================
+// Mock Tasks (for finca dashboard integration)
+// ========================================
+
+interface ProcesamientoTask {
+  id: string;
+  title: string;
+  type: string;
+  dueDate: Date;
+  priority: 'high' | 'medium' | 'low';
+  status: 'pending' | 'in_progress' | 'completed' | 'cancelled';
+  assignedTo?: string;
+}
+
+export const getMockProcesamientoTasks = async (): Promise<ProcesamientoTask[]> => {
+  await delay(200);
+  initializeBatchesStore();
+
+  // Convert batches en_proceso to tasks
+  return batchesStore
+    .filter(b => b.status === 'en_proceso')
+    .map(b => ({
+      id: b.id,
+      title: `${b.processType}: ${b.inputProduct}`,
+      type: 'proceso',
+      dueDate: new Date(b.processDate),
+      priority: 'medium' as const,
+      status: 'in_progress' as const,
+      assignedTo: b.operator,
+    }));
 };

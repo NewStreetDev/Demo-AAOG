@@ -46,6 +46,7 @@ function getModuleSourceFromSaleType(saleType: SaleRecord['saleType']): SaleReco
 const initialSales: SaleRecord[] = [
     {
       id: '1',
+      fincaId: '1',
       date: new Date('2026-01-20'),
       invoiceNumber: 'FAC-2026-001',
       saleType: 'agricola',
@@ -65,6 +66,7 @@ const initialSales: SaleRecord[] = [
     },
     {
       id: '2',
+      fincaId: '1',
       date: new Date('2026-01-18'),
       invoiceNumber: 'FAC-2026-002',
       saleType: 'animal_vivo',
@@ -80,11 +82,14 @@ const initialSales: SaleRecord[] = [
       dueDate: new Date('2026-02-18'),
       notes: 'Plazo 30 días',
       animalWeight: 450,
+      livestockId: '1',
+      livestockTag: 'BOV-001',
       createdAt: new Date('2026-01-18'),
       updatedAt: new Date('2026-01-18'),
     },
     {
       id: '3',
+      fincaId: '1',
       date: new Date('2026-01-15'),
       invoiceNumber: 'FAC-2026-003',
       saleType: 'procesado',
@@ -101,12 +106,15 @@ const initialSales: SaleRecord[] = [
       packageType: 'frascos',
       packageSize: 500,
       packageSizeUnit: 'g',
-      batchNumber: 'LOT-2026-001',
+      packageCount: 50,
+      batchId: '2',
+      batchCode: 'L-20260118-001-001',
       createdAt: new Date('2026-01-15'),
       updatedAt: new Date('2026-01-15'),
     },
     {
       id: '4',
+      fincaId: '1',
       date: new Date('2026-01-12'),
       invoiceNumber: 'FAC-2026-004',
       saleType: 'carnico',
