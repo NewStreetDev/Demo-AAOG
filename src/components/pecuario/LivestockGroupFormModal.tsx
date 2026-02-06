@@ -13,9 +13,11 @@ import {
   livestockGroupFormSchema,
   speciesOptions,
   categoryOptionsBySpecies,
+  livestockGroupStatusOptions,
   type LivestockGroupFormData,
 } from '../../schemas/pecuario.schema';
 import { useCreateLivestockGroup, useUpdateLivestockGroup } from '../../hooks/usePecuarioMutations';
+import { usePotreros, useLivestock } from '../../hooks/usePecuario';
 import type { LivestockGroup } from '../../types/pecuario.types';
 
 interface LivestockGroupFormModalProps {
@@ -34,7 +36,17 @@ export default function LivestockGroupFormModal({
   const isEditing = !!livestockGroup;
   const createMutation = useCreateLivestockGroup();
   const updateMutation = useUpdateLivestockGroup();
+  const { data: potreros } = usePotreros();
+  const { data: livestock } = useLivestock();
   const isLoading = createMutation.isPending || updateMutation.isPending;
+
+  // Build potrero options for select
+  const potreroOptions = [
+    { value: '', label: 'Sin asignar' },
+    ...(potreros || [])
+      .filter(p => p.status === 'active')
+      .map(p => ({ value: p.id, label: p.name })),
+  ];
 
   const {
     register,
@@ -51,7 +63,9 @@ export default function LivestockGroupFormModal({
       species: undefined,
       category: undefined,
       count: '',
-      location: '',
+      potreroId: '',
+      memberIds: [],
+      status: 'active',
       description: '',
     },
   });
@@ -70,6 +84,18 @@ export default function LivestockGroupFormModal({
     }
   }, [selectedSpecies, setValue, isEditing]);
 
+  // Filter livestock by selected species and category
+  const filteredLivestock = livestock?.filter(l =>
+    l.status === 'active' &&
+    (!selectedSpecies || l.species === selectedSpecies) &&
+    (!watch('category') || l.category === watch('category'))
+  ) || [];
+
+  const livestockOptions = filteredLivestock.map(l => ({
+    value: l.id,
+    label: `${l.tag} - ${l.name || l.breed}`,
+  }));
+
   useEffect(() => {
     if (open && livestockGroup) {
       reset({
@@ -77,7 +103,9 @@ export default function LivestockGroupFormModal({
         species: livestockGroup.species,
         category: livestockGroup.category,
         count: String(livestockGroup.count),
-        location: livestockGroup.location,
+        potreroId: livestockGroup.location?.potreroId || '',
+        memberIds: livestockGroup.memberIds || [],
+        status: livestockGroup.status || 'active',
         description: livestockGroup.description || '',
       });
     } else if (open && !livestockGroup) {
@@ -86,7 +114,9 @@ export default function LivestockGroupFormModal({
         species: undefined,
         category: undefined,
         count: '',
-        location: '',
+        potreroId: '',
+        memberIds: [],
+        status: 'active',
         description: '',
       });
     }
@@ -163,8 +193,8 @@ export default function LivestockGroupFormModal({
           </FormField>
         </div>
 
-        {/* Row 3: Count and Location */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Row 3: Count, Potrero and Status */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <FormField label="Cantidad de Animales" required error={errors.count?.message}>
             <FormInput
               {...register('count')}
@@ -174,14 +204,72 @@ export default function LivestockGroupFormModal({
               error={errors.count?.message}
             />
           </FormField>
-          <FormField label="Ubicacion / Potrero" required error={errors.location?.message}>
-            <FormInput
-              {...register('location')}
-              placeholder="Ej: Potrero Norte"
-              error={errors.location?.message}
+          <FormField label="Potrero" error={errors.potreroId?.message}>
+            <Controller
+              name="potreroId"
+              control={control}
+              render={({ field }) => (
+                <FormSelect
+                  value={field.value || ''}
+                  onValueChange={field.onChange}
+                  options={potreroOptions}
+                  placeholder="Seleccionar potrero..."
+                  error={errors.potreroId?.message}
+                />
+              )}
+            />
+          </FormField>
+          <FormField label="Estado" error={errors.status?.message}>
+            <Controller
+              name="status"
+              control={control}
+              render={({ field }) => (
+                <FormSelect
+                  value={field.value}
+                  onValueChange={field.onChange}
+                  options={livestockGroupStatusOptions}
+                  placeholder="Seleccionar..."
+                  error={errors.status?.message}
+                />
+              )}
             />
           </FormField>
         </div>
+
+        {/* Row 4: Member Selection (Multi-select checkboxes) */}
+        {selectedSpecies && livestockOptions.length > 0 && (
+          <FormField label="Miembros del Grupo (opcional)">
+            <Controller
+              name="memberIds"
+              control={control}
+              render={({ field }) => (
+                <div className="max-h-40 overflow-y-auto border border-gray-200 rounded-md p-2 space-y-1">
+                  {livestockOptions.map(option => (
+                    <label key={option.value} className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-1 rounded">
+                      <input
+                        type="checkbox"
+                        checked={field.value?.includes(option.value) || false}
+                        onChange={(e) => {
+                          const current = field.value || [];
+                          if (e.target.checked) {
+                            field.onChange([...current, option.value]);
+                          } else {
+                            field.onChange(current.filter((id: string) => id !== option.value));
+                          }
+                        }}
+                        className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+                      />
+                      <span className="text-sm text-gray-700">{option.label}</span>
+                    </label>
+                  ))}
+                </div>
+              )}
+            />
+            <p className="mt-1 text-xs text-gray-500">
+              {watch('memberIds')?.length || 0} animales seleccionados
+            </p>
+          </FormField>
+        )}
 
         {/* Row 4: Description */}
         <FormField label="Descripcion" error={errors.description?.message}>

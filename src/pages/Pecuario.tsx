@@ -3,7 +3,6 @@ import { Plus, Stethoscope, Users, Heart, Beef, MapPin, CalendarDays } from 'luc
 import {
   PecuarioStatCard,
   LivestockTable,
-  PecuarioProductionChart,
   CategoryDistributionChart,
   PecuarioTaskList,
   PotreroCard,
@@ -29,7 +28,6 @@ import {
   useLivestock,
   usePotreros,
   usePecuarioStats,
-  usePecuarioProduction,
   usePecuarioTasks,
   useCategoryDistribution,
   useHealthRecords,
@@ -219,7 +217,6 @@ export default function Pecuario() {
   const { data: livestock, isLoading: livestockLoading } = useLivestock();
   const { data: potreros, isLoading: potrerosLoading } = usePotreros();
   const { data: stats, isLoading: statsLoading } = usePecuarioStats();
-  const { data: production, isLoading: productionLoading } = usePecuarioProduction();
   const { data: tasks, isLoading: tasksLoading } = usePecuarioTasks();
   const { data: categoryDist, isLoading: categoryLoading } = useCategoryDistribution();
   const { data: healthRecords, isLoading: healthRecordsLoading } = useHealthRecords();
@@ -247,10 +244,10 @@ export default function Pecuario() {
         return (
           <div className="space-y-6">
             {/* Stats Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {statsLoading ? (
                 <>
-                  {[...Array(4)].map((_, i) => (
+                  {[...Array(2)].map((_, i) => (
                     <StatCardSkeleton key={i} />
                   ))}
                 </>
@@ -261,18 +258,6 @@ export default function Pecuario() {
                     value={stats.totalLivestock}
                     icon="livestock"
                     subValue={`${stats.byCategory.vacas} vacas, ${stats.byCategory.toros} toros`}
-                  />
-                  <PecuarioStatCard
-                    label="Salud General"
-                    value={`${stats.healthyPercentage}%`}
-                    icon="health"
-                    subValue={`${stats.pendingHealthActions} acciones pendientes`}
-                  />
-                  <PecuarioStatCard
-                    label="Produccion Leche"
-                    value={`${stats.monthlyMilkProduction.toLocaleString()} L`}
-                    icon="milk"
-                    subValue="este mes"
                   />
                   <PecuarioStatCard
                     label="Potreros Activos"
@@ -305,14 +290,6 @@ export default function Pecuario() {
               </div>
             </div>
 
-            {/* Production Chart */}
-            <div className="grid grid-cols-1 gap-4">
-              {productionLoading ? (
-                <ChartSkeleton />
-              ) : production ? (
-                <PecuarioProductionChart data={production} />
-              ) : null}
-            </div>
           </div>
         );
 

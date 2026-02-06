@@ -273,7 +273,7 @@ export default function LivestockDetailModal({
                 <DetailRow
                   icon={<MapPin className="w-4 h-4" />}
                   label="Ubicacion"
-                  value={livestock.location}
+                  value={livestock.location.potreroName}
                 />
                 <DetailRow
                   icon={<Calendar className="w-4 h-4" />}

@@ -21,6 +21,7 @@ import {
   type LivestockFormData,
 } from '../../schemas/pecuario.schema';
 import { useCreateLivestock, useUpdateLivestock } from '../../hooks/usePecuarioMutations';
+import { usePotreros } from '../../hooks/usePecuario';
 import type { Livestock, LivestockSpecies } from '../../types/pecuario.types';
 import { requiresParentTracking } from '../../types/pecuario.types';
 
@@ -46,7 +47,13 @@ export default function LivestockFormModal({
   const isEditing = !!livestock;
   const createMutation = useCreateLivestock();
   const updateMutation = useUpdateLivestock();
+  const { data: potreros } = usePotreros();
   const isLoading = createMutation.isPending || updateMutation.isPending;
+
+  // Build potrero options for select
+  const potreroOptions = (potreros || [])
+    .filter(p => p.status === 'active')
+    .map(p => ({ value: p.id, label: p.name }));
 
   const {
     register,
@@ -68,7 +75,7 @@ export default function LivestockFormModal({
       gender: undefined,
       weight: '',
       status: 'active',
-      location: '',
+      potreroId: '',
       motherId: '',
       motherTag: '',
       fatherId: '',
@@ -98,7 +105,7 @@ export default function LivestockFormModal({
         gender: livestock.gender,
         weight: livestock.weight.toString(),
         status: livestock.status,
-        location: livestock.location,
+        potreroId: livestock.location.potreroId,
         motherId: livestock.motherId || '',
         motherTag: livestock.motherTag || '',
         fatherId: livestock.fatherId || '',
@@ -120,7 +127,7 @@ export default function LivestockFormModal({
         gender: undefined,
         weight: '',
         status: 'active',
-        location: '',
+        potreroId: '',
         motherId: '',
         motherTag: '',
         fatherId: '',
@@ -283,12 +290,20 @@ export default function LivestockFormModal({
           </FormField>
         </div>
 
-        {/* Row 4: Location */}
-        <FormField label="Ubicación" required error={errors.location?.message}>
-          <FormInput
-            {...register('location')}
-            placeholder="Ej: Potrero Norte"
-            error={errors.location?.message}
+        {/* Row 4: Potrero */}
+        <FormField label="Potrero" required error={errors.potreroId?.message}>
+          <Controller
+            name="potreroId"
+            control={control}
+            render={({ field }) => (
+              <FormSelect
+                value={field.value}
+                onValueChange={field.onChange}
+                options={potreroOptions}
+                placeholder="Seleccionar potrero..."
+                error={errors.potreroId?.message}
+              />
+            )}
           />
         </FormField>
 

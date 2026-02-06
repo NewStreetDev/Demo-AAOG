@@ -16,6 +16,7 @@ import {
   type PotreroFormData,
 } from '../../schemas/pecuario.schema';
 import { useCreatePotrero, useUpdatePotrero } from '../../hooks/usePecuarioMutations';
+import { useDivisions } from '../../hooks/useFinca';
 import type { Potrero } from '../../types/pecuario.types';
 
 interface PotreroFormModalProps {
@@ -40,7 +41,16 @@ export default function PotreroFormModal({
   const isEditing = !!potrero;
   const createMutation = useCreatePotrero();
   const updateMutation = useUpdatePotrero();
+  const { data: divisions } = useDivisions();
   const isLoading = createMutation.isPending || updateMutation.isPending;
+
+  // Filter divisions by type 'potrero'
+  const divisionOptions = [
+    { value: '', label: 'Sin asignar' },
+    ...(divisions || [])
+      .filter(d => d.type === 'potrero')
+      .map(d => ({ value: d.id, label: d.name })),
+  ];
 
   const {
     register,
@@ -52,10 +62,14 @@ export default function PotreroFormModal({
     resolver: zodResolver(potreroFormSchema),
     defaultValues: {
       name: '',
+      code: '',
       area: '',
       capacity: '',
       currentOccupancy: '0',
       status: undefined,
+      divisionId: '',
+      waterSource: false,
+      shade: false,
       grassType: '',
       lastRotation: '',
       nextRotation: '',
@@ -67,10 +81,14 @@ export default function PotreroFormModal({
     if (open && potrero) {
       reset({
         name: potrero.name,
+        code: potrero.code || '',
         area: potrero.area.toString(),
         capacity: potrero.capacity.toString(),
         currentOccupancy: potrero.currentOccupancy.toString(),
         status: potrero.status,
+        divisionId: potrero.divisionId || '',
+        waterSource: potrero.waterSource || false,
+        shade: potrero.shade || false,
         grassType: potrero.grassType || '',
         lastRotation: formatDateForInput(potrero.lastRotation),
         nextRotation: formatDateForInput(potrero.nextRotation),
@@ -79,10 +97,14 @@ export default function PotreroFormModal({
     } else if (open && !potrero) {
       reset({
         name: '',
+        code: '',
         area: '',
         capacity: '',
         currentOccupancy: '0',
         status: undefined,
+        divisionId: '',
+        waterSource: false,
+        shade: false,
         grassType: '',
         lastRotation: '',
         nextRotation: '',
@@ -118,15 +140,24 @@ export default function PotreroFormModal({
       size="md"
     >
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-        {/* Row 1: Name and Status */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField label="Nombre" required error={errors.name?.message}>
+        {/* Row 1: Code, Name and Status */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <FormField label="Codigo" error={errors.code?.message}>
             <FormInput
-              {...register('name')}
-              placeholder="Ej: Potrero Norte"
-              error={errors.name?.message}
+              {...register('code')}
+              placeholder="Ej: P-001"
+              error={errors.code?.message}
             />
           </FormField>
+          <div className="md:col-span-2">
+            <FormField label="Nombre" required error={errors.name?.message}>
+              <FormInput
+                {...register('name')}
+                placeholder="Ej: Potrero Norte"
+                error={errors.name?.message}
+              />
+            </FormField>
+          </div>
           <FormField label="Estado" required error={errors.status?.message}>
             <Controller
               name="status"
@@ -136,7 +167,7 @@ export default function PotreroFormModal({
                   value={field.value}
                   onValueChange={field.onChange}
                   options={potreroStatusOptions}
-                  placeholder="Seleccionar estado..."
+                  placeholder="Seleccionar..."
                   error={errors.status?.message}
                 />
               )}
@@ -173,14 +204,50 @@ export default function PotreroFormModal({
           </FormField>
         </div>
 
-        {/* Row 3: Grass Type */}
-        <FormField label="Tipo de Pasto" error={errors.grassType?.message}>
-          <FormInput
-            {...register('grassType')}
-            placeholder="Ej: Brachiaria"
-            error={errors.grassType?.message}
-          />
-        </FormField>
+        {/* Row 3: Division and Grass Type */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <FormField label="Division (Mi Finca)" error={errors.divisionId?.message}>
+            <Controller
+              name="divisionId"
+              control={control}
+              render={({ field }) => (
+                <FormSelect
+                  value={field.value || ''}
+                  onValueChange={field.onChange}
+                  options={divisionOptions}
+                  placeholder="Vincular a division..."
+                />
+              )}
+            />
+          </FormField>
+          <FormField label="Tipo de Pasto" error={errors.grassType?.message}>
+            <FormInput
+              {...register('grassType')}
+              placeholder="Ej: Brachiaria"
+              error={errors.grassType?.message}
+            />
+          </FormField>
+        </div>
+
+        {/* Row 4: Characteristics */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              {...register('waterSource')}
+              className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+            />
+            <span className="text-sm text-gray-700">Tiene fuente de agua</span>
+          </label>
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              {...register('shade')}
+              className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+            />
+            <span className="text-sm text-gray-700">Tiene sombra</span>
+          </label>
+        </div>
 
         {/* Row 4: Rotation Dates */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

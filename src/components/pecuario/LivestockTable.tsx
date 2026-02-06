@@ -136,7 +136,7 @@ export default function LivestockTable({ livestock, maxItems = 6, onViewAll, onL
                 <td className="py-3 text-sm text-gray-900 text-right font-medium">
                   {animal.weight} kg
                 </td>
-                <td className="py-3 text-sm text-gray-600">{animal.location}</td>
+                <td className="py-3 text-sm text-gray-600">{animal.location.potreroName}</td>
               </tr>
             ))}
           </tbody>
