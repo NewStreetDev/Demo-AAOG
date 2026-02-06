@@ -5,18 +5,18 @@ import { z } from 'zod';
 // ========================================
 
 export const batchStatuses = ['en_proceso', 'completado'] as const;
-export const inputSourceTypes = ['cosecha', 'lote_anterior'] as const;
+export const inputSourceTypes = ['cosecha', 'lote_anterior', 'miel', 'otro'] as const;
 
 // ========================================
 // Processing Batch Form Schema
 // ========================================
 
 export const processingBatchFormSchema = z.object({
-  // Process info
-  processType: z
+  // Process info - ahora con catálogo
+  processTypeId: z
     .string()
-    .min(1, 'El tipo de proceso es requerido'),
-  processDescription: z.string().optional(),
+    .min(1, 'Seleccione un tipo de proceso'),
+  processTypeName: z.string().optional(), // Se llena automáticamente del catálogo
   processDate: z
     .string()
     .min(1, 'La fecha del proceso es requerida'),
@@ -117,6 +117,8 @@ export const batchStatusOptions = [
 export const inputSourceTypeOptions = [
   { value: 'cosecha', label: 'Cosecha (materia prima fresca)' },
   { value: 'lote_anterior', label: 'Lote anterior (proceso previo)' },
+  { value: 'miel', label: 'Miel (producción apícola)' },
+  { value: 'otro', label: 'Otro' },
 ];
 
 export const inputUnitOptions = [

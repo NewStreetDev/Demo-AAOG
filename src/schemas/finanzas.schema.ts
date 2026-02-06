@@ -38,16 +38,38 @@ export const saleRecordFormSchema = z.object({
   packageType: z.string().optional(),
   packageSize: z.string().optional().refine((val) => !val || (!isNaN(parseFloat(val)) && parseFloat(val) > 0), 'Debe ser un número mayor a 0'),
   packageSizeUnit: z.string().optional(),
-  batchNumber: z.string().optional(),
+  packageCount: z.string().optional().refine((val) => !val || (!isNaN(parseInt(val)) && parseInt(val) > 0), 'Debe ser un número mayor a 0'),
+  batchId: z.string().optional(),
+  batchCode: z.string().optional(), // Se llena automáticamente del select
 
   // Animal vivo-specific
   animalWeight: z.string().optional().refine((val) => !val || (!isNaN(parseFloat(val)) && parseFloat(val) > 0), 'Debe ser un número mayor a 0'),
+  livestockId: z.string().optional(),
+  livestockTag: z.string().optional(),
 
   // Carnico-specific
   priceType: z.enum(priceTypeOptions).optional(),
 });
 
 export type SaleRecordFormData = z.infer<typeof saleRecordFormSchema>;
+
+/**
+ * Helper para inferir moduleSource desde saleType
+ * - agricola → agro
+ * - procesado → procesamiento
+ * - animal_vivo, carnico → pecuario
+ */
+export function inferModuleSource(saleType: typeof saleTypeOptions[number]): typeof moduleSourceOptions[number] {
+  switch (saleType) {
+    case 'agricola':
+      return 'agro';
+    case 'procesado':
+      return 'procesamiento';
+    case 'animal_vivo':
+    case 'carnico':
+      return 'pecuario';
+  }
+}
 
 // Purchase Record Form Schema
 export const purchaseRecordFormSchema = z.object({

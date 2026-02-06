@@ -43,6 +43,7 @@ export const fincaFormSchema = z.object({
     message: 'Seleccione un estado valido',
   }),
   description: z.string().optional(),
+  imageUrl: z.string().url('Ingrese una URL valida').optional().or(z.literal('')),
   notes: z.string().optional(),
 });
 
@@ -111,7 +112,7 @@ export const divisionFormSchema = z.object({
       'La longitud debe estar entre -180 y 180'
     ),
   parentDivisionId: z.string().optional(),
-  moduleAssociation: z.enum(moduleAssociations).optional(),
+  moduleAssociations: z.array(z.enum(moduleAssociations)).optional(),
   description: z.string().optional(),
   notes: z.string().optional(),
 });
@@ -200,6 +201,20 @@ export const planPriorities = ['high', 'medium', 'low'] as const;
 
 export const planStatuses = ['pending', 'in_progress', 'completed', 'cancelled'] as const;
 
+// Insumo schema
+export const insumoUtilizadoSchema = z.object({
+  nombre: z.string().min(1, 'El nombre es requerido'),
+  cantidad: z.number().min(0.01, 'La cantidad debe ser mayor a 0'),
+  unidad: z.string().min(1, 'La unidad es requerida'),
+  costo: z.number().optional(),
+});
+
+// Herramienta schema
+export const herramientaUtilizadaSchema = z.object({
+  nombre: z.string().min(1, 'El nombre es requerido'),
+  descripcion: z.string().optional(),
+});
+
 export const generalPlanFormSchema = z.object({
   title: z
     .string()
@@ -242,6 +257,9 @@ export const generalPlanFormSchema = z.object({
     message: 'Seleccione un estado',
   }),
   notes: z.string().optional(),
+  // Insumos y herramientas
+  insumos: z.array(insumoUtilizadoSchema).optional(),
+  herramientas: z.array(herramientaUtilizadaSchema).optional(),
   // Annual planning fields
   annualPlanId: z.string().optional(),
   planPhase: z.enum(planPhases).optional(),
@@ -281,4 +299,21 @@ export const planStatusOptions = [
   { value: 'in_progress', label: 'En Progreso' },
   { value: 'completed', label: 'Completado' },
   { value: 'cancelled', label: 'Cancelado' },
+];
+
+// Unidades comunes para insumos
+export const unidadOptions = [
+  { value: 'kg', label: 'Kilogramos (kg)' },
+  { value: 'g', label: 'Gramos (g)' },
+  { value: 'lb', label: 'Libras (lb)' },
+  { value: 'l', label: 'Litros (L)' },
+  { value: 'ml', label: 'Mililitros (mL)' },
+  { value: 'gal', label: 'Galones (gal)' },
+  { value: 'unidad', label: 'Unidades' },
+  { value: 'saco', label: 'Sacos' },
+  { value: 'bolsa', label: 'Bolsas' },
+  { value: 'caja', label: 'Cajas' },
+  { value: 'm', label: 'Metros (m)' },
+  { value: 'm2', label: 'Metros cuadrados (m2)' },
+  { value: 'ha', label: 'Hectareas (ha)' },
 ];

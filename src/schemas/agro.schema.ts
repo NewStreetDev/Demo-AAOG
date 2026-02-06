@@ -7,6 +7,7 @@ export const irrigationTypes = ['drip', 'sprinkler', 'flood', 'none'] as const;
 // Crop constants
 export const cropStatuses = ['planned', 'planted', 'growing', 'flowering', 'fruiting', 'ready', 'harvested'] as const;
 export const productTypes = ['primary', 'secondary'] as const;
+export const planPhases = ['initial', 'execution'] as const;
 
 // Lote Form Schema
 export const loteFormSchema = z.object({
@@ -27,6 +28,8 @@ export const loteFormSchema = z.object({
   status: z.enum(loteStatuses, {
     message: 'Seleccione un estado válido',
   }),
+  // Vinculación con Mi Finca
+  divisionId: z.string().optional(), // Select de divisiones tipo 'lote_agricola'
   notes: z.string().optional(),
 });
 
@@ -79,6 +82,11 @@ export const cropFormSchema = z.object({
       'El rendimiento real debe ser un número válido'
     ),
   yieldUnit: z.string().optional(),
+  // Vinculación con Mi Finca y planificación
+  divisionId: z.string().optional(), // Select de divisiones tipo 'lote_agricola'
+  annualPlanId: z.string().optional(), // Plan anual asociado
+  planPhase: z.enum(planPhases).optional(), // 'initial' | 'execution'
+  isFromPlanning: z.boolean().optional(), // Si viene de la planificación central
   notes: z.string().optional(),
 });
 
@@ -114,6 +122,11 @@ export const productTypeOptions = [
   { value: 'secondary', label: 'Secundario' },
 ];
 
+export const planPhaseOptions = [
+  { value: 'initial', label: 'Planificacion Inicial' },
+  { value: 'execution', label: 'Ejecucion' },
+];
+
 export const yieldUnitOptions = [
   { value: 'kg', label: 'Kilogramos (kg)' },
   { value: 'ton', label: 'Toneladas (ton)' },
@@ -134,9 +147,32 @@ export const agroActionTypes = [
   'soil_preparation',
 ] as const;
 
+export const agroActionStatuses = ['pending', 'in_progress', 'completed', 'cancelled'] as const;
+export const agroActionPriorities = ['high', 'medium', 'low'] as const;
+
+// Insumo schema for dynamic array
+export const insumoSchema = z.object({
+  nombre: z.string().min(1, 'El nombre es requerido'),
+  cantidad: z.string().min(1, 'La cantidad es requerida').refine(
+    (val) => !isNaN(parseFloat(val)) && parseFloat(val) > 0,
+    'La cantidad debe ser mayor a 0'
+  ),
+  unidad: z.string().min(1, 'La unidad es requerida'),
+  costo: z.string().optional().refine(
+    (val) => !val || (!isNaN(parseFloat(val)) && parseFloat(val) >= 0),
+    'El costo debe ser un numero valido'
+  ),
+});
+
+// Herramienta schema for dynamic array
+export const herramientaSchema = z.object({
+  nombre: z.string().min(1, 'El nombre es requerido'),
+  descripcion: z.string().optional(),
+});
+
 // Harvest constants
-export const harvestQualities = ['A', 'B', 'C'] as const;
-export const harvestDestinations = ['sale', 'processing', 'storage', 'seeds'] as const;
+export const harvestQualities = ['A', 'B', 'C', 'rechazo'] as const;
+export const harvestDestinations = ['venta', 'procesamiento', 'almacen', 'semilla', 'autoconsumo', 'donacion'] as const;
 
 // AgroAction Form Schema
 export const agroActionFormSchema = z.object({
@@ -146,10 +182,18 @@ export const agroActionFormSchema = z.object({
     message: 'Seleccione un tipo de accion',
   }),
   date: z.string().min(1, 'La fecha es requerida'),
+  status: z.enum(agroActionStatuses, {
+    message: 'Seleccione un estado',
+  }),
+  priority: z.enum(agroActionPriorities).optional(),
   description: z
     .string()
     .min(5, 'La descripcion debe tener al menos 5 caracteres')
     .max(500, 'La descripcion no puede tener mas de 500 caracteres'),
+  // Nuevos campos estructurados
+  insumos: z.array(insumoSchema).optional().default([]),
+  herramientas: z.array(herramientaSchema).optional().default([]),
+  // Campos legacy (mantenidos para compatibilidad)
   insumoUsed: z.string().optional(),
   quantity: z
     .string()
@@ -171,10 +215,17 @@ export const agroActionFormSchema = z.object({
     .min(2, 'El nombre debe tener al menos 2 caracteres')
     .max(100, 'El nombre no puede tener mas de 100 caracteres'),
   weatherConditions: z.string().optional(),
+  // Campos de planificación
+  annualPlanId: z.string().optional(), // Plan anual asociado
+  planPhase: z.enum(planPhases).optional(), // 'initial' | 'execution'
+  linkedPlanId: z.string().optional(), // Vincula con GeneralPlan de Mi Finca
+  isFromPlanning: z.boolean().optional(), // Si viene de la planificación central
   notes: z.string().optional(),
 });
 
 export type AgroActionFormData = z.infer<typeof agroActionFormSchema>;
+export type InsumoFormData = z.infer<typeof insumoSchema>;
+export type HerramientaFormData = z.infer<typeof herramientaSchema>;
 
 // Harvest Form Schema
 export const harvestFormSchema = z.object({
@@ -195,6 +246,8 @@ export const harvestFormSchema = z.object({
   destination: z.enum(harvestDestinations, {
     message: 'Seleccione un destino',
   }),
+  // Vinculación con Procesamiento (solo cuando destino='procesamiento')
+  batchId: z.string().optional(),
   pricePerUnit: z
     .string()
     .optional()
@@ -220,19 +273,37 @@ export const agroActionTypeOptions = [
   { value: 'soil_preparation', label: 'Preparacion de Suelo' },
 ];
 
+// Select options for AgroAction status
+export const agroActionStatusOptions = [
+  { value: 'pending', label: 'Pendiente' },
+  { value: 'in_progress', label: 'En Progreso' },
+  { value: 'completed', label: 'Completada' },
+  { value: 'cancelled', label: 'Cancelada' },
+];
+
+// Select options for AgroAction priority
+export const agroActionPriorityOptions = [
+  { value: 'high', label: 'Alta' },
+  { value: 'medium', label: 'Media' },
+  { value: 'low', label: 'Baja' },
+];
+
 // Select options for Harvest quality
 export const harvestQualityOptions = [
   { value: 'A', label: 'Calidad A - Excelente' },
   { value: 'B', label: 'Calidad B - Buena' },
   { value: 'C', label: 'Calidad C - Regular' },
+  { value: 'rechazo', label: 'Rechazo' },
 ];
 
-// Select options for Harvest destination
+// Select options for Harvest destination (aligned with DestinoProduccion type)
 export const harvestDestinationOptions = [
-  { value: 'sale', label: 'Venta' },
-  { value: 'processing', label: 'Procesamiento' },
-  { value: 'storage', label: 'Almacenamiento' },
-  { value: 'seeds', label: 'Semillas' },
+  { value: 'venta', label: 'Venta' },
+  { value: 'procesamiento', label: 'Procesamiento' },
+  { value: 'almacen', label: 'Almacenamiento' },
+  { value: 'semilla', label: 'Semillas' },
+  { value: 'autoconsumo', label: 'Autoconsumo' },
+  { value: 'donacion', label: 'Donación' },
 ];
 
 // Weather condition options

@@ -57,10 +57,7 @@ export const livestockFormSchema = z.object({
   status: z.enum(livestockStatuses, {
     message: 'Seleccione un estado válido',
   }),
-  location: z
-    .string()
-    .min(1, 'La ubicación es requerida')
-    .max(100, 'La ubicación no puede tener más de 100 caracteres'),
+  potreroId: z.string().min(1, 'Seleccione un potrero'),
   // Seguimiento de padres (opcional, solo aplica para especies que lo requieren)
   motherId: z.string().optional(),
   motherTag: z.string().optional(),
@@ -83,6 +80,7 @@ export const potreroFormSchema = z.object({
     .string()
     .min(2, 'El nombre debe tener al menos 2 caracteres')
     .max(100, 'El nombre no puede tener más de 100 caracteres'),
+  code: z.string().optional(), // Código identificador del potrero
   area: z
     .string()
     .min(1, 'El área es requerida')
@@ -98,6 +96,11 @@ export const potreroFormSchema = z.object({
   status: z.enum(potreroStatuses, {
     message: 'Seleccione un estado válido',
   }),
+  // Vinculación con Mi Finca
+  divisionId: z.string().optional(), // Select de divisiones tipo 'potrero'
+  // Características del potrero
+  waterSource: z.boolean().optional(), // Tiene fuente de agua
+  shade: z.boolean().optional(), // Tiene sombra
   grassType: z.string().optional(),
   lastRotation: z.string().optional(),
   nextRotation: z.string().optional(),
@@ -395,6 +398,8 @@ export const milkProductionFormSchema = z.object({
     ),
   quality: z.enum(milkQualities).optional(),
   destination: z.enum(milkDestinations).optional(),
+  // Trazabilidad de animales productores
+  producingLivestockIds: z.array(z.string()).optional(), // Multi-select de vacas productoras
   notes: z.string().optional(),
 });
 
@@ -424,6 +429,8 @@ export const milkDestinationOptions = [
 // Livestock Group Schema
 // ========================================
 
+export const livestockGroupStatuses = ['active', 'inactive'] as const;
+
 export const livestockGroupFormSchema = z.object({
   name: z
     .string()
@@ -442,11 +449,17 @@ export const livestockGroupFormSchema = z.object({
       (val) => !isNaN(parseInt(val)) && parseInt(val) > 0,
       'La cantidad debe ser un numero positivo'
     ),
-  location: z
-    .string()
-    .min(1, 'La ubicacion es requerida')
-    .max(100, 'La ubicacion no puede tener mas de 100 caracteres'),
+  potreroId: z.string().optional(), // Opcional - grupo puede no estar asignado a potrero
+  // Miembros del grupo
+  memberIds: z.array(z.string()).optional(), // Multi-select de animales activos
+  status: z.enum(livestockGroupStatuses).default('active'),
   description: z.string().optional(),
 });
 
 export type LivestockGroupFormData = z.infer<typeof livestockGroupFormSchema>;
+
+// Livestock Group Status Options
+export const livestockGroupStatusOptions = [
+  { value: 'active', label: 'Activo' },
+  { value: 'inactive', label: 'Inactivo' },
+];
