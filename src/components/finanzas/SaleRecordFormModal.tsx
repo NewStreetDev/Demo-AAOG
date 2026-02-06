@@ -18,6 +18,8 @@ import {
   type SaleRecordFormData,
 } from '../../schemas/finanzas.schema';
 import { useCreateSaleRecord, useUpdateSaleRecord } from '../../hooks/useFinanzasMutations';
+import { useCompletedBatches } from '../../hooks/useProcesamiento';
+import { useLivestock } from '../../hooks/usePecuario';
 import type { SaleRecord } from '../../types/finanzas.types';
 
 interface SaleRecordFormModalProps {
@@ -67,7 +69,27 @@ export default function SaleRecordFormModal({
   const isEditing = !!saleRecord;
   const createMutation = useCreateSaleRecord();
   const updateMutation = useUpdateSaleRecord();
+  const { data: completedBatches } = useCompletedBatches();
+  const { data: livestock } = useLivestock();
   const isLoading = createMutation.isPending || updateMutation.isPending;
+
+  // Build batch options for procesado sales (only final products)
+  const batchOptions = (completedBatches || [])
+    .filter(b => b.isFinalProduct && (b.availableQuantity ?? 0) > 0)
+    .map(b => ({
+      value: b.id,
+      label: `${b.batchCode || b.tempCode} - ${b.outputProduct} (${b.availableQuantity} ${b.outputUnit})`,
+      code: b.batchCode || b.tempCode || '',
+    }));
+
+  // Build livestock options for animal_vivo sales (only active animals)
+  const livestockOptions = (livestock || [])
+    .filter(l => l.status === 'active')
+    .map(l => ({
+      value: l.id,
+      label: `${l.tag} - ${l.name || l.breed} (${l.category})`,
+      tag: l.tag,
+    }));
 
   const {
     register,
@@ -96,8 +118,12 @@ export default function SaleRecordFormModal({
       packageType: '',
       packageSize: '',
       packageSizeUnit: '',
-      batchNumber: '',
+      packageCount: '',
+      batchId: '',
+      batchCode: '',
       animalWeight: '',
+      livestockId: '',
+      livestockTag: '',
       priceType: undefined,
     },
   });
@@ -123,7 +149,7 @@ export default function SaleRecordFormModal({
       reset({
         saleType: saleRecord.saleType,
         date: formatDateForInput(saleRecord.date),
-        invoiceNumber: saleRecord.invoiceNumber,
+        invoiceNumber: saleRecord.invoiceNumber || '',
         productDescription: saleRecord.productDescription,
         quantity: saleRecord.quantity.toString(),
         unit: saleRecord.unit,
@@ -137,8 +163,12 @@ export default function SaleRecordFormModal({
         packageType: saleRecord.packageType || '',
         packageSize: saleRecord.packageSize?.toString() || '',
         packageSizeUnit: saleRecord.packageSizeUnit || '',
-        batchNumber: saleRecord.batchNumber || '',
+        packageCount: saleRecord.packageCount?.toString() || '',
+        batchId: saleRecord.batchId || '',
+        batchCode: saleRecord.batchCode || '',
         animalWeight: saleRecord.animalWeight?.toString() || '',
+        livestockId: saleRecord.livestockId || '',
+        livestockTag: saleRecord.livestockTag || '',
         priceType: saleRecord.priceType,
       });
     } else if (open && !saleRecord) {
@@ -159,8 +189,12 @@ export default function SaleRecordFormModal({
         packageType: '',
         packageSize: '',
         packageSizeUnit: '',
-        batchNumber: '',
+        packageCount: '',
+        batchId: '',
+        batchCode: '',
         animalWeight: '',
+        livestockId: '',
+        livestockTag: '',
         priceType: undefined,
       });
     }
@@ -238,9 +272,34 @@ export default function SaleRecordFormModal({
       case 'procesado':
         return (
           <>
+            {/* Procesado: Lote de origen */}
+            <FormField label="Lote de Procesamiento" error={errors.batchId?.message}>
+              <Controller
+                name="batchId"
+                control={control}
+                render={({ field }) => (
+                  <FormSelect
+                    value={field.value || ''}
+                    onValueChange={(value) => {
+                      field.onChange(value);
+                      // Auto-fill batchCode from selection
+                      const selected = batchOptions.find(b => b.value === value);
+                      setValue('batchCode', selected?.code || '');
+                    }}
+                    options={[
+                      { value: '', label: 'Sin lote asociado' },
+                      ...batchOptions,
+                    ]}
+                    placeholder="Seleccionar lote..."
+                    error={errors.batchId?.message}
+                  />
+                )}
+              />
+            </FormField>
+
             {/* Procesado: Presentación comercial */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField label="Tipo de Unidad" required error={errors.packageType?.message}>
+              <FormField label="Tipo de Presentación" required error={errors.packageType?.message}>
                 <Controller
                   name="packageType"
                   control={control}
@@ -255,19 +314,19 @@ export default function SaleRecordFormModal({
                   )}
                 />
               </FormField>
-              <FormField label="Cantidad de Unidades" required error={errors.quantity?.message}>
+              <FormField label="Cantidad de Presentaciones" required error={errors.packageCount?.message}>
                 <FormInput
-                  {...register('quantity')}
+                  {...register('packageCount')}
                   type="number"
                   step="1"
                   placeholder="Ej: 10, 50, 24"
-                  error={errors.quantity?.message}
+                  error={errors.packageCount?.message}
                 />
               </FormField>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField label="Tamaño por Unidad" required error={errors.packageSize?.message}>
+              <FormField label="Tamaño por Presentación" required error={errors.packageSize?.message}>
                 <FormInput
                   {...register('packageSize')}
                   type="number"
@@ -294,11 +353,13 @@ export default function SaleRecordFormModal({
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField label="N° de Lote (opcional)" error={errors.batchNumber?.message}>
+              <FormField label="Cantidad Total" required error={errors.quantity?.message}>
                 <FormInput
-                  {...register('batchNumber')}
-                  placeholder="Ej: LOT-2026-001"
-                  error={errors.batchNumber?.message}
+                  {...register('quantity')}
+                  type="number"
+                  step="1"
+                  placeholder="Cantidad total vendida"
+                  error={errors.quantity?.message}
                 />
               </FormField>
               <FormField label="Precio Unitario (₡)" required error={errors.unitPrice?.message}>
@@ -306,20 +367,46 @@ export default function SaleRecordFormModal({
                   {...register('unitPrice')}
                   type="number"
                   step="any"
-                  placeholder="Precio por unidad"
+                  placeholder="Precio por presentación"
                   error={errors.unitPrice?.message}
                 />
               </FormField>
             </div>
 
-            {/* Hidden unit field - will be computed from package info */}
+            {/* Hidden fields */}
             <input type="hidden" {...register('unit')} value="unidad" />
+            <input type="hidden" {...register('batchCode')} />
           </>
         );
 
       case 'animal_vivo':
         return (
           <>
+            {/* Animal vivo: Selección de animal */}
+            <FormField label="Animal a Vender" error={errors.livestockId?.message}>
+              <Controller
+                name="livestockId"
+                control={control}
+                render={({ field }) => (
+                  <FormSelect
+                    value={field.value || ''}
+                    onValueChange={(value) => {
+                      field.onChange(value);
+                      // Auto-fill livestockTag from selection
+                      const selected = livestockOptions.find(l => l.value === value);
+                      setValue('livestockTag', selected?.tag || '');
+                    }}
+                    options={[
+                      { value: '', label: 'Sin animal específico' },
+                      ...livestockOptions,
+                    ]}
+                    placeholder="Seleccionar animal..."
+                    error={errors.livestockId?.message}
+                  />
+                )}
+              />
+            </FormField>
+
             {/* Animal vivo: Simple por unidad */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <FormField label="Cantidad" required error={errors.quantity?.message}>
@@ -360,6 +447,9 @@ export default function SaleRecordFormModal({
                 error={errors.animalWeight?.message}
               />
             </FormField>
+
+            {/* Hidden field for livestockTag */}
+            <input type="hidden" {...register('livestockTag')} />
           </>
         );
 
