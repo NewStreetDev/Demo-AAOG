@@ -7,12 +7,13 @@ interface PotreroCardProps {
 }
 
 function getStatusInfo(status: Potrero['status']): { label: string; color: string } {
-  const statusMap = {
+  const statusMap: Record<Potrero['status'], { label: string; color: string }> = {
     active: { label: 'Activo', color: 'bg-green-100 text-green-700' },
+    inactive: { label: 'Inactivo', color: 'bg-red-100 text-red-700' },
     resting: { label: 'Descanso', color: 'bg-amber-100 text-amber-700' },
     maintenance: { label: 'Mantenimiento', color: 'bg-gray-100 text-gray-600' },
   };
-  return statusMap[status] || statusMap.active;
+  return statusMap[status];
 }
 
 function getOccupancyColor(current: number, capacity: number): string {

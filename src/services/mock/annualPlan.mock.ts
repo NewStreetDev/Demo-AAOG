@@ -25,9 +25,11 @@ export const initializeAnnualPlanStoreConnection = (
 const initialAnnualPlans: AnnualPlan[] = [
   {
     id: 'ap-2025',
+    fincaId: '1',
     year: 2025,
     name: 'Planificacion 2025',
     status: 'completed',
+    currentPhase: 'execution',
     description: 'Plan anual completado del ano 2025',
     createdAt: new Date('2024-11-15'),
     updatedAt: new Date('2025-12-31'),
@@ -36,9 +38,11 @@ const initialAnnualPlans: AnnualPlan[] = [
   },
   {
     id: 'ap-2026',
+    fincaId: '1',
     year: 2026,
     name: 'Planificacion 2026',
     status: 'planning',
+    currentPhase: 'initial',
     description: 'Plan anual en desarrollo para el ano 2026',
     createdAt: new Date('2025-11-01'),
     updatedAt: new Date('2026-01-20'),
@@ -85,9 +89,11 @@ export const createMockAnnualPlan = async (data: AnnualPlanFormData): Promise<An
 
   const newPlan: AnnualPlan = {
     id: `ap-${data.year}`,
+    fincaId: '1',
     year: data.year,
     name: data.name,
     status: 'draft',
+    currentPhase: 'initial',
     description: data.description,
     createdAt: new Date(),
     updatedAt: new Date(),

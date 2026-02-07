@@ -136,6 +136,7 @@ export const yieldUnitOptions = [
 ];
 
 // AgroAction constants
+// Must match AgroActionType in agro.types.ts
 export const agroActionTypes = [
   'planting',
   'irrigation',
@@ -145,6 +146,10 @@ export const agroActionTypes = [
   'pruning',
   'harvest',
   'soil_preparation',
+  'mantenimiento',
+  'tratamiento',
+  'revision',
+  'otro',
 ] as const;
 
 export const agroActionStatuses = ['pending', 'in_progress', 'completed', 'cancelled'] as const;
@@ -191,8 +196,8 @@ export const agroActionFormSchema = z.object({
     .min(5, 'La descripcion debe tener al menos 5 caracteres')
     .max(500, 'La descripcion no puede tener mas de 500 caracteres'),
   // Nuevos campos estructurados
-  insumos: z.array(insumoSchema).optional().default([]),
-  herramientas: z.array(herramientaSchema).optional().default([]),
+  insumos: z.array(insumoSchema).default([]),
+  herramientas: z.array(herramientaSchema).default([]),
   // Campos legacy (mantenidos para compatibilidad)
   insumoUsed: z.string().optional(),
   quantity: z
@@ -271,6 +276,10 @@ export const agroActionTypeOptions = [
   { value: 'pruning', label: 'Poda' },
   { value: 'harvest', label: 'Cosecha' },
   { value: 'soil_preparation', label: 'Preparacion de Suelo' },
+  { value: 'mantenimiento', label: 'Mantenimiento' },
+  { value: 'tratamiento', label: 'Tratamiento' },
+  { value: 'revision', label: 'Revision' },
+  { value: 'otro', label: 'Otro' },
 ];
 
 // Select options for AgroAction status

@@ -70,11 +70,17 @@ export const divisionTypes = [
 
 export const divisionStatuses = ['active', 'inactive', 'maintenance', 'resting'] as const;
 
+// Module associations for Divisions and GeneralPlans
+// Must be compatible with SystemModule from common.types.ts
 export const moduleAssociations = [
+  'mi_finca',
+  'agricola',
   'agro',
   'pecuario',
   'procesamiento',
   'finanzas',
+  'reglamentos',
+  'reportes',
   'general',
 ] as const;
 
@@ -139,8 +145,10 @@ export const divisionStatusOptions = [
   { value: 'resting', label: 'En Descanso' },
 ];
 
-// Module association options
+// Module association options - for forms/selects
+// Using common subset that makes sense for division associations
 export const moduleAssociationOptions = [
+  { value: 'mi_finca', label: 'Mi Finca' },
   { value: 'agro', label: 'Agricultura' },
   { value: 'pecuario', label: 'Pecuario' },
   { value: 'procesamiento', label: 'Procesamiento' },

@@ -1,5 +1,12 @@
 import { ChevronRight } from 'lucide-react';
-import type { WorkerSummary } from '../../../types/dashboard.types';
+
+// Local type definition (previously from dashboard.types)
+interface WorkerSummary {
+  id: string;
+  name: string;
+  role: string;
+  status: 'active' | 'inactive';
+}
 
 interface WorkerListProps {
   workers: WorkerSummary[];

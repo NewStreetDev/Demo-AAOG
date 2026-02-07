@@ -1,5 +1,11 @@
 import { FileText, Award, ClipboardList } from 'lucide-react';
-import type { AuditSummary } from '../../../types/dashboard.types';
+
+// Local type definition (previously from dashboard.types)
+interface AuditSummary {
+  inReview: number;
+  approved: number;
+  pending: number;
+}
 
 interface DocumentsCardProps {
   auditSummary: AuditSummary;

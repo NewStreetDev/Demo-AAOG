@@ -1,7 +1,19 @@
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import { Icon } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import type { FarmSummary } from '../../../types/dashboard.types';
+
+// Local type definition (previously from dashboard.types)
+interface FarmSummary {
+  id: string;
+  name: string;
+  color: string;
+  production: number;
+  productionUnit: string;
+  location: {
+    lat: number;
+    lng: number;
+  };
+}
 
 interface MapCardProps {
   farms: FarmSummary[];

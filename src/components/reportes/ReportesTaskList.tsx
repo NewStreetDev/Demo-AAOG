@@ -1,23 +1,19 @@
-import { ChevronRight, Calendar, FileText, Download, Eye, Archive, Send } from 'lucide-react';
+import { ChevronRight, Calendar, FileText, Eye, Send } from 'lucide-react';
 import type { ReportesTask } from '../../types/reportes.types';
 
 interface ReportesTaskListProps {
   tasks: ReportesTask[];
 }
 
-const typeIcons = {
-  report_generation: FileText,
-  export: Download,
-  review: Eye,
-  archive: Archive,
+const typeIcons: Record<string, typeof FileText> = {
+  generation_pending: FileText,
+  review_required: Eye,
   distribution: Send,
 };
 
-const typeColors = {
-  report_generation: 'bg-blue-100 text-blue-600',
-  export: 'bg-green-100 text-green-600',
-  review: 'bg-amber-100 text-amber-600',
-  archive: 'bg-gray-100 text-gray-600',
+const typeColors: Record<string, string> = {
+  generation_pending: 'bg-blue-100 text-blue-600',
+  review_required: 'bg-amber-100 text-amber-600',
   distribution: 'bg-purple-100 text-purple-600',
 };
 
@@ -67,28 +63,19 @@ export default function ReportesTaskList({ tasks }: ReportesTaskListProps) {
                     {task.title}
                   </p>
                   <div className="flex items-center gap-3 mt-1">
-                    <div className="flex items-center gap-1 text-xs text-gray-500">
-                      <Calendar className="w-3 h-3" />
-                      {new Date(task.dueDate).toLocaleDateString('es-CR', {
-                        day: 'numeric',
-                        month: 'short',
-                      })}
-                    </div>
-                    {task.assignedTo && (
-                      <span className="text-xs text-gray-500">{task.assignedTo}</span>
+                    {task.dueDate && (
+                      <div className="flex items-center gap-1 text-xs text-gray-500">
+                        <Calendar className="w-3 h-3" />
+                        {new Date(task.dueDate).toLocaleDateString('es-CR', {
+                          day: 'numeric',
+                          month: 'short',
+                        })}
+                      </div>
+                    )}
+                    {task.reportType && (
+                      <span className="text-xs text-gray-500">{task.reportType}</span>
                     )}
                   </div>
-                  {task.progress !== undefined && task.status === 'in_progress' && (
-                    <div className="flex items-center gap-2 mt-2">
-                      <div className="flex-1 bg-gray-200 rounded-full h-1.5">
-                        <div
-                          className="bg-blue-500 h-1.5 rounded-full transition-all duration-300"
-                          style={{ width: `${task.progress}%` }}
-                        />
-                      </div>
-                      <span className="text-xs font-semibold text-gray-600">{task.progress}%</span>
-                    </div>
-                  )}
                 </div>
               </div>
             );

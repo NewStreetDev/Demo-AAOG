@@ -17,12 +17,15 @@ function getPriorityColor(priority: PecuarioTask['priority']): string {
 }
 
 function getTaskTypeIcon(type: PecuarioTask['type']): string {
-  const icons = {
+  const icons: Record<PecuarioTask['type'], string> = {
     health: '💉',
     reproduction: '🐄',
     rotation: '🔄',
     sale: '💰',
     checkup: '📋',
+    harvest: '🌾',
+    beehive_inspection: '🐝',
+    beehive_treatment: '💊',
   };
   return icons[type];
 }

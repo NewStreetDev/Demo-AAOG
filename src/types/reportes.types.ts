@@ -504,3 +504,49 @@ export interface ReportesTask {
   priority: 'high' | 'medium' | 'low';
   status: 'pending' | 'in_progress' | 'completed';
 }
+
+// ========================================
+// TIPOS SIMPLIFICADOS PARA UI/MOCK
+// ========================================
+
+/**
+ * Estadísticas consolidadas para el dashboard (versión simplificada)
+ */
+export interface ConsolidatedStats {
+  totalIncome: number;
+  totalExpense: number;
+  netProfit: number;
+  profitMargin: number;
+  totalProduction: number;
+  productionUnit: string;
+  agroProduction: number;
+  pecuarioProduction: number;
+  apiculturaProduction: number;
+  procesamientoProduction: number;
+  totalInventoryValue: number;
+  lowStockAlerts: number;
+  criticalStockAlerts: number;
+}
+
+/**
+ * Reporte generado (versión simplificada para listados)
+ */
+export interface GeneratedReport {
+  id: string;
+  reportCode: string;
+  title: string;
+  description?: string;
+  reportType: ReportCategory;
+  period: 'monthly' | 'quarterly' | 'annual';
+  periodStart: Date;
+  periodEnd: Date;
+  fincaName: string;
+  status: ReportStatus;
+  generatedBy: string;
+  formats: string[];
+  fileSize: number;
+  viewCount: number;
+  downloadCount: number;
+  createdAt: Date;
+  updatedAt: Date;
+}

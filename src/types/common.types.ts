@@ -37,7 +37,8 @@ export interface Farm {
 // -----------------------------------------------------------------------------
 
 // Módulos del sistema (completos)
-export type SystemModule = 'mi_finca' | 'agricola' | 'pecuario' | 'procesamiento' | 'finanzas' | 'reglamentos' | 'reportes';
+// Incluye 'agro' como alias de 'agricola' y 'general' para uso transversal
+export type SystemModule = 'mi_finca' | 'agricola' | 'agro' | 'pecuario' | 'procesamiento' | 'finanzas' | 'reglamentos' | 'reportes' | 'general';
 
 // -----------------------------------------------------------------------------
 // Estados Unificados

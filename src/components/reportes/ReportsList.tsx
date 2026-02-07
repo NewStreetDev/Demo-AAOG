@@ -5,13 +5,15 @@ interface ReportsListProps {
   reports: GeneratedReport[];
 }
 
-const reportTypeConfig = {
+const reportTypeConfig: Record<string, { label: string; bg: string; text: string }> = {
   agricola: { label: 'Agrícola', bg: 'bg-green-100', text: 'text-green-700' },
   pecuario: { label: 'Pecuario', bg: 'bg-amber-100', text: 'text-amber-700' },
   procesamiento: { label: 'Procesamiento', bg: 'bg-blue-100', text: 'text-blue-700' },
 };
 
-const periodLabels = {
+const defaultTypeConfig = { label: 'Reporte', bg: 'bg-gray-100', text: 'text-gray-700' };
+
+const periodLabels: Record<string, string> = {
   monthly: 'Mensual',
   quarterly: 'Trimestral',
   annual: 'Anual',
@@ -38,7 +40,8 @@ export default function ReportsList({ reports }: ReportsListProps) {
       <div className="space-y-3">
         {reports.length > 0 ? (
           reports.map((report) => {
-            const typeConfig = reportTypeConfig[report.reportType];
+            const typeConfig = reportTypeConfig[report.reportType] || defaultTypeConfig;
+            const periodLabel = periodLabels[report.period] || report.period;
             return (
               <div
                 key={report.id}
@@ -59,7 +62,7 @@ export default function ReportsList({ reports }: ReportsListProps) {
                       {typeConfig.label}
                     </span>
                     <span className="text-xs text-gray-500">
-                      {periodLabels[report.period]}
+                      {periodLabel}
                     </span>
                   </div>
                   <div className="flex items-center gap-1 mt-1 text-xs text-gray-500">

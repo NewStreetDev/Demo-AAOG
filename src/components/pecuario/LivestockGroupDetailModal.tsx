@@ -143,7 +143,7 @@ export default function LivestockGroupDetailModal({
             </div>
             <div>
               <p className="text-sm text-gray-500">Ubicacion</p>
-              <p className="font-medium text-gray-900">{livestockGroup.location}</p>
+              <p className="font-medium text-gray-900">{livestockGroup.location?.potreroName || 'Sin ubicación'}</p>
             </div>
           </div>
         </div>

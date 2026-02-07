@@ -1,36 +1,51 @@
 import { z } from 'zod';
+import type { FolderType } from '../types/reglamentos.types';
 
-export const documentCategories = ['normativo', 'tecnico', 'operativo', 'certificacion'] as const;
-export const documentFolders = ['asociado', 'administracion', 'compartidos'] as const;
+// Categories matching DEFAULT_CATEGORIES from reglamentos.types.ts
+export const documentCategories = [
+  'Reglamentos',
+  'Leyes y Decretos',
+  'Manuales Técnicos',
+  'Procedimientos',
+  'Certificaciones',
+  'Formatos',
+  'Otros',
+] as const;
+
+export const documentFolders: FolderType[] = ['asociado', 'administracion', 'compartidos'];
 
 export const documentFormSchema = z.object({
-  name: z
+  title: z
     .string()
-    .min(3, 'El nombre debe tener al menos 3 caracteres')
-    .max(200, 'El nombre no puede tener mas de 200 caracteres'),
+    .min(3, 'El titulo debe tener al menos 3 caracteres')
+    .max(200, 'El titulo no puede tener mas de 200 caracteres'),
   description: z
     .string()
     .min(10, 'La descripcion debe tener al menos 10 caracteres')
-    .max(500, 'La descripcion no puede tener mas de 500 caracteres'),
-  category: z.enum(documentCategories, {
-    message: 'Seleccione una categoria',
-  }),
-  folder: z.enum(documentFolders, {
+    .max(500, 'La descripcion no puede tener mas de 500 caracteres')
+    .optional(),
+  categoryId: z.string().optional(),
+  categoryName: z.string().optional(),
+  folderType: z.enum(['asociado', 'administracion', 'compartidos'] as const, {
     message: 'Seleccione una carpeta',
   }),
   fileUrl: z
     .string()
     .min(1, 'La URL del archivo es requerida'),
+  fileName: z.string().min(1, 'El nombre del archivo es requerido'),
   fileSize: z.string().optional(),
 });
 
 export type DocumentFormData = z.infer<typeof documentFormSchema>;
 
 export const categoryOptions = [
-  { value: 'normativo', label: 'Normativo' },
-  { value: 'tecnico', label: 'Tecnico' },
-  { value: 'operativo', label: 'Operativo' },
-  { value: 'certificacion', label: 'Certificacion' },
+  { value: 'reglamentos', label: 'Reglamentos' },
+  { value: 'leyes', label: 'Leyes y Decretos' },
+  { value: 'manuales', label: 'Manuales Tecnicos' },
+  { value: 'procedimientos', label: 'Procedimientos' },
+  { value: 'certificaciones', label: 'Certificaciones' },
+  { value: 'formatos', label: 'Formatos' },
+  { value: 'otros', label: 'Otros' },
 ];
 
 export const folderOptions = [

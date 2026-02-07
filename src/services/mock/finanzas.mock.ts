@@ -137,6 +137,7 @@ const initialSales: SaleRecord[] = [
 const initialPurchases: PurchaseRecord[] = [
     {
       id: '1',
+      fincaId: '1',
       date: new Date('2026-01-18'),
       invoiceNumber: 'PROV-2026-001',
       supplierName: 'Agrosemillas CR',
@@ -154,6 +155,7 @@ const initialPurchases: PurchaseRecord[] = [
     },
     {
       id: '2',
+      fincaId: '1',
       date: new Date('2026-01-16'),
       invoiceNumber: 'PROV-2026-002',
       supplierName: 'Fertilizantes del Pacífico',
@@ -172,6 +174,7 @@ const initialPurchases: PurchaseRecord[] = [
     },
     {
       id: '3',
+      fincaId: '1',
       date: new Date('2026-01-14'),
       invoiceNumber: 'PROV-2026-003',
       supplierName: 'Agroalimentaria Central',
@@ -190,6 +193,7 @@ const initialPurchases: PurchaseRecord[] = [
     },
     {
       id: '4',
+      fincaId: '1',
       date: new Date('2026-01-10'),
       invoiceNumber: 'PROV-2026-004',
       supplierName: 'Dr. García Veterinario',
@@ -372,6 +376,7 @@ export const createMockSaleRecord = async (data: SaleRecordFormData): Promise<Sa
 
   const newSale: SaleRecord = {
     id: String(Date.now()),
+    fincaId: '1',
     date: new Date(data.date),
     invoiceNumber: data.invoiceNumber,
     saleType: data.saleType,
@@ -391,7 +396,7 @@ export const createMockSaleRecord = async (data: SaleRecordFormData): Promise<Sa
     packageType: data.packageType || undefined,
     packageSize: data.packageSize ? parseFloat(data.packageSize) : undefined,
     packageSizeUnit: data.packageSizeUnit || undefined,
-    batchNumber: data.batchNumber || undefined,
+    batchCode: data.batchCode || undefined,
     animalWeight: data.animalWeight ? parseFloat(data.animalWeight) : undefined,
     priceType: data.priceType,
     createdAt: new Date(),
@@ -435,7 +440,7 @@ export const updateMockSaleRecord = async (id: string, data: SaleRecordFormData)
     packageType: data.packageType || undefined,
     packageSize: data.packageSize ? parseFloat(data.packageSize) : undefined,
     packageSizeUnit: data.packageSizeUnit || undefined,
-    batchNumber: data.batchNumber || undefined,
+    batchCode: data.batchCode || undefined,
     animalWeight: data.animalWeight ? parseFloat(data.animalWeight) : undefined,
     priceType: data.priceType,
     updatedAt: new Date(),
@@ -476,6 +481,7 @@ export const createMockPurchaseRecord = async (data: PurchaseRecordFormData): Pr
 
   const newPurchase: PurchaseRecord = {
     id: String(Date.now()),
+    fincaId: '1',
     date: new Date(data.date),
     invoiceNumber: data.invoiceNumber,
     supplierName: data.supplierName,

@@ -42,19 +42,27 @@ const priorityColors: Record<PlanPriority, string> = {
 };
 
 const moduleColors: Record<SystemModule, string> = {
+  mi_finca: 'bg-gray-500',
+  agricola: 'bg-green-600',
   general: 'bg-green-500',
   agro: 'bg-blue-500',
   pecuario: 'bg-yellow-500',
   procesamiento: 'bg-purple-500',
   finanzas: 'bg-emerald-500',
+  reglamentos: 'bg-orange-500',
+  reportes: 'bg-indigo-500',
 };
 
 const moduleLabels: Record<SystemModule, string> = {
+  mi_finca: 'Mi Finca',
+  agricola: 'Agricola',
   general: 'General',
   agro: 'Agricultura',
   pecuario: 'Pecuario',
   procesamiento: 'Procesamiento',
   finanzas: 'Finanzas',
+  reglamentos: 'Reglamentos',
+  reportes: 'Reportes',
 };
 
 // Helper function to check if a plan is unplanned (added during execution, not from initial planning)

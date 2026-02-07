@@ -1,5 +1,20 @@
 import { TrendingUp } from 'lucide-react';
-import type { ProductionSummary } from '../../../types/dashboard.types';
+
+// Local type definition (previously from dashboard.types)
+interface ProductionItem {
+  id: string;
+  name: string;
+  quantity: number;
+  unit: string;
+  icon?: string;
+  color?: string;
+}
+
+interface ProductionSummary {
+  month: string;
+  items: ProductionItem[];
+  totalValue: number;
+}
 
 interface ProductionCardProps {
   production: ProductionSummary;

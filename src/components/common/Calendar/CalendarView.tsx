@@ -49,19 +49,27 @@ interface CalendarViewProps {
 }
 
 const moduleColors: Record<SystemModule, string> = {
+  mi_finca: 'bg-gray-500',
+  agricola: 'bg-green-600',
   general: 'bg-green-500',
   agro: 'bg-blue-500',
   pecuario: 'bg-yellow-500',
   procesamiento: 'bg-purple-500',
   finanzas: 'bg-emerald-500',
+  reglamentos: 'bg-orange-500',
+  reportes: 'bg-indigo-500',
 };
 
 const moduleColorsBorder: Record<SystemModule, string> = {
+  mi_finca: 'border-l-gray-500',
+  agricola: 'border-l-green-600',
   general: 'border-l-green-500',
   agro: 'border-l-blue-500',
   pecuario: 'border-l-yellow-500',
   procesamiento: 'border-l-purple-500',
   finanzas: 'border-l-emerald-500',
+  reglamentos: 'border-l-orange-500',
+  reportes: 'border-l-indigo-500',
 };
 
 const dayNamesShort = ['Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab', 'Dom'];

@@ -126,7 +126,7 @@ export default function ProcessingBatchList({ batches, onBatchClick }: Processin
                         {status.label}
                       </span>
                       <span className="px-2 py-0.5 rounded text-xs font-medium bg-blue-50 text-blue-600">
-                        {batch.processType}
+                        {batch.processTypeName}
                       </span>
                       {batch.isFinalProduct && (
                         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">

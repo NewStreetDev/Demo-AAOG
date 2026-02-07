@@ -7,18 +7,35 @@ interface DocumentListProps {
   isAdmin?: boolean;
 }
 
-const categoryLabels: Record<Document['category'], string> = {
-  normativo: 'Normativo',
-  tecnico: 'Tecnico',
-  operativo: 'Operativo',
-  certificacion: 'Certificacion',
+// Category labels for display
+const categoryLabels: Record<string, string> = {
+  reglamentos: 'Reglamentos',
+  leyes: 'Leyes y Decretos',
+  manuales: 'Manuales Tecnicos',
+  procedimientos: 'Procedimientos',
+  certificaciones: 'Certificaciones',
+  formatos: 'Formatos',
+  otros: 'Otros',
 };
 
-const categoryColors: Record<Document['category'], string> = {
-  normativo: 'bg-blue-100 text-blue-700',
-  tecnico: 'bg-green-100 text-green-700',
-  operativo: 'bg-amber-100 text-amber-700',
-  certificacion: 'bg-purple-100 text-purple-700',
+// Category colors for styling
+const categoryColors: Record<string, string> = {
+  reglamentos: 'bg-blue-100 text-blue-700',
+  leyes: 'bg-indigo-100 text-indigo-700',
+  manuales: 'bg-green-100 text-green-700',
+  procedimientos: 'bg-amber-100 text-amber-700',
+  certificaciones: 'bg-purple-100 text-purple-700',
+  formatos: 'bg-gray-100 text-gray-700',
+  otros: 'bg-slate-100 text-slate-700',
+};
+
+// Helper to format file size
+const formatFileSize = (bytes: number): string => {
+  if (bytes === 0) return '0 B';
+  const k = 1024;
+  const sizes = ['B', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
 };
 
 export default function DocumentList({ documents, isAdmin = false }: DocumentListProps) {
@@ -31,7 +48,7 @@ export default function DocumentList({ documents, isAdmin = false }: DocumentLis
   };
 
   const handleDelete = async (doc: Document) => {
-    if (window.confirm(`¿Desea eliminar el documento "${doc.name}"?`)) {
+    if (window.confirm(`¿Desea eliminar el documento "${doc.title}"?`)) {
       try {
         await deleteMutation.mutateAsync(doc.id);
       } catch (error) {
@@ -59,10 +76,10 @@ export default function DocumentList({ documents, isAdmin = false }: DocumentLis
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <h3 className="font-semibold text-gray-900 truncate">
-                      {doc.name}
+                      {doc.title}
                     </h3>
                     <p className="text-sm text-gray-600 mt-1 line-clamp-2">
-                      {doc.description}
+                      {doc.description || ''}
                     </p>
                   </div>
                   <div className="flex items-center gap-1">
@@ -88,10 +105,12 @@ export default function DocumentList({ documents, isAdmin = false }: DocumentLis
 
                 {/* Meta info */}
                 <div className="flex items-center gap-4 mt-3">
-                  <span className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium ${categoryColors[doc.category]}`}>
-                    <Tag className="w-3 h-3" />
-                    {categoryLabels[doc.category]}
-                  </span>
+                  {doc.categoryId && (
+                    <span className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium ${categoryColors[doc.categoryId] || 'bg-gray-100 text-gray-700'}`}>
+                      <Tag className="w-3 h-3" />
+                      {doc.categoryName || categoryLabels[doc.categoryId] || doc.categoryId}
+                    </span>
+                  )}
                   <span className="inline-flex items-center gap-1.5 text-xs text-gray-500">
                     <Calendar className="w-3.5 h-3.5" />
                     {new Date(doc.uploadedAt).toLocaleDateString('es-CR', {
@@ -100,9 +119,9 @@ export default function DocumentList({ documents, isAdmin = false }: DocumentLis
                       day: 'numeric',
                     })}
                   </span>
-                  {doc.fileSize && (
+                  {doc.fileSize > 0 && (
                     <span className="text-xs text-gray-400">
-                      {doc.fileSize}
+                      {formatFileSize(doc.fileSize)}
                     </span>
                   )}
                 </div>

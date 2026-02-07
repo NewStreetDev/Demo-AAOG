@@ -109,7 +109,7 @@ export default function ProcessingBatchFormModal({
   useEffect(() => {
     if (open && batch) {
       reset({
-        processTypeId: batch.processTypeId || batch.processType || '',
+        processTypeId: batch.processTypeId || '',
         processTypeName: batch.processTypeName || '',
         processDate: new Date(batch.processDate).toISOString().slice(0, 16),
         inputProduct: batch.inputProduct,

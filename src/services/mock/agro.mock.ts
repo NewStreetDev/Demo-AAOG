@@ -23,6 +23,7 @@ let harvestsStore: Harvest[] = [];
 const initialLotes: Lote[] = [
   {
     id: '1',
+    fincaId: '1',
     name: 'Lote Norte',
     code: 'LT-001',
     area: 5.5,
@@ -35,6 +36,7 @@ const initialLotes: Lote[] = [
   },
   {
     id: '2',
+    fincaId: '1',
     name: 'Lote Central',
     code: 'LT-002',
     area: 8.2,
@@ -47,6 +49,7 @@ const initialLotes: Lote[] = [
   },
   {
     id: '3',
+    fincaId: '1',
     name: 'Lote Sur',
     code: 'LT-003',
     area: 4.0,
@@ -59,6 +62,7 @@ const initialLotes: Lote[] = [
   },
   {
     id: '4',
+    fincaId: '1',
     name: 'Lote Este',
     code: 'LT-004',
     area: 3.5,
@@ -70,6 +74,7 @@ const initialLotes: Lote[] = [
   },
   {
     id: '5',
+    fincaId: '1',
     name: 'Lote Oeste',
     code: 'LT-005',
     area: 2.8,
@@ -85,6 +90,7 @@ const initialLotes: Lote[] = [
 const initialCrops: Crop[] = [
     {
       id: '1',
+      fincaId: '1',
       name: 'Tomate',
       variety: 'Roma',
       productType: 'primary',
@@ -101,6 +107,7 @@ const initialCrops: Crop[] = [
     },
     {
       id: '2',
+      fincaId: '1',
       name: 'Chile',
       variety: 'Jalapeño',
       productType: 'primary',
@@ -117,6 +124,7 @@ const initialCrops: Crop[] = [
     },
     {
       id: '3',
+      fincaId: '1',
       name: 'Pepino',
       variety: 'Americano',
       productType: 'primary',
@@ -133,6 +141,7 @@ const initialCrops: Crop[] = [
     },
     {
       id: '4',
+      fincaId: '1',
       name: 'Cilantro',
       variety: 'Común',
       productType: 'secondary',
@@ -182,6 +191,7 @@ export const createMockLote = async (data: LoteFormData): Promise<Lote> => {
   initializeLotesStore();
   const newLote: Lote = {
     id: String(Date.now()),
+    fincaId: '1',
     name: data.name,
     code: data.code,
     area: parseFloat(data.area),
@@ -252,6 +262,7 @@ export const createMockCrop = async (data: CropFormData): Promise<Crop> => {
   const lote = lotesStore.find(l => l.id === data.loteId);
   const newCrop: Crop = {
     id: String(Date.now()),
+    fincaId: '1',
     name: data.name,
     variety: data.variety,
     productType: data.productType,
@@ -477,11 +488,13 @@ export const getMockCropSummaries = async (): Promise<CropSummary[]> => {
 const initialAgroActions: AgroAction[] = [
   {
     id: '1',
+    fincaId: '1',
     cropId: '1',
     cropName: 'Tomate',
     loteId: '1',
     loteName: 'Lote Norte',
     type: 'fertilization',
+    status: 'completed',
     date: new Date('2026-01-18'),
     description: 'Aplicacion de fertilizante NPK',
     insumoUsed: 'NPK 15-15-15',
@@ -495,11 +508,13 @@ const initialAgroActions: AgroAction[] = [
   },
   {
     id: '2',
+    fincaId: '1',
     cropId: '2',
     cropName: 'Chile',
     loteId: '2',
     loteName: 'Lote Central',
     type: 'irrigation',
+    status: 'completed',
     date: new Date('2026-01-17'),
     description: 'Riego por aspersion',
     quantity: 15000,
@@ -511,11 +526,13 @@ const initialAgroActions: AgroAction[] = [
   },
   {
     id: '3',
+    fincaId: '1',
     cropId: '3',
     cropName: 'Pepino',
     loteId: '3',
     loteName: 'Lote Sur',
     type: 'pesticide',
+    status: 'completed',
     date: new Date('2026-01-15'),
     description: 'Control preventivo de afidos',
     insumoUsed: 'Insecticida organico',
@@ -529,11 +546,13 @@ const initialAgroActions: AgroAction[] = [
   },
   {
     id: '4',
+    fincaId: '1',
     cropId: '1',
     cropName: 'Tomate',
     loteId: '1',
     loteName: 'Lote Norte',
     type: 'weeding',
+    status: 'completed',
     date: new Date('2026-01-12'),
     description: 'Deshierbe manual de camas',
     performedBy: 'Pedro Martinez',
@@ -543,9 +562,11 @@ const initialAgroActions: AgroAction[] = [
   },
   {
     id: '5',
+    fincaId: '1',
     loteId: '4',
     loteName: 'Lote Este',
     type: 'soil_preparation',
+    status: 'completed',
     date: new Date('2026-01-10'),
     description: 'Preparacion de suelo con tractor',
     cost: 120000,
@@ -561,6 +582,7 @@ const initialAgroActions: AgroAction[] = [
 const initialHarvests: Harvest[] = [
   {
     id: '1',
+    fincaId: '1',
     cropId: '4',
     cropName: 'Cilantro',
     loteId: '1',
@@ -569,7 +591,7 @@ const initialHarvests: Harvest[] = [
     quantity: 150,
     unit: 'kg',
     quality: 'A',
-    destination: 'sale',
+    destination: 'venta',
     pricePerUnit: 2500,
     totalValue: 375000,
     harvestedBy: 'Maria Lopez',
@@ -579,6 +601,7 @@ const initialHarvests: Harvest[] = [
   },
   {
     id: '2',
+    fincaId: '1',
     cropId: '4',
     cropName: 'Cilantro',
     loteId: '1',
@@ -587,7 +610,7 @@ const initialHarvests: Harvest[] = [
     quantity: 100,
     unit: 'kg',
     quality: 'B',
-    destination: 'sale',
+    destination: 'venta',
     pricePerUnit: 2000,
     totalValue: 200000,
     harvestedBy: 'Carlos Sanchez',
@@ -596,6 +619,7 @@ const initialHarvests: Harvest[] = [
   },
   {
     id: '3',
+    fincaId: '1',
     cropId: '1',
     cropName: 'Tomate',
     loteId: '1',
@@ -604,7 +628,7 @@ const initialHarvests: Harvest[] = [
     quantity: 500,
     unit: 'kg',
     quality: 'A',
-    destination: 'sale',
+    destination: 'venta',
     pricePerUnit: 1800,
     totalValue: 900000,
     harvestedBy: 'Juan Perez',
@@ -674,11 +698,13 @@ export const createMockAgroAction = async (data: AgroActionFormData): Promise<Ag
 
   const newAction: AgroAction = {
     id: String(Date.now()),
+    fincaId: '1',
     loteId: data.loteId,
     loteName: lote?.name || '',
     cropId: data.cropId || undefined,
     cropName: crop?.name,
     type: data.type,
+    status: data.status || 'pending',
     date: new Date(data.date),
     description: data.description,
     insumoUsed: data.insumoUsed || undefined,
@@ -789,6 +815,7 @@ export const createMockHarvest = async (data: HarvestFormData): Promise<Harvest>
 
   const newHarvest: Harvest = {
     id: String(Date.now()),
+    fincaId: '1',
     cropId: data.cropId,
     cropName: crop?.name || '',
     loteId: data.loteId,

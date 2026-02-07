@@ -41,7 +41,7 @@ export default function LivestockGroupList({
     const matchesSearch =
       searchTerm === '' ||
       group.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      group.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      group.location?.potreroName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       group.description?.toLowerCase().includes(searchTerm.toLowerCase());
 
     const matchesSpecies = selectedSpecies === 'all' || group.species === selectedSpecies;
@@ -56,7 +56,8 @@ export default function LivestockGroupList({
     return speciesOptions.find(s => s.value === species)?.label || species;
   };
 
-  const getCategoryLabel = (species: string, category: string) => {
+  const getCategoryLabel = (species: string, category?: string) => {
+    if (!category) return 'Sin categoría';
     return categoryOptionsBySpecies[species]?.find(c => c.value === category)?.label || category;
   };
 
@@ -160,7 +161,7 @@ export default function LivestockGroupList({
                       </span>
                       <span className="inline-flex items-center gap-1">
                         <MapPin className="w-3 h-3" />
-                        {group.location}
+                        {group.location?.potreroName || 'Sin ubicación'}
                       </span>
                     </div>
                   </div>

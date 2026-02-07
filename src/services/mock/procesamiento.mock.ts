@@ -38,6 +38,7 @@ function generateBatchCode(processDate: Date): string {
   if (!dailyCounters[counterKey]) {
     // Count existing batches for this day to initialize counter
     const existingCount = batchesStore.filter(b => {
+      if (!b.batchCode) return false;
       const batchDateStr = b.batchCode.split('-')[1];
       return batchDateStr === dateStr;
     }).length;
@@ -236,8 +237,8 @@ export const createMockProcessingBatch = async (data: ProcessingBatchFormData): 
     id: String(Date.now()),
     fincaId: '1', // Default finca for mock
     batchCode,
-    processTypeId: `proc-${data.processType.toLowerCase().replace(/\s+/g, '-')}`,
-    processTypeName: data.processType,
+    processTypeId: data.processTypeId || `proc-${(data.processTypeName || '').toLowerCase().replace(/\s+/g, '-')}`,
+    processTypeName: data.processTypeName || data.processTypeId,
     processDate,
     inputProduct: data.inputProduct,
     inputQuantity: inputQty,
@@ -301,8 +302,8 @@ export const updateMockProcessingBatch = async (id: string, data: ProcessingBatc
   const updated: ProcessingBatch = {
     ...existing,
     batchCode,
-    processTypeId: `proc-${data.processType.toLowerCase().replace(/\s+/g, '-')}`,
-    processTypeName: data.processType,
+    processTypeId: data.processTypeId || `proc-${(data.processTypeName || '').toLowerCase().replace(/\s+/g, '-')}`,
+    processTypeName: data.processTypeName || data.processTypeId,
     processDate,
     inputProduct: data.inputProduct,
     inputQuantity: inputQty,
@@ -353,12 +354,35 @@ export const getMockProcesamientoStats = async (): Promise<ProcesamientoDashboar
     .filter(b => b.status === 'completado' && b.merma !== undefined)
     .reduce((sum, b) => sum + (b.merma || 0), 0);
 
+  // Calculate average merma percentage
+  const batchesWithMerma = batchesStore.filter(b => b.status === 'completado' && b.merma !== undefined && b.inputQuantity > 0);
+  const averageMermaPercentage = batchesWithMerma.length > 0
+    ? batchesWithMerma.reduce((sum, b) => sum + ((b.merma || 0) / b.inputQuantity) * 100, 0) / batchesWithMerma.length
+    : 0;
+
+  // Calculate monthly output
+  const now = new Date();
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const monthlyBatches = batchesStore.filter(
+    b => b.status === 'completado' && b.completionDate && new Date(b.completionDate) >= startOfMonth
+  );
+  const monthlyOutput = monthlyBatches.reduce((sum, b) => sum + (b.outputQuantity || 0), 0);
+
   return {
     batchesEnProceso: enProceso,
     batchesCompletados: completados,
     batchesProductoFinal: productoFinal,
+    batchesDisponiblesVenta: productoFinal, // Same as productoFinal for now
     totalMerma,
     mermaUnit: 'kg',
+    averageMermaPercentage: Math.round(averageMermaPercentage * 10) / 10,
+    totalInventoryItems: productoFinal,
+    lowStockItems: 0, // No low stock tracking in mock
+    monthlyOutputQuantity: monthlyOutput,
+    monthlyOutputUnit: 'kg',
+    monthlyProcessedBatches: monthlyBatches.length,
+    pendingRG06: productoFinal, // Simplified: assume all final products need RG06
+    pendingSales: 0, // No pending sales tracking in mock
   };
 };
 
@@ -385,7 +409,7 @@ export const getMockProcesamientoTasks = async (): Promise<ProcesamientoTask[]> 
     .filter(b => b.status === 'en_proceso')
     .map(b => ({
       id: b.id,
-      title: `${b.processType}: ${b.inputProduct}`,
+      title: `${b.processTypeName}: ${b.inputProduct}`,
       type: 'proceso',
       dueDate: new Date(b.processDate),
       priority: 'medium' as const,

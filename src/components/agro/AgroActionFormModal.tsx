@@ -15,7 +15,6 @@ import {
   agroActionStatusOptions,
   agroActionPriorityOptions,
   weatherConditionOptions,
-  planPhaseOptions,
   type AgroActionFormData,
 } from '../../schemas/agro.schema';
 import { useCreateAgroAction, useUpdateAgroAction } from '../../hooks/useAgroMutations';
@@ -57,7 +56,7 @@ export default function AgroActionFormModal({
     watch,
     formState: { errors },
   } = useForm<AgroActionFormData>({
-    resolver: zodResolver(agroActionFormSchema),
+    resolver: zodResolver(agroActionFormSchema) as never,
     defaultValues: {
       loteId: '',
       cropId: '',

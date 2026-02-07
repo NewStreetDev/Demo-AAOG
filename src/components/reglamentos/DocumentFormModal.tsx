@@ -11,13 +11,13 @@ import {
   type DocumentFormData,
 } from '../../schemas/reglamentos.schema';
 import { useCreateDocument } from '../../hooks/useReglamentos';
-import type { DocumentFolder } from '../../types/reglamentos.types';
+import type { FolderType } from '../../types/reglamentos.types';
 
 interface DocumentFormModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSuccess?: () => void;
-  defaultFolder?: DocumentFolder;
+  defaultFolder?: FolderType;
 }
 
 export default function DocumentFormModal({
@@ -37,11 +37,13 @@ export default function DocumentFormModal({
   } = useForm<DocumentFormData>({
     resolver: zodResolver(documentFormSchema),
     defaultValues: {
-      name: '',
+      title: '',
       description: '',
-      category: 'normativo',
-      folder: defaultFolder,
+      categoryId: '',
+      categoryName: '',
+      folderType: defaultFolder,
       fileUrl: '',
+      fileName: '',
       fileSize: '',
     },
   });
@@ -49,11 +51,13 @@ export default function DocumentFormModal({
   useEffect(() => {
     if (open) {
       reset({
-        name: '',
+        title: '',
         description: '',
-        category: 'normativo',
-        folder: defaultFolder,
+        categoryId: '',
+        categoryName: '',
+        folderType: defaultFolder,
         fileUrl: '',
+        fileName: '',
         fileSize: '',
       });
     }
@@ -78,10 +82,10 @@ export default function DocumentFormModal({
     >
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <Controller
-          name="name"
+          name="title"
           control={control}
           render={({ field }) => (
-            <FormField label="Nombre del documento" error={errors.name?.message}>
+            <FormField label="Titulo del documento" error={errors.title?.message}>
               <FormInput
                 placeholder="Ej: Reglamento de Agricultura Organica"
                 {...field}
@@ -105,13 +109,13 @@ export default function DocumentFormModal({
         />
 
         <Controller
-          name="category"
+          name="categoryId"
           control={control}
           render={({ field }) => (
-            <FormField label="Categoria" error={errors.category?.message}>
+            <FormField label="Categoria" error={errors.categoryId?.message}>
               <FormSelect
                 options={categoryOptions}
-                value={field.value}
+                value={field.value || ''}
                 onValueChange={field.onChange}
                 placeholder="Seleccione una categoria"
               />
@@ -120,15 +124,28 @@ export default function DocumentFormModal({
         />
 
         <Controller
-          name="folder"
+          name="folderType"
           control={control}
           render={({ field }) => (
-            <FormField label="Carpeta destino" error={errors.folder?.message}>
+            <FormField label="Carpeta destino" error={errors.folderType?.message}>
               <FormSelect
                 options={folderOptions}
                 value={field.value}
                 onValueChange={field.onChange}
                 placeholder="Seleccione una carpeta"
+              />
+            </FormField>
+          )}
+        />
+
+        <Controller
+          name="fileName"
+          control={control}
+          render={({ field }) => (
+            <FormField label="Nombre del archivo" error={errors.fileName?.message}>
+              <FormInput
+                placeholder="Ej: reglamento-agricultura.pdf"
+                {...field}
               />
             </FormField>
           )}

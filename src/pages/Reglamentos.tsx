@@ -5,9 +5,9 @@ import ListCardSkeleton from '../components/common/Skeletons/ListCardSkeleton';
 import { useDocuments } from '../hooks/useReglamentos';
 import { useAuth } from '../contexts/AuthContext';
 import { categoryOptions } from '../schemas/reglamentos.schema';
-import type { DocumentFolder } from '../types/reglamentos.types';
+import type { FolderType } from '../types/reglamentos.types';
 
-type TabType = 'asociado' | 'administracion' | 'compartidos';
+type TabType = FolderType;
 
 export default function Reglamentos() {
   const { data: documents, isLoading } = useDocuments();
@@ -17,7 +17,7 @@ export default function Reglamentos() {
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('');
 
-  const isAdmin = user?.role === 'admin';
+  const isAdmin = user?.role === 'administrador';
 
   const tabs = [
     { id: 'asociado' as TabType, label: 'Mi Carpeta', icon: FolderOpen },
@@ -31,19 +31,19 @@ export default function Reglamentos() {
   const filteredDocuments = useMemo(() => {
     if (!documents) return [];
 
-    let filtered = documents.filter((doc) => doc.folder === activeTab);
+    let filtered = documents.filter((doc) => doc.folderType === activeTab);
 
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase().trim();
       filtered = filtered.filter(
         (doc) =>
-          doc.name.toLowerCase().includes(query) ||
-          doc.description.toLowerCase().includes(query)
+          doc.title.toLowerCase().includes(query) ||
+          (doc.description?.toLowerCase().includes(query) ?? false)
       );
     }
 
     if (categoryFilter) {
-      filtered = filtered.filter((doc) => doc.category === categoryFilter);
+      filtered = filtered.filter((doc) => doc.categoryId === categoryFilter);
     }
 
     return filtered;
@@ -173,7 +173,7 @@ export default function Reglamentos() {
         <DocumentFormModal
           open={documentFormOpen}
           onOpenChange={setDocumentFormOpen}
-          defaultFolder={activeTab as DocumentFolder}
+          defaultFolder={activeTab}
         />
       )}
     </div>

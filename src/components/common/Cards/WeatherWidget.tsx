@@ -1,5 +1,5 @@
 import { Droplets } from 'lucide-react';
-import type { WeatherData } from '../../../types/dashboard.types';
+import type { WeatherData } from '../../../types/finca.types';
 
 interface WeatherWidgetProps {
   weather: WeatherData;

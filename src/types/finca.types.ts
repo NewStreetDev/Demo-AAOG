@@ -81,6 +81,22 @@ export interface WeatherForecast {
   lastUpdated: Date;
 }
 
+// Weather data for dashboard widgets
+export interface WeatherData {
+  current: {
+    temperature: number;
+    humidity: number;
+    condition: string;
+    icon: string;
+  };
+  forecast: {
+    day: string;
+    icon: string;
+    tempHigh: number;
+    tempLow: number;
+  }[];
+}
+
 // ==================== SELECTOR DE FINCA ACTIVA (§3.2) ====================
 
 // Contexto de finca activa para el usuario

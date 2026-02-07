@@ -481,6 +481,15 @@ export const ROLE_PERMISSIONS: Record<UserRole, SystemPermissions> = {
 // HELPERS DE PERMISOS
 // ========================================
 
+// Mapear módulo a su clave canónica en SystemPermissions
+const mapModuleToCanonical = (module: SystemModule): keyof SystemPermissions => {
+  // 'agro' es alias de 'agricola', 'general' mapea a 'mi_finca'
+  if (module === 'agro') return 'agricola';
+  if (module === 'general') return 'mi_finca';
+  // Los demás son directos
+  return module as keyof SystemPermissions;
+};
+
 // Verificar si un rol tiene permiso para una acción en un módulo
 export const hasPermission = (
   role: UserRole,
@@ -488,7 +497,8 @@ export const hasPermission = (
   action: keyof ModulePermissions
 ): boolean => {
   const permissions = ROLE_PERMISSIONS[role];
-  const modulePermissions = permissions[module];
+  const canonicalModule = mapModuleToCanonical(module);
+  const modulePermissions = permissions[canonicalModule];
   return modulePermissions[action] ?? false;
 };
 

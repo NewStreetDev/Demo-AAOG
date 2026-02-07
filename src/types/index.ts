@@ -140,18 +140,18 @@ export type {
   ProductType,
   CropStatus,
 
+  // Destino de producción
+  DestinoProduccion,
+
   // Reportes RG (Agrícola)
   RG01Record,        // Plan de Manejo (SIC)
   RG02Record,        // Estimación de Producción (SIC)
   RG03Record,        // Bitácora de Labores (ejecución)
   RG04Record,        // Insumos (ejecución)
   RG05Record,        // Registro de Cosechas (ejecución)
-  RG05Destination,
 
   // Balance de Masas
   BalanceMasasAgro,
-  BalanceMasasItem,
-  BalanceMasasAnalysis,
 
   // Dashboard y estadísticas
   AgroDashboardStats,
@@ -173,21 +173,25 @@ export type {
   LivestockSpecies,
   LivestockCategory,
   LivestockGroup,
-  LivestockSummary,
 
   // Salud animal (RP02)
   HealthRecord,
-  TreatmentType,
+  GroupHealthAction,
 
   // Reproducción (RP04)
   ReproductionRecord,
-  ReproductionEventType,
 
   // Potreros
   Potrero,
   PotreroAssignment,
   PotreroRestInfo,
   PotreroOccupancyHistory,
+
+  // Movimientos
+  LivestockMovement,
+
+  // Producción de leche
+  MilkProduction,
 
   // Colmenas
   Beehive,
@@ -202,12 +206,9 @@ export type {
 
   // Dashboard y estadísticas
   PecuarioDashboardStats,
-  LivestockBySpecies,
+  PecuarioProductionData,
   CategoryDistribution,
-  MonthlyLivestockData,
   PecuarioTask,
-  PotreroSummary,
-  PotreroPieData,
 } from './pecuario.types';
 
 // Exportar constantes de pecuario
@@ -236,7 +237,6 @@ export type {
 
   // Reportes RG (Procesamiento)
   RG06Record,        // Registro de Procesamiento
-  RG06ProcessStep,
   ProcessedProductSale,
   RG07Record,        // Venta de Productos Procesados
   RG07SaleItem,
@@ -272,9 +272,6 @@ export type {
   AccountsReceivable,
   AccountsPayable,
 
-  // Presentación comercial
-  CommercialPresentation,
-
   // Vinculación con otros módulos
   LivestockSaleLink,
   BatchSaleLink,
@@ -284,7 +281,7 @@ export type {
   FinanzasSummaryView,
   FinanzasDashboardStats,
   MonthlyFinancialData,
-  SalesByType,
+  SalesByModule,
 
   // Exportación
   FinanzasExportFormat,
@@ -317,7 +314,6 @@ export type {
 
   // Auditoría
   DocumentActivityLog,
-  ActivityType,
 
   // Visualización
   DocumentViewer,
@@ -352,8 +348,6 @@ export type {
 
   // Balance de Masas (consolidado)
   BalanceMasasData,
-  BalanceMasasProductItem,
-  BalanceMasasSummary,
 } from './reportes.types';
 
 // Exportar catálogo y constantes de reportes

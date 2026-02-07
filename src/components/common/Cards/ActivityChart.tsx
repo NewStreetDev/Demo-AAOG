@@ -1,6 +1,12 @@
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
-import type { Activity } from '../../../types/dashboard.types';
 import { TrendingUp } from 'lucide-react';
+
+// Local type definition (previously from dashboard.types)
+interface Activity {
+  name: string;
+  value: number;
+  color: string;
+}
 
 interface ActivityChartProps {
   activities: Activity[];

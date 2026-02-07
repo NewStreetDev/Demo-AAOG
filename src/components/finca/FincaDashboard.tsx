@@ -1,6 +1,5 @@
 import { Wheat, Beef, Factory, DollarSign } from 'lucide-react';
-import type { FincaDashboardStats, MonthlyAggregatedData, AggregatedTask, Finca } from '../../types/finca.types';
-import type { WeatherData } from '../../types/dashboard.types';
+import type { FincaDashboardStats, MonthlyAggregatedData, AggregatedTask, Finca, WeatherData } from '../../types/finca.types';
 import type { SystemModule } from '../../types/common.types';
 import FincaStatCard from './FincaStatCard';
 import FincaOverviewCard from './FincaOverviewCard';

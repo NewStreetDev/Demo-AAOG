@@ -9,7 +9,13 @@ import {
   Legend,
   ResponsiveContainer,
 } from 'recharts';
-import type { StatsChartData } from '../../../types/dashboard.types';
+
+// Local type definition (previously from dashboard.types)
+interface StatsChartData {
+  month: string;
+  production: number;
+  income: number;
+}
 
 interface StatsChartProps {
   data: StatsChartData[];

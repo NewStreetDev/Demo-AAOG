@@ -27,7 +27,8 @@ export const entryReasons = ['birth', 'purchase', 'transfer'] as const;
 export const exitReasons = ['sale', 'death', 'transfer', 'slaughter'] as const;
 
 // Potrero constants
-export const potreroStatuses = ['active', 'resting', 'maintenance'] as const;
+// Must match Potrero.status in pecuario.types.ts: 'active' | 'inactive' | 'resting' | 'maintenance'
+export const potreroStatuses = ['active', 'inactive', 'resting', 'maintenance'] as const;
 
 // Livestock Form Schema
 export const livestockFormSchema = z.object({
@@ -213,8 +214,10 @@ export const exitReasonOptions = [
 ];
 
 // Select options for Potrero
+// Must match Potrero.status in pecuario.types.ts
 export const potreroStatusOptions = [
   { value: 'active', label: 'Activo' },
+  { value: 'inactive', label: 'Inactivo' },
   { value: 'resting', label: 'En Descanso' },
   { value: 'maintenance', label: 'En Mantenimiento' },
 ];
@@ -452,7 +455,10 @@ export const livestockGroupFormSchema = z.object({
   potreroId: z.string().optional(), // Opcional - grupo puede no estar asignado a potrero
   // Miembros del grupo
   memberIds: z.array(z.string()).optional(), // Multi-select de animales activos
-  status: z.enum(livestockGroupStatuses).default('active'),
+  // Status is required in LivestockGroup type
+  status: z.enum(livestockGroupStatuses, {
+    message: 'Seleccione un estado valido',
+  }),
   description: z.string().optional(),
 });
 

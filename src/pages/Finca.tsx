@@ -13,8 +13,6 @@ import {
   AnnualPlanFormModal,
   AnnualPlanDetailModal,
 } from '../components/finca';
-import WeatherWidget from '../components/common/Cards/WeatherWidget';
-import { useWeather } from '../hooks/useDashboard';
 import { CalendarView } from '../components/common/Calendar';
 import ListCardSkeleton from '../components/common/Skeletons/ListCardSkeleton';
 import { cn } from '../utils/cn';
@@ -58,7 +56,6 @@ export default function Finca() {
   // Queries
   const { data: finca } = useFinca();
   const { data: divisions, isLoading: divisionsLoading } = useDivisions();
-  const { data: weather, isLoading: weatherLoading } = useWeather();
 
   // Annual plan queries
   const { data: annualPlans, isLoading: annualPlansLoading } = useAnnualPlans();
@@ -437,26 +434,10 @@ export default function Finca() {
                   )}
                 </div>
 
-                {/* Mapa y Clima - Informacion Geografica */}
+                {/* Mapa - Informacion Geografica */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   {/* Mapa de ubicacion */}
                   <FincaMapCard finca={finca} />
-
-                  {/* Widget de clima */}
-                  {weatherLoading ? (
-                    <div className="card p-6 animate-pulse">
-                      <div className="h-6 w-32 bg-gray-200 rounded mb-4" />
-                      <div className="h-16 w-24 bg-gray-200 rounded mb-4" />
-                      <div className="h-4 w-48 bg-gray-200 rounded mb-6" />
-                      <div className="grid grid-cols-4 gap-3">
-                        {[...Array(4)].map((_, i) => (
-                          <div key={i} className="h-24 bg-gray-200 rounded" />
-                        ))}
-                      </div>
-                    </div>
-                  ) : weather ? (
-                    <WeatherWidget weather={weather} />
-                  ) : null}
                 </div>
               </>
             ) : (

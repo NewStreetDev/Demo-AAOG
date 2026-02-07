@@ -140,7 +140,7 @@ export default function SaleRecordDetailModal({
       <Modal
         open={open}
         onOpenChange={onOpenChange}
-        title={saleRecord.invoiceNumber}
+        title={saleRecord.invoiceNumber || 'Sin factura'}
         description={saleRecord.productDescription}
         size="md"
       >
@@ -228,11 +228,11 @@ export default function SaleRecordDetailModal({
               />
             )}
 
-            {saleRecord.saleType === 'procesado' && saleRecord.batchNumber && (
+            {saleRecord.saleType === 'procesado' && saleRecord.batchCode && (
               <DetailRow
                 icon={<Box className="w-4 h-4" />}
                 label="Número de Lote"
-                value={saleRecord.batchNumber}
+                value={saleRecord.batchCode}
               />
             )}
 

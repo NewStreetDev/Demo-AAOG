@@ -1,9 +1,27 @@
 import { z } from 'zod';
 
-export const systemModules = ['agro', 'pecuario', 'procesamiento', 'finanzas', 'general'] as const;
+// Modules for action forms - subset of SystemModule that can have actions
+// Must be compatible with SystemModule type from common.types.ts
+export const systemModules = ['mi_finca', 'agricola', 'agro', 'pecuario', 'procesamiento', 'finanzas', 'reglamentos', 'reportes', 'general'] as const;
 
 // Tipos de acción por módulo
 export const actionTypesByModule = {
+  mi_finca: [
+    { value: 'maintenance', label: 'Mantenimiento' },
+    { value: 'planning', label: 'Planificación' },
+    { value: 'other', label: 'Otra' },
+  ],
+  agricola: [
+    { value: 'planting', label: 'Siembra' },
+    { value: 'irrigation', label: 'Riego' },
+    { value: 'fertilization', label: 'Fertilización' },
+    { value: 'pesticide', label: 'Aplicación de Pesticida' },
+    { value: 'weeding', label: 'Deshierbe' },
+    { value: 'pruning', label: 'Poda' },
+    { value: 'harvest', label: 'Cosecha' },
+    { value: 'soil_preparation', label: 'Preparación de Suelo' },
+    { value: 'other', label: 'Otra' },
+  ],
   agro: [
     { value: 'planting', label: 'Siembra' },
     { value: 'irrigation', label: 'Riego' },
@@ -33,6 +51,22 @@ export const actionTypesByModule = {
     { value: 'quality_control', label: 'Control de Calidad' },
     { value: 'storage', label: 'Almacenamiento' },
     { value: 'cleaning', label: 'Limpieza' },
+    { value: 'other', label: 'Otra' },
+  ],
+  finanzas: [
+    { value: 'accounting', label: 'Contabilidad' },
+    { value: 'payment', label: 'Pago' },
+    { value: 'collection', label: 'Cobro' },
+    { value: 'other', label: 'Otra' },
+  ],
+  reglamentos: [
+    { value: 'document_review', label: 'Revisión de Documento' },
+    { value: 'upload', label: 'Carga de Documento' },
+    { value: 'other', label: 'Otra' },
+  ],
+  reportes: [
+    { value: 'report_generation', label: 'Generación de Reporte' },
+    { value: 'export', label: 'Exportación' },
     { value: 'other', label: 'Otra' },
   ],
   general: [
@@ -86,10 +120,12 @@ export function getActionTypeLabel(module: string, actionType: string): string {
   return found?.label || actionType;
 }
 
-// Opciones de módulos
+// Opciones de módulos - for forms/selects
 export const moduleOptions = [
+  { value: 'mi_finca', label: 'Mi Finca' },
   { value: 'agro', label: 'Agricultura' },
   { value: 'pecuario', label: 'Pecuario' },
   { value: 'procesamiento', label: 'Procesamiento' },
+  { value: 'finanzas', label: 'Finanzas' },
   { value: 'general', label: 'General' },
 ];

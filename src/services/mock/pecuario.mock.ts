@@ -21,6 +21,7 @@ import type {
   MilkProductionFormData,
   LivestockGroupFormData,
 } from '../../schemas/pecuario.schema';
+import { getMockDivisionById } from './finca.mock';
 
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -404,8 +405,10 @@ export const getMockLivestockById = async (id: string): Promise<Livestock | unde
 export const createMockLivestock = async (data: LivestockFormData): Promise<Livestock> => {
   await delay(400);
   initializeLivestockStore();
+  initializePotrerosStore(); // Ensure potreros are loaded for lookup
   const newLivestock: Livestock = {
     id: String(Date.now()),
+    fincaId: '1',
     tag: data.tag,
     name: data.name,
     species: data.species,
@@ -415,7 +418,10 @@ export const createMockLivestock = async (data: LivestockFormData): Promise<Live
     gender: data.gender,
     weight: parseFloat(data.weight),
     status: data.status,
-    location: { potreroId: '', potreroName: data.location },
+    location: {
+      potreroId: data.potreroId || '',
+      potreroName: potrerosStore.find(p => p.id === data.potreroId)?.name || ''
+    },
     motherId: data.motherId || undefined,
     motherTag: data.motherTag || undefined,
     fatherId: data.fatherId || undefined,
@@ -436,6 +442,7 @@ export const createMockLivestock = async (data: LivestockFormData): Promise<Live
 export const updateMockLivestock = async (id: string, data: LivestockFormData): Promise<Livestock> => {
   await delay(400);
   initializeLivestockStore();
+  initializePotrerosStore(); // Ensure potreros are loaded for lookup
   const index = livestockStore.findIndex(l => l.id === id);
   if (index === -1) throw new Error('Livestock not found');
 
@@ -451,7 +458,10 @@ export const updateMockLivestock = async (id: string, data: LivestockFormData): 
     gender: data.gender,
     weight: parseFloat(data.weight),
     status: data.status,
-    location: { potreroId: '', potreroName: data.location },
+    location: {
+      potreroId: data.potreroId || '',
+      potreroName: potrerosStore.find(p => p.id === data.potreroId)?.name || ''
+    },
     motherId: data.motherId || undefined,
     motherTag: data.motherTag || undefined,
     fatherId: data.fatherId || undefined,
@@ -494,9 +504,14 @@ export const getMockPotreroById = async (id: string): Promise<Potrero | undefine
 export const createMockPotrero = async (data: PotreroFormData): Promise<Potrero> => {
   await delay(400);
   initializePotrerosStore();
+  // Lookup division name from divisionId
+  const division = data.divisionId ? await getMockDivisionById(data.divisionId) : undefined;
   const newPotrero: Potrero = {
     id: String(Date.now()),
+    fincaId: '1',
     name: data.name,
+    divisionId: data.divisionId || '',
+    divisionName: division?.name || '',
     area: parseFloat(data.area),
     capacity: parseInt(data.capacity),
     currentOccupancy: parseInt(data.currentOccupancy),
@@ -677,6 +692,7 @@ export const createMockHealthRecord = async (data: HealthRecordFormData): Promis
   initializeHealthRecordsStore();
   const newRecord: HealthRecord = {
     id: String(Date.now()),
+    fincaId: '1',
     livestockId: data.livestockId,
     livestockTag: data.livestockTag,
     date: new Date(data.date),
@@ -766,12 +782,12 @@ export const getMockPecuarioStats = async (): Promise<PecuarioDashboardStats> =>
 export const getMockPecuarioProduction = async (): Promise<PecuarioProductionData[]> => {
   await delay(300);
   return [
-    { month: 'Ago', milk: 3800, births: 2, sales: 3, weight: 425 },
-    { month: 'Sep', milk: 4100, births: 1, sales: 2, weight: 430 },
-    { month: 'Oct', milk: 4300, births: 3, sales: 4, weight: 428 },
-    { month: 'Nov', milk: 4150, births: 2, sales: 1, weight: 432 },
-    { month: 'Dic', milk: 4050, births: 4, sales: 2, weight: 435 },
-    { month: 'Ene', milk: 4250, births: 2, sales: 3, weight: 438 },
+    { month: 'Ago', milk: 3800, honey: 0, births: 2, sales: 3, weight: 425 },
+    { month: 'Sep', milk: 4100, honey: 0, births: 1, sales: 2, weight: 430 },
+    { month: 'Oct', milk: 4300, honey: 0, births: 3, sales: 4, weight: 428 },
+    { month: 'Nov', milk: 4150, honey: 0, births: 2, sales: 1, weight: 432 },
+    { month: 'Dic', milk: 4050, honey: 0, births: 4, sales: 2, weight: 435 },
+    { month: 'Ene', milk: 4250, honey: 0, births: 2, sales: 3, weight: 438 },
   ];
 };
 
@@ -936,6 +952,7 @@ export const createMockGroupHealthAction = async (data: GroupHealthActionFormDat
   initializeGroupHealthActionsStore();
   const newAction: GroupHealthAction = {
     id: String(Date.now()),
+    fincaId: '1',
     groupId: data.groupId || undefined,
     groupName: data.groupName || undefined,
     species: data.species || undefined,
@@ -1077,6 +1094,7 @@ export const createMockReproductionRecord = async (data: ReproductionRecordFormD
   initializeReproductionRecordsStore();
   const newRecord: ReproductionRecord = {
     id: String(Date.now()),
+    fincaId: '1',
     cowId: data.cowId,
     cowTag: data.cowTag,
     bullId: data.bullId || undefined,
@@ -1151,6 +1169,7 @@ const generateInitialMilkProduction = (): MilkProduction[] => {
     const morningCows = 28;
     data.push({
       id: `milk-m-${i}`,
+      fincaId: '1',
       date: new Date(date.setHours(6, 0, 0, 0)),
       shift: 'morning',
       totalLiters: morningLiters,
@@ -1168,6 +1187,7 @@ const generateInitialMilkProduction = (): MilkProduction[] => {
     const afternoonCows = 28;
     data.push({
       id: `milk-a-${i}`,
+      fincaId: '1',
       date: new Date(date.setHours(16, 0, 0, 0)),
       shift: 'afternoon',
       totalLiters: afternoonLiters,
@@ -1232,6 +1252,7 @@ export const createMockMilkProduction = async (data: MilkProductionFormData): Pr
 
   const newRecord: MilkProduction = {
     id: String(Date.now()),
+    fincaId: '1',
     date: new Date(data.date),
     shift: data.shift,
     totalLiters,
@@ -1433,13 +1454,32 @@ export const getMockLivestockGroupsBySpecies = async (species: LivestockSpecies)
 export const createMockLivestockGroup = async (data: LivestockGroupFormData): Promise<LivestockGroup> => {
   await delay(400);
   initializeLivestockGroupsStore();
+  initializeLivestockStore(); // For member tag lookup
+  initializePotrerosStore(); // For potrero name lookup
+
+  // Lookup member tags from memberIds
+  const memberIds = data.memberIds || [];
+  const memberTags = memberIds
+    .map(id => livestockStore.find(l => l.id === id)?.tag)
+    .filter((tag): tag is string => !!tag);
+
+  // Lookup potrero name from potreroId
+  const potrero = potrerosStore.find(p => p.id === data.potreroId);
+
   const newGroup: LivestockGroup = {
     id: String(Date.now()),
+    fincaId: '1',
     name: data.name,
     species: data.species,
     category: data.category,
+    memberIds,
+    memberTags,
     count: parseInt(data.count),
-    location: { potreroId: '', potreroName: data.location },
+    location: {
+      potreroId: data.potreroId || '',
+      potreroName: potrero?.name || ''
+    },
+    status: data.status || 'active',
     description: data.description || undefined,
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -1452,17 +1492,35 @@ export const createMockLivestockGroup = async (data: LivestockGroupFormData): Pr
 export const updateMockLivestockGroup = async (id: string, data: LivestockGroupFormData): Promise<LivestockGroup> => {
   await delay(400);
   initializeLivestockGroupsStore();
+  initializeLivestockStore(); // For member tag lookup
+  initializePotrerosStore(); // For potrero name lookup
   const index = livestockGroupsStore.findIndex(g => g.id === id);
   if (index === -1) throw new Error('Livestock group not found');
 
   const existingGroup = livestockGroupsStore[index];
+
+  // Lookup member tags from memberIds
+  const memberIds = data.memberIds || existingGroup.memberIds;
+  const memberTags = memberIds
+    .map(id => livestockStore.find(l => l.id === id)?.tag)
+    .filter((tag): tag is string => !!tag);
+
+  // Lookup potrero name from potreroId
+  const potrero = potrerosStore.find(p => p.id === data.potreroId);
+
   const updatedGroup: LivestockGroup = {
     ...existingGroup,
     name: data.name,
     species: data.species,
     category: data.category,
+    memberIds,
+    memberTags,
     count: parseInt(data.count),
-    location: { potreroId: '', potreroName: data.location },
+    location: {
+      potreroId: data.potreroId || '',
+      potreroName: potrero?.name || ''
+    },
+    status: data.status || existingGroup.status,
     description: data.description || undefined,
     updatedAt: new Date(),
   };
@@ -1579,6 +1637,7 @@ export const getMockPecuarioProductionData = async (): Promise<PecuarioProductio
     data.push({
       month: months[i],
       milk: Math.round(monthMilk) || (3800 + Math.floor(Math.random() * 600)),
+      honey: 0,
       births: monthBirths || Math.floor(Math.random() * 4) + 1,
       sales: Math.floor(Math.random() * 4) + 1,
       weight: 425 + Math.floor(Math.random() * 15),

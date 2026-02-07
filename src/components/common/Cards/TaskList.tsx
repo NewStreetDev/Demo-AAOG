@@ -1,5 +1,13 @@
 import { ChevronRight } from 'lucide-react';
-import type { Task } from '../../../types/dashboard.types';
+
+// Local type definition (previously from dashboard.types)
+interface Task {
+  id: string;
+  title: string;
+  description?: string;
+  priority: 'high' | 'medium' | 'low';
+  status: 'pending' | 'in_progress' | 'completed';
+}
 
 interface TaskListProps {
   tasks: Task[];

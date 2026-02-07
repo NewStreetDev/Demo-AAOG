@@ -1,5 +1,13 @@
 import { Package, Clock, AlertCircle, Plus, ChevronRight } from 'lucide-react';
-import type { InventoryItem } from '../../../types/dashboard.types';
+
+// Local type definition (previously from dashboard.types)
+interface InventoryItem {
+  id: string;
+  name: string;
+  category: string;
+  quantity: string;
+  status: 'en_stock' | 'bajo' | 'critico';
+}
 
 interface InventoryCardProps {
   items: InventoryItem[];

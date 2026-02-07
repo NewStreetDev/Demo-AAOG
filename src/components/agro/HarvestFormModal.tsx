@@ -53,7 +53,7 @@ export default function HarvestFormModal({
   const batchOptions = [
     { value: '', label: 'Sin asignar a lote' },
     ...(processingBatches || [])
-      .filter(b => b.status === 'in_progress' || b.status === 'pending')
+      .filter(b => b.status === 'en_proceso')
       .map(b => ({ value: b.id, label: `${b.batchCode} - ${b.processTypeName || 'Procesamiento'}` })),
   ];
 

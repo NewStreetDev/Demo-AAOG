@@ -60,6 +60,7 @@ const initialFinca: Finca = {
 const initialDivisions: Division[] = [
   {
     id: '1',
+    fincaId: '1',
     name: 'Potrero Norte',
     code: 'POT-001',
     type: 'potrero',
@@ -73,6 +74,7 @@ const initialDivisions: Division[] = [
   },
   {
     id: '2',
+    fincaId: '1',
     name: 'Potrero Central',
     code: 'POT-002',
     type: 'potrero',
@@ -86,6 +88,7 @@ const initialDivisions: Division[] = [
   },
   {
     id: '3',
+    fincaId: '1',
     name: 'Potrero Sur',
     code: 'POT-003',
     type: 'potrero',
@@ -99,6 +102,7 @@ const initialDivisions: Division[] = [
   },
   {
     id: '4',
+    fincaId: '1',
     name: 'Lote Norte - Tomates',
     code: 'LT-001',
     type: 'lote_agricola',
@@ -112,6 +116,7 @@ const initialDivisions: Division[] = [
   },
   {
     id: '5',
+    fincaId: '1',
     name: 'Lote Central - Chiles',
     code: 'LT-002',
     type: 'lote_agricola',
@@ -125,6 +130,7 @@ const initialDivisions: Division[] = [
   },
   {
     id: '6',
+    fincaId: '1',
     name: 'Lote Sur - Pepinos',
     code: 'LT-003',
     type: 'lote_agricola',
@@ -138,6 +144,7 @@ const initialDivisions: Division[] = [
   },
   {
     id: '7',
+    fincaId: '1',
     name: 'Planta de Procesamiento',
     code: 'PROC-001',
     type: 'infraestructura',
@@ -151,6 +158,7 @@ const initialDivisions: Division[] = [
   },
   {
     id: '10',
+    fincaId: '1',
     name: 'Reserva de Bosque',
     code: 'RES-001',
     type: 'reserva',
@@ -164,6 +172,7 @@ const initialDivisions: Division[] = [
   },
   {
     id: '11',
+    fincaId: '1',
     name: 'Laguna y Naciente',
     code: 'AGU-001',
     type: 'agua',
@@ -181,6 +190,7 @@ const initialDivisions: Division[] = [
 const initialGeneralPlans: GeneralPlan[] = [
   {
     id: '1',
+    fincaId: '1',
     title: 'Mantenimiento de cercas perimetrales',
     description: 'Revision y reparacion de cercas en toda la finca',
     actionType: 'mantenimiento',
@@ -199,6 +209,7 @@ const initialGeneralPlans: GeneralPlan[] = [
   },
   {
     id: '2',
+    fincaId: '1',
     title: 'Capacitacion en manejo integrado de plagas',
     description: 'Taller para trabajadores sobre MIP en cultivos',
     actionType: 'capacitacion',
@@ -216,6 +227,7 @@ const initialGeneralPlans: GeneralPlan[] = [
   },
   {
     id: '3',
+    fincaId: '1',
     title: 'Compra de insumos para temporada',
     description: 'Adquisicion de fertilizantes y semillas para proxima siembra',
     actionType: 'compra',
@@ -239,6 +251,7 @@ const initialGeneralPlans: GeneralPlan[] = [
   },
   {
     id: '4',
+    fincaId: '1',
     title: 'Revision de sistema de riego',
     description: 'Inspeccion y mantenimiento del sistema de riego por goteo',
     actionType: 'revision',
@@ -269,6 +282,7 @@ const initialGeneralPlans: GeneralPlan[] = [
   },
   {
     id: '5',
+    fincaId: '1',
     title: 'Vacunacion de ganado bovino',
     description: 'Aplicacion de vacunas contra fiebre aftosa',
     actionType: 'vacunacion',
@@ -298,6 +312,7 @@ const initialGeneralPlans: GeneralPlan[] = [
   },
   {
     id: '6',
+    fincaId: '1',
     title: 'Procesamiento de leche - Lote mensual',
     description: 'Procesamiento de productos lacteos del mes',
     actionType: 'otro',
@@ -315,6 +330,7 @@ const initialGeneralPlans: GeneralPlan[] = [
   // 2025 Completed plan - Initial phase plans
   {
     id: '7',
+    fincaId: '1',
     title: 'Mantenimiento de equipos 2025',
     description: 'Revision y mantenimiento de toda la maquinaria',
     actionType: 'mantenimiento',
@@ -335,6 +351,7 @@ const initialGeneralPlans: GeneralPlan[] = [
   },
   {
     id: '8',
+    fincaId: '1',
     title: 'Capacitacion en manejo de ganado 2025',
     description: 'Curso de bienestar animal para trabajadores',
     actionType: 'capacitacion',
@@ -355,6 +372,7 @@ const initialGeneralPlans: GeneralPlan[] = [
   // 2025 Completed plan - Execution phase plans (copied from initial)
   {
     id: 'exec-7-2025',
+    fincaId: '1',
     title: 'Mantenimiento de equipos 2025',
     description: 'Revision y mantenimiento de toda la maquinaria',
     actionType: 'mantenimiento',
@@ -379,6 +397,7 @@ const initialGeneralPlans: GeneralPlan[] = [
   },
   {
     id: 'exec-8-2025',
+    fincaId: '1',
     title: 'Capacitacion en manejo de ganado 2025',
     description: 'Curso de bienestar animal para trabajadores',
     actionType: 'capacitacion',
@@ -402,6 +421,7 @@ const initialGeneralPlans: GeneralPlan[] = [
   // An execution plan added directly (not from planning)
   {
     id: 'exec-9-2025',
+    fincaId: '1',
     title: 'Reparacion urgente de bomba de agua',
     description: 'Reparacion no planificada de bomba principal',
     actionType: 'reparacion',
@@ -498,6 +518,7 @@ export const createMockDivision = async (data: DivisionFormData): Promise<Divisi
 
   const newDivision: Division = {
     id: String(Date.now()),
+    fincaId: '1',
     name: data.name,
     code: data.code,
     type: data.type,
@@ -508,7 +529,7 @@ export const createMockDivision = async (data: DivisionFormData): Promise<Divisi
       lng: parseFloat(data.lng),
     } : undefined,
     parentDivisionId: data.parentDivisionId || undefined,
-    moduleAssociations: data.moduleAssociation ? [data.moduleAssociation] : undefined,
+    moduleAssociations: data.moduleAssociations || undefined,
     description: data.description,
     notes: data.notes,
     createdAt: new Date(),
@@ -539,7 +560,7 @@ export const updateMockDivision = async (id: string, data: DivisionFormData): Pr
       lng: parseFloat(data.lng),
     } : existingDivision.coordinates,
     parentDivisionId: data.parentDivisionId || undefined,
-    moduleAssociations: data.moduleAssociation ? [data.moduleAssociation] : undefined,
+    moduleAssociations: data.moduleAssociations || undefined,
     description: data.description,
     notes: data.notes,
     updatedAt: new Date(),
@@ -590,6 +611,7 @@ export const createMockGeneralPlan = async (data: GeneralPlanFormData): Promise<
 
   const newPlan: GeneralPlan = {
     id: String(Date.now()),
+    fincaId: '1',
     title: data.title,
     description: data.description,
     actionType: data.actionType,

@@ -1,4 +1,4 @@
-import type { BaseEntity, PaymentStatus, ExportFormat } from './common.types';
+import type { BaseEntity, PaymentStatus } from './common.types';
 
 // Transaction Types
 export type TransactionType = 'income' | 'expense';

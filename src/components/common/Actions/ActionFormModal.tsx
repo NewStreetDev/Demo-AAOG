@@ -17,8 +17,6 @@ import {
   type ActionFormData,
 } from '../../../schemas/action.schema';
 import { useCreateAction, useUpdateAction } from '../../../hooks/useActions';
-import { useWorkers } from '../../../hooks/useTrabajadores';
-import { useInsumos } from '../../../hooks/useInsumos';
 import type { GenericAction, ActionInsumo, SystemModule } from '../../../types/common.types';
 
 interface ActionFormModalProps {
@@ -51,8 +49,9 @@ export default function ActionFormModal({
   const updateMutation = useUpdateAction();
   const isLoading = createMutation.isPending || updateMutation.isPending;
 
-  const { data: workers } = useWorkers();
-  const { data: insumos } = useInsumos();
+  // TODO: Replace with actual data source when available
+  const workers: { id: string; firstName: string; lastName: string }[] = [];
+  const insumos: { id: string; name: string; currentStock: number; unit: string }[] = [];
 
   // Local state for insumos list
   const [selectedInsumos, setSelectedInsumos] = useState<ActionInsumo[]>([]);
