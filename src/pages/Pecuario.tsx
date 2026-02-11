@@ -20,6 +20,9 @@ import {
   LivestockGroupList,
   LivestockGroupFormModal,
   LivestockGroupDetailModal,
+  BeehiveTable,
+  BeehiveFormModal,
+  BeehiveDetailModal,
 } from '../components/pecuario';
 import StatCardSkeleton from '../components/common/Skeletons/StatCardSkeleton';
 import ChartSkeleton from '../components/common/Skeletons/ChartSkeleton';
@@ -33,8 +36,9 @@ import {
   useHealthRecords,
   useReproductionRecords,
   useLivestockGroups,
+  useBeehives,
 } from '../hooks/usePecuario';
-import type { Livestock, Potrero, HealthRecord, ReproductionRecord, LivestockGroup } from '../types/pecuario.types';
+import type { Livestock, Potrero, HealthRecord, ReproductionRecord, LivestockGroup, Beehive } from '../types/pecuario.types';
 import type { GeneralPlan } from '../types/finca.types';
 import { GeneralPlanFormModal, GeneralPlanDetailModal } from '../components/finca';
 import { CalendarView } from '../components/common/Calendar';
@@ -44,6 +48,7 @@ type TabType = 'planificacion' | 'inventario' | 'salud' | 'reproduccion' | 'potr
 
 export default function Pecuario() {
   const [activeTab, setActiveTab] = useState<TabType>('planificacion');
+  const [inventoryView, setInventoryView] = useState<'ganado' | 'colmenas'>('ganado');
 
   // Modal state for Livestock
   const [selectedLivestock, setSelectedLivestock] = useState<Livestock | null>(null);
@@ -74,6 +79,11 @@ export default function Pecuario() {
   const [selectedGroup, setSelectedGroup] = useState<LivestockGroup | null>(null);
   const [groupFormModalOpen, setGroupFormModalOpen] = useState(false);
   const [groupDetailModalOpen, setGroupDetailModalOpen] = useState(false);
+
+  // Modal state for Beehives
+  const [selectedBeehive, setSelectedBeehive] = useState<Beehive | null>(null);
+  const [beehiveFormModalOpen, setBeehiveFormModalOpen] = useState(false);
+  const [beehiveDetailModalOpen, setBeehiveDetailModalOpen] = useState(false);
 
   // Modal state for Plans
   const [selectedPlan, setSelectedPlan] = useState<GeneralPlan | null>(null);
@@ -130,6 +140,23 @@ export default function Pecuario() {
   const handleNewGroup = () => {
     setSelectedGroup(null);
     setGroupFormModalOpen(true);
+  };
+
+  // Beehive handlers
+  const handleBeehiveClick = (beehive: Beehive) => {
+    setSelectedBeehive(beehive);
+    setBeehiveDetailModalOpen(true);
+  };
+
+  const handleBeehiveEdit = (beehive: Beehive) => {
+    setSelectedBeehive(beehive);
+    setBeehiveDetailModalOpen(false);
+    setBeehiveFormModalOpen(true);
+  };
+
+  const handleNewBeehive = () => {
+    setSelectedBeehive(null);
+    setBeehiveFormModalOpen(true);
   };
 
   // Health Record handlers
@@ -222,6 +249,7 @@ export default function Pecuario() {
   const { data: healthRecords, isLoading: healthRecordsLoading } = useHealthRecords();
   const { data: reproductionRecords, isLoading: reproductionLoading } = useReproductionRecords();
   const { data: livestockGroups, isLoading: livestockGroupsLoading } = useLivestockGroups();
+  const { data: beehives, isLoading: beehivesLoading } = useBeehives();
   const { data: allPlans, isLoading: plansLoading } = useGeneralPlans();
 
   // Filter plans for pecuario module
@@ -243,53 +271,118 @@ export default function Pecuario() {
       case 'inventario':
         return (
           <div className="space-y-6">
-            {/* Stats Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {statsLoading ? (
-                <>
-                  {[...Array(2)].map((_, i) => (
-                    <StatCardSkeleton key={i} />
-                  ))}
-                </>
-              ) : stats ? (
-                <>
-                  <PecuarioStatCard
-                    label="Total Ganado"
-                    value={stats.totalLivestock}
-                    icon="livestock"
-                    subValue={`${stats.byCategory.vacas} vacas, ${stats.byCategory.toros} toros`}
-                  />
-                  <PecuarioStatCard
-                    label="Potreros Activos"
-                    value={stats.activePotrerosCount}
-                    icon="potreros"
-                    subValue={`${stats.recentBirths} nacimientos recientes`}
-                  />
-                </>
-              ) : null}
+            {/* Toggle Ganado / Colmenas */}
+            <div className="flex items-center gap-1 bg-gray-100 rounded-full p-1 w-fit">
+              <button
+                onClick={() => setInventoryView('ganado')}
+                className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                  inventoryView === 'ganado'
+                    ? 'bg-white text-gray-900 shadow-sm'
+                    : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                Ganado
+              </button>
+              <button
+                onClick={() => setInventoryView('colmenas')}
+                className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                  inventoryView === 'colmenas'
+                    ? 'bg-white text-gray-900 shadow-sm'
+                    : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                Colmenas
+              </button>
             </div>
 
-            {/* Livestock Table and Category Distribution */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-              <div className="lg:col-span-2">
-                {livestockLoading ? (
+            {inventoryView === 'ganado' ? (
+              <>
+                {/* Stats Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {statsLoading ? (
+                    <>
+                      {[...Array(2)].map((_, i) => (
+                        <StatCardSkeleton key={i} />
+                      ))}
+                    </>
+                  ) : stats ? (
+                    <>
+                      <PecuarioStatCard
+                        label="Total Ganado"
+                        value={stats.totalLivestock}
+                        icon="livestock"
+                        subValue={`${stats.byCategory.vacas} vacas, ${stats.byCategory.toros} toros`}
+                      />
+                      <PecuarioStatCard
+                        label="Potreros Activos"
+                        value={stats.activePotrerosCount}
+                        icon="potreros"
+                        subValue={`${stats.recentBirths} nacimientos recientes`}
+                      />
+                    </>
+                  ) : null}
+                </div>
+
+                {/* Livestock Table and Category Distribution */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                  <div className="lg:col-span-2">
+                    {livestockLoading ? (
+                      <ListCardSkeleton itemCount={6} />
+                    ) : livestock ? (
+                      <LivestockTable
+                        livestock={livestock}
+                        onLivestockClick={handleLivestockClick}
+                      />
+                    ) : null}
+                  </div>
+                  <div>
+                    {categoryLoading ? (
+                      <ChartSkeleton />
+                    ) : categoryDist ? (
+                      <CategoryDistributionChart data={categoryDist} />
+                    ) : null}
+                  </div>
+                </div>
+              </>
+            ) : (
+              <>
+                {/* Beehive Stats */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {beehivesLoading ? (
+                    <>
+                      {[...Array(2)].map((_, i) => (
+                        <StatCardSkeleton key={i} />
+                      ))}
+                    </>
+                  ) : beehives ? (
+                    <>
+                      <PecuarioStatCard
+                        label="Colmenas Activas"
+                        value={beehives.filter(b => b.status === 'active').length}
+                        icon="livestock"
+                        subValue={`${beehives.length} total registradas`}
+                      />
+                      <PecuarioStatCard
+                        label="Colonias Fuertes"
+                        value={beehives.filter(b => b.strength === 'strong' && b.status === 'active').length}
+                        icon="potreros"
+                        subValue={`${beehives.filter(b => b.strength === 'weak' && b.status === 'active').length} débiles requieren atención`}
+                      />
+                    </>
+                  ) : null}
+                </div>
+
+                {/* Beehive Table */}
+                {beehivesLoading ? (
                   <ListCardSkeleton itemCount={6} />
-                ) : livestock ? (
-                  <LivestockTable
-                    livestock={livestock}
-                    onLivestockClick={handleLivestockClick}
+                ) : beehives ? (
+                  <BeehiveTable
+                    beehives={beehives}
+                    onBeehiveClick={handleBeehiveClick}
                   />
                 ) : null}
-              </div>
-              <div>
-                {categoryLoading ? (
-                  <ChartSkeleton />
-                ) : categoryDist ? (
-                  <CategoryDistributionChart data={categoryDist} />
-                ) : null}
-              </div>
-            </div>
-
+              </>
+            )}
           </div>
         );
 
@@ -420,7 +513,15 @@ export default function Pecuario() {
   const getActionButtons = () => {
     switch (activeTab) {
       case 'inventario':
-        return (
+        return inventoryView === 'colmenas' ? (
+          <button
+            onClick={handleNewBeehive}
+            className="btn-primary inline-flex items-center gap-2"
+          >
+            <Plus className="w-4 h-4" />
+            Nueva Colmena
+          </button>
+        ) : (
           <button
             onClick={handleNewLivestock}
             className="btn-primary inline-flex items-center gap-2"
@@ -636,6 +737,21 @@ export default function Pecuario() {
         onOpenChange={setReproductionDetailModalOpen}
         reproductionRecord={selectedReproductionRecord}
         onEdit={handleReproductionRecordEdit}
+      />
+
+      {/* Beehive Modals */}
+      <BeehiveFormModal
+        open={beehiveFormModalOpen}
+        onOpenChange={setBeehiveFormModalOpen}
+        beehive={selectedBeehive}
+        onSuccess={() => setSelectedBeehive(null)}
+      />
+      <BeehiveDetailModal
+        open={beehiveDetailModalOpen}
+        onOpenChange={setBeehiveDetailModalOpen}
+        beehive={selectedBeehive}
+        onEdit={handleBeehiveEdit}
+        onDeleteSuccess={() => setSelectedBeehive(null)}
       />
 
       {/* Plan Modals - filtered to pecuario module */}
