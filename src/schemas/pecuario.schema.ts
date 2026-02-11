@@ -469,3 +469,145 @@ export const livestockGroupStatusOptions = [
   { value: 'active', label: 'Activo' },
   { value: 'inactive', label: 'Inactivo' },
 ];
+
+// ========================================
+// Beehive (Colmena) Schema
+// ========================================
+
+// Beehive constants
+export const beehiveTypes = ['langstroth', 'top_bar', 'warre', 'traditional', 'other'] as const;
+export const beehiveStatuses = ['active', 'inactive', 'dead', 'sold', 'merged'] as const;
+export const beehiveStrengths = ['weak', 'medium', 'strong'] as const;
+export const beehiveTemperaments = ['calm', 'moderate', 'aggressive'] as const;
+export const queenStatuses = ['present', 'absent', 'virgin', 'laying', 'unknown'] as const;
+export const queenOrigins = ['swarm', 'purchased', 'raised', 'unknown'] as const;
+export const beehiveEntryReasons = ['purchase', 'swarm_capture', 'split', 'transfer', 'nucleus'] as const;
+export const beehiveExitReasons = ['sale', 'death', 'merge', 'transfer', 'absconded'] as const;
+
+// Beehive Form Schema
+export const beehiveFormSchema = z.object({
+  code: z
+    .string()
+    .min(1, 'El codigo es requerido')
+    .max(20, 'El codigo no puede tener mas de 20 caracteres'),
+  name: z.string().optional(),
+  apiaryId: z.string().min(1, 'Seleccione un apiario'),
+  position: z.string().optional(),
+  type: z.enum(beehiveTypes, {
+    message: 'Seleccione un tipo de colmena',
+  }),
+  frameCount: z
+    .string()
+    .min(1, 'El numero de marcos es requerido')
+    .refine(
+      (val) => !isNaN(parseInt(val)) && parseInt(val) > 0,
+      'El numero de marcos debe ser mayor a 0'
+    ),
+  superCount: z
+    .string()
+    .min(1, 'El numero de alzas es requerido')
+    .refine(
+      (val) => !isNaN(parseInt(val)) && parseInt(val) >= 0,
+      'El numero de alzas debe ser un numero valido'
+    ),
+  hasQueenExcluder: z.boolean().optional(),
+  status: z.enum(beehiveStatuses, {
+    message: 'Seleccione un estado valido',
+  }),
+  strength: z.enum(beehiveStrengths, {
+    message: 'Seleccione la fortaleza de la colonia',
+  }),
+  temperament: z.enum(beehiveTemperaments, {
+    message: 'Seleccione el temperamento',
+  }),
+  queenStatus: z.enum(queenStatuses, {
+    message: 'Seleccione el estado de la reina',
+  }),
+  queenMarked: z.boolean().optional(),
+  queenColor: z.string().optional(),
+  queenAge: z
+    .string()
+    .optional()
+    .refine(
+      (val) => !val || (!isNaN(parseInt(val)) && parseInt(val) >= 0),
+      'La edad debe ser un numero valido'
+    ),
+  queenOrigin: z.enum(queenOrigins).optional(),
+  installationDate: z.string().min(1, 'La fecha de instalacion es requerida'),
+  entryReason: z.enum(beehiveEntryReasons, {
+    message: 'Seleccione una razon de entrada',
+  }),
+  parentHiveCode: z.string().optional(),
+  exitDate: z.string().optional(),
+  exitReason: z.enum(beehiveExitReasons).optional(),
+  notes: z.string().optional(),
+});
+
+export type BeehiveFormData = z.infer<typeof beehiveFormSchema>;
+
+// Beehive Type Options
+export const beehiveTypeOptions = [
+  { value: 'langstroth', label: 'Langstroth' },
+  { value: 'top_bar', label: 'Top Bar' },
+  { value: 'warre', label: 'Warré' },
+  { value: 'traditional', label: 'Tradicional' },
+  { value: 'other', label: 'Otro' },
+];
+
+// Beehive Status Options
+export const beehiveStatusOptions = [
+  { value: 'active', label: 'Activa' },
+  { value: 'inactive', label: 'Inactiva' },
+  { value: 'dead', label: 'Muerta' },
+  { value: 'sold', label: 'Vendida' },
+  { value: 'merged', label: 'Fusionada' },
+];
+
+// Beehive Strength Options
+export const beehiveStrengthOptions = [
+  { value: 'weak', label: 'Débil' },
+  { value: 'medium', label: 'Media' },
+  { value: 'strong', label: 'Fuerte' },
+];
+
+// Beehive Temperament Options
+export const beehiveTemperamentOptions = [
+  { value: 'calm', label: 'Tranquila' },
+  { value: 'moderate', label: 'Moderada' },
+  { value: 'aggressive', label: 'Agresiva' },
+];
+
+// Queen Status Options
+export const queenStatusOptions = [
+  { value: 'present', label: 'Presente' },
+  { value: 'absent', label: 'Ausente' },
+  { value: 'virgin', label: 'Virgen' },
+  { value: 'laying', label: 'Poniendo' },
+  { value: 'unknown', label: 'Desconocido' },
+];
+
+// Queen Origin Options
+export const queenOriginOptions = [
+  { value: 'swarm', label: 'Enjambre' },
+  { value: 'purchased', label: 'Comprada' },
+  { value: 'raised', label: 'Criada' },
+  { value: 'unknown', label: 'Desconocido' },
+];
+
+// Beehive Entry Reason Options
+export const beehiveEntryReasonOptions = [
+  { value: 'purchase', label: 'Compra' },
+  { value: 'swarm_capture', label: 'Captura de enjambre' },
+  { value: 'split', label: 'División' },
+  { value: 'transfer', label: 'Transferencia' },
+  { value: 'nucleus', label: 'Núcleo' },
+];
+
+// Beehive Exit Reason Options
+export const beehiveExitReasonOptions = [
+  { value: 'sale', label: 'Venta' },
+  { value: 'death', label: 'Muerte' },
+  { value: 'merge', label: 'Fusión' },
+  { value: 'transfer', label: 'Transferencia' },
+  { value: 'absconded', label: 'Abandono' },
+];
