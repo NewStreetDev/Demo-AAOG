@@ -24,3 +24,8 @@ export { default as ReproductionList } from './ReproductionList';
 export { default as LivestockGroupFormModal } from './LivestockGroupFormModal';
 export { default as LivestockGroupDetailModal } from './LivestockGroupDetailModal';
 export { default as LivestockGroupList } from './LivestockGroupList';
+
+// Beehive (Colmena) Module
+export { default as BeehiveTable } from './BeehiveTable';
+export { default as BeehiveFormModal } from './BeehiveFormModal';
+export { default as BeehiveDetailModal } from './BeehiveDetailModal';
