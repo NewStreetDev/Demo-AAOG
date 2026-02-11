@@ -11,6 +11,7 @@ import type {
   ReproductionRecord,
   MilkProduction,
   LivestockSpecies,
+  Beehive,
 } from '../../types/pecuario.types';
 import type {
   LivestockFormData,
@@ -20,8 +21,9 @@ import type {
   ReproductionRecordFormData,
   MilkProductionFormData,
   LivestockGroupFormData,
+  BeehiveFormData,
 } from '../../schemas/pecuario.schema';
-import { getMockDivisionById } from './finca.mock';
+import { getMockDivisionById, getMockDivisions } from './finca.mock';
 
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -33,6 +35,7 @@ let groupHealthActionsStore: GroupHealthAction[] = [];
 let reproductionRecordsStore: ReproductionRecord[] = [];
 let milkProductionStore: MilkProduction[] = [];
 let livestockGroupsStore: LivestockGroup[] = [];
+let beehivesStore: Beehive[] = [];
 
 // Initial Livestock Data - Multiple species
 const initialLivestock: Livestock[] = [
@@ -1645,4 +1648,295 @@ export const getMockPecuarioProductionData = async (): Promise<PecuarioProductio
   }
 
   return data;
+};
+
+// ========================================
+// Beehive (Colmena) CRUD
+// ========================================
+
+// Initial Beehive Data
+const initialBeehives: Beehive[] = [
+  {
+    id: 'bh-1',
+    fincaId: '1',
+    code: 'COL-001',
+    name: 'Reina Dorada',
+    apiaryId: '12',
+    apiaryName: 'Apiario Principal',
+    position: 'Fila 1, #1',
+    type: 'langstroth',
+    frameCount: 10,
+    hasQueenExcluder: true,
+    superCount: 2,
+    status: 'active',
+    strength: 'strong',
+    temperament: 'calm',
+    queenStatus: 'laying',
+    queenMarked: true,
+    queenColor: 'Azul',
+    queenAge: 1,
+    queenOrigin: 'purchased',
+    installationDate: new Date('2024-03-15'),
+    entryReason: 'purchase',
+    lastInspectionDate: new Date('2026-01-20'),
+    lastHarvestDate: new Date('2025-12-10'),
+    notes: 'Colmena productora principal. Excelente produccion de miel multifloral.',
+    createdAt: new Date('2024-03-15'),
+    updatedAt: new Date('2026-01-20'),
+  },
+  {
+    id: 'bh-2',
+    fincaId: '1',
+    code: 'COL-002',
+    name: 'La Trabajadora',
+    apiaryId: '12',
+    apiaryName: 'Apiario Principal',
+    position: 'Fila 1, #2',
+    type: 'langstroth',
+    frameCount: 10,
+    hasQueenExcluder: true,
+    superCount: 1,
+    status: 'active',
+    strength: 'medium',
+    temperament: 'moderate',
+    queenStatus: 'present',
+    queenMarked: false,
+    queenOrigin: 'raised',
+    installationDate: new Date('2024-06-01'),
+    entryReason: 'split',
+    parentHiveId: 'bh-1',
+    parentHiveCode: 'COL-001',
+    lastInspectionDate: new Date('2026-01-18'),
+    createdAt: new Date('2024-06-01'),
+    updatedAt: new Date('2026-01-18'),
+  },
+  {
+    id: 'bh-3',
+    fincaId: '1',
+    code: 'COL-003',
+    apiaryId: '12',
+    apiaryName: 'Apiario Principal',
+    position: 'Fila 2, #1',
+    type: 'top_bar',
+    frameCount: 15,
+    hasQueenExcluder: false,
+    superCount: 0,
+    status: 'active',
+    strength: 'strong',
+    temperament: 'calm',
+    queenStatus: 'laying',
+    queenMarked: true,
+    queenColor: 'Blanco',
+    queenAge: 2,
+    queenOrigin: 'swarm',
+    installationDate: new Date('2023-09-20'),
+    entryReason: 'swarm_capture',
+    lastInspectionDate: new Date('2026-01-15'),
+    lastHarvestDate: new Date('2025-11-25'),
+    notes: 'Capturada de enjambre silvestre. Muy buena produccion.',
+    createdAt: new Date('2023-09-20'),
+    updatedAt: new Date('2026-01-15'),
+  },
+  {
+    id: 'bh-4',
+    fincaId: '1',
+    code: 'COL-004',
+    name: 'Abeja Maya',
+    apiaryId: '13',
+    apiaryName: 'Apiario Sur',
+    position: 'Fila 1, #1',
+    type: 'warre',
+    frameCount: 8,
+    hasQueenExcluder: false,
+    superCount: 1,
+    status: 'active',
+    strength: 'weak',
+    temperament: 'aggressive',
+    queenStatus: 'virgin',
+    queenMarked: false,
+    queenOrigin: 'raised',
+    installationDate: new Date('2025-10-05'),
+    entryReason: 'nucleus',
+    lastInspectionDate: new Date('2026-01-10'),
+    notes: 'Colonia debil, requiere alimentacion suplementaria.',
+    createdAt: new Date('2025-10-05'),
+    updatedAt: new Date('2026-01-10'),
+  },
+  {
+    id: 'bh-5',
+    fincaId: '1',
+    code: 'COL-005',
+    apiaryId: '13',
+    apiaryName: 'Apiario Sur',
+    position: 'Fila 1, #2',
+    type: 'traditional',
+    frameCount: 8,
+    hasQueenExcluder: false,
+    superCount: 0,
+    status: 'inactive',
+    strength: 'weak',
+    temperament: 'moderate',
+    queenStatus: 'absent',
+    queenMarked: false,
+    installationDate: new Date('2023-04-10'),
+    entryReason: 'transfer',
+    lastInspectionDate: new Date('2026-01-05'),
+    notes: 'Colmena sin reina. Pendiente de fusion o introduccion de reina.',
+    createdAt: new Date('2023-04-10'),
+    updatedAt: new Date('2026-01-05'),
+  },
+  {
+    id: 'bh-6',
+    fincaId: '1',
+    code: 'COL-006',
+    apiaryId: '12',
+    apiaryName: 'Apiario Principal',
+    position: 'Fila 2, #2',
+    type: 'langstroth',
+    frameCount: 10,
+    hasQueenExcluder: true,
+    superCount: 2,
+    status: 'active',
+    strength: 'strong',
+    temperament: 'calm',
+    queenStatus: 'laying',
+    queenMarked: true,
+    queenColor: 'Rojo',
+    queenAge: 1,
+    queenOrigin: 'purchased',
+    installationDate: new Date('2025-02-20'),
+    entryReason: 'purchase',
+    lastInspectionDate: new Date('2026-01-22'),
+    lastHarvestDate: new Date('2025-12-15'),
+    createdAt: new Date('2025-02-20'),
+    updatedAt: new Date('2026-01-22'),
+  },
+];
+
+// Initialize beehives store
+export const initializeBeehivesStore = () => {
+  if (beehivesStore.length === 0) {
+    beehivesStore = [...initialBeehives];
+  }
+};
+
+// Get all Beehives
+export const getMockBeehives = async (): Promise<Beehive[]> => {
+  await delay(300);
+  initializeBeehivesStore();
+  return [...beehivesStore].sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime());
+};
+
+// Get single Beehive
+export const getMockBeehiveById = async (id: string): Promise<Beehive | undefined> => {
+  await delay(200);
+  initializeBeehivesStore();
+  return beehivesStore.find(b => b.id === id);
+};
+
+// Create Beehive
+export const createMockBeehive = async (data: BeehiveFormData): Promise<Beehive> => {
+  await delay(400);
+  initializeBeehivesStore();
+
+  // Lookup apiaryName from divisions
+  const divisions = await getMockDivisions();
+  const apiary = divisions.find(d => d.id === data.apiaryId);
+
+  // Lookup parent hive code
+  const parentHive = data.parentHiveCode
+    ? beehivesStore.find(b => b.code === data.parentHiveCode)
+    : undefined;
+
+  const newBeehive: Beehive = {
+    id: String(Date.now()),
+    fincaId: '1',
+    code: data.code,
+    name: data.name || undefined,
+    apiaryId: data.apiaryId,
+    apiaryName: apiary?.name || '',
+    position: data.position || undefined,
+    type: data.type,
+    frameCount: parseInt(data.frameCount),
+    hasQueenExcluder: data.hasQueenExcluder || false,
+    superCount: parseInt(data.superCount),
+    status: data.status,
+    strength: data.strength,
+    temperament: data.temperament,
+    queenStatus: data.queenStatus,
+    queenMarked: data.queenMarked || false,
+    queenColor: data.queenColor || undefined,
+    queenAge: data.queenAge ? parseInt(data.queenAge) : undefined,
+    queenOrigin: data.queenOrigin || undefined,
+    installationDate: new Date(data.installationDate),
+    entryReason: data.entryReason,
+    parentHiveId: parentHive?.id || undefined,
+    parentHiveCode: data.parentHiveCode || undefined,
+    exitDate: data.exitDate ? new Date(data.exitDate) : undefined,
+    exitReason: data.exitReason || undefined,
+    notes: data.notes || undefined,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
+  beehivesStore.push(newBeehive);
+  return newBeehive;
+};
+
+// Update Beehive
+export const updateMockBeehive = async (id: string, data: BeehiveFormData): Promise<Beehive> => {
+  await delay(400);
+  initializeBeehivesStore();
+
+  const index = beehivesStore.findIndex(b => b.id === id);
+  if (index === -1) throw new Error('Beehive not found');
+
+  // Lookup apiaryName from divisions
+  const divisions = await getMockDivisions();
+  const apiary = divisions.find(d => d.id === data.apiaryId);
+
+  // Lookup parent hive
+  const parentHive = data.parentHiveCode
+    ? beehivesStore.find(b => b.code === data.parentHiveCode)
+    : undefined;
+
+  const existingBeehive = beehivesStore[index];
+  const updatedBeehive: Beehive = {
+    ...existingBeehive,
+    code: data.code,
+    name: data.name || undefined,
+    apiaryId: data.apiaryId,
+    apiaryName: apiary?.name || existingBeehive.apiaryName,
+    position: data.position || undefined,
+    type: data.type,
+    frameCount: parseInt(data.frameCount),
+    hasQueenExcluder: data.hasQueenExcluder || false,
+    superCount: parseInt(data.superCount),
+    status: data.status,
+    strength: data.strength,
+    temperament: data.temperament,
+    queenStatus: data.queenStatus,
+    queenMarked: data.queenMarked || false,
+    queenColor: data.queenColor || undefined,
+    queenAge: data.queenAge ? parseInt(data.queenAge) : undefined,
+    queenOrigin: data.queenOrigin || undefined,
+    installationDate: new Date(data.installationDate),
+    entryReason: data.entryReason,
+    parentHiveId: parentHive?.id || existingBeehive.parentHiveId,
+    parentHiveCode: data.parentHiveCode || undefined,
+    exitDate: data.exitDate ? new Date(data.exitDate) : undefined,
+    exitReason: data.exitReason || undefined,
+    notes: data.notes || undefined,
+    updatedAt: new Date(),
+  };
+  beehivesStore[index] = updatedBeehive;
+  return updatedBeehive;
+};
+
+// Delete Beehive
+export const deleteMockBeehive = async (id: string): Promise<void> => {
+  await delay(300);
+  initializeBeehivesStore();
+  const index = beehivesStore.findIndex(b => b.id === id);
+  if (index === -1) throw new Error('Beehive not found');
+  beehivesStore.splice(index, 1);
 };
