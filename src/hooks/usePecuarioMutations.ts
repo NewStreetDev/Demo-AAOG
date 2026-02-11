@@ -19,6 +19,9 @@ import {
   createMockLivestockGroup,
   updateMockLivestockGroup,
   deleteMockLivestockGroup,
+  createMockBeehive,
+  updateMockBeehive,
+  deleteMockBeehive,
 } from '../services/mock/pecuario.mock';
 import type {
   LivestockFormData,
@@ -28,6 +31,7 @@ import type {
   ReproductionRecordFormData,
   MilkProductionFormData,
   LivestockGroupFormData,
+  BeehiveFormData,
 } from '../schemas/pecuario.schema';
 
 // Livestock mutations
@@ -306,6 +310,50 @@ export function useDeleteLivestockGroup() {
     mutationFn: (id: string) => deleteMockLivestockGroup(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['livestock-groups'] });
+      queryClient.invalidateQueries({ queryKey: ['pecuario-stats'] });
+      queryClient.invalidateQueries({ queryKey: ['pecuario-dashboard'] });
+    },
+  });
+}
+
+// ========================================
+// Beehive (Colmena) mutations
+// ========================================
+
+export function useCreateBeehive() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: BeehiveFormData) => createMockBeehive(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['beehives'] });
+      queryClient.invalidateQueries({ queryKey: ['pecuario-stats'] });
+      queryClient.invalidateQueries({ queryKey: ['pecuario-dashboard'] });
+    },
+  });
+}
+
+export function useUpdateBeehive() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: BeehiveFormData }) =>
+      updateMockBeehive(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['beehives'] });
+      queryClient.invalidateQueries({ queryKey: ['pecuario-stats'] });
+      queryClient.invalidateQueries({ queryKey: ['pecuario-dashboard'] });
+    },
+  });
+}
+
+export function useDeleteBeehive() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => deleteMockBeehive(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['beehives'] });
       queryClient.invalidateQueries({ queryKey: ['pecuario-stats'] });
       queryClient.invalidateQueries({ queryKey: ['pecuario-dashboard'] });
     },

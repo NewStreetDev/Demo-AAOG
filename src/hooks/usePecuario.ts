@@ -17,6 +17,7 @@ import {
   getMockPecuarioProductionData,
   getMockLivestockGroups,
   getMockLivestockGroupsBySpecies,
+  getMockBeehives,
 } from '../services/mock/pecuario.mock';
 import type { LivestockSpecies } from '../types/pecuario.types';
 
@@ -155,5 +156,16 @@ export function useLivestockGroupsBySpecies(species: LivestockSpecies | undefine
     queryKey: ['livestock-groups', 'species', species],
     queryFn: () => getMockLivestockGroupsBySpecies(species!),
     enabled: !!species,
+  });
+}
+
+// ========================================
+// Beehive (Colmena) Hooks
+// ========================================
+
+export function useBeehives() {
+  return useQuery({
+    queryKey: ['beehives'],
+    queryFn: getMockBeehives,
   });
 }
