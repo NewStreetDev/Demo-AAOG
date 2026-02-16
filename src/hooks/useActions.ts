@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import {
   getMockActions,
   getMockActionsByModule,
@@ -55,10 +56,11 @@ export function useCreateAction() {
       workerName: string;
     }) => createMockAction(data, insumos, workerName),
     onSuccess: (_, variables) => {
+      toast.success('Accion registrada exitosamente');
       queryClient.invalidateQueries({ queryKey: ['actions'] });
-      // Also invalidate module-specific queries
       queryClient.invalidateQueries({ queryKey: ['actions', variables.data.module] });
     },
+    onError: () => { toast.error('Error al registrar accion'); },
   });
 }
 
@@ -78,9 +80,11 @@ export function useUpdateAction() {
       workerName: string;
     }) => updateMockAction(id, data, insumos, workerName),
     onSuccess: (_, variables) => {
+      toast.success('Accion actualizada');
       queryClient.invalidateQueries({ queryKey: ['actions'] });
       queryClient.invalidateQueries({ queryKey: ['actions', variables.data.module] });
     },
+    onError: () => { toast.error('Error al actualizar accion'); },
   });
 }
 
@@ -90,7 +94,9 @@ export function useDeleteAction() {
   return useMutation({
     mutationFn: (id: string) => deleteMockAction(id),
     onSuccess: () => {
+      toast.success('Accion eliminada');
       queryClient.invalidateQueries({ queryKey: ['actions'] });
     },
+    onError: () => { toast.error('Error al eliminar accion'); },
   });
 }

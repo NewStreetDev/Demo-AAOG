@@ -67,10 +67,10 @@ function isOverdue(date: Date, status: string): boolean {
   return new Date(date) < new Date();
 }
 
-function formatCurrency(value: number): string {
+function formatCurrency(value: number, currency: string = 'CRC'): string {
   return new Intl.NumberFormat('es-CR', {
     style: 'currency',
-    currency: 'CRC',
+    currency,
     maximumFractionDigits: 0,
   }).format(value);
 }
@@ -114,17 +114,17 @@ export default function GeneralPlanCard({ plan, onClick }: GeneralPlanCardProps)
               </div>
             )}
 
-            {plan.assignedTo && (
+            {plan.assignedTo && plan.assignedTo.length > 0 && (
               <div className="flex items-center gap-1 text-xs text-gray-500">
                 <User className="w-3.5 h-3.5" />
-                <span className="truncate max-w-[100px]">{plan.assignedTo}</span>
+                <span className="truncate max-w-[100px]">{Array.isArray(plan.assignedTo) ? plan.assignedTo.join(', ') : plan.assignedTo}</span>
               </div>
             )}
 
             {plan.estimatedCost && (
               <div className="flex items-center gap-1 text-xs text-gray-500">
                 <DollarSign className="w-3.5 h-3.5" />
-                <span>{formatCurrency(plan.estimatedCost)}</span>
+                <span>{formatCurrency(plan.estimatedCost, plan.currency)}</span>
               </div>
             )}
           </div>

@@ -1,4 +1,6 @@
-import { FileText, Download, Calendar, Tag, Trash2 } from 'lucide-react';
+import { useState } from 'react';
+import { FileText, Download, Calendar, Tag, Trash2, Eye } from 'lucide-react';
+import { ConfirmModal } from '../common/Modals';
 import type { Document } from '../../types/reglamentos.types';
 import { useDeleteDocument } from '../../hooks/useReglamentos';
 
@@ -40,6 +42,8 @@ const formatFileSize = (bytes: number): string => {
 
 export default function DocumentList({ documents, isAdmin = false }: DocumentListProps) {
   const deleteMutation = useDeleteDocument();
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [documentToDelete, setDocumentToDelete] = useState<Document | null>(null);
 
   const handleDownload = (doc: Document) => {
     // In a real app, this would trigger a file download
@@ -47,17 +51,29 @@ export default function DocumentList({ documents, isAdmin = false }: DocumentLis
     window.open(doc.fileUrl, '_blank');
   };
 
-  const handleDelete = async (doc: Document) => {
-    if (window.confirm(`¿Desea eliminar el documento "${doc.title}"?`)) {
-      try {
-        await deleteMutation.mutateAsync(doc.id);
-      } catch (error) {
-        console.error('Error deleting document:', error);
-      }
+  const handleView = (doc: Document) => {
+    window.open(doc.fileUrl, '_blank');
+  };
+
+  const handleDeleteClick = (doc: Document) => {
+    setDocumentToDelete(doc);
+    setConfirmOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!documentToDelete) return;
+    try {
+      await deleteMutation.mutateAsync(documentToDelete.id);
+    } catch (error) {
+      console.error('Error deleting document:', error);
+    } finally {
+      setConfirmOpen(false);
+      setDocumentToDelete(null);
     }
   };
 
   return (
+    <>
     <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
       <div className="divide-y divide-gray-100">
         {documents.map((doc) => (
@@ -84,6 +100,13 @@ export default function DocumentList({ documents, isAdmin = false }: DocumentLis
                   </div>
                   <div className="flex items-center gap-1">
                     <button
+                      onClick={() => handleView(doc)}
+                      className="flex-shrink-0 p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                      title="Ver documento"
+                    >
+                      <Eye className="w-5 h-5" />
+                    </button>
+                    <button
                       onClick={() => handleDownload(doc)}
                       className="flex-shrink-0 p-2 text-gray-500 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
                       title="Descargar documento"
@@ -92,7 +115,7 @@ export default function DocumentList({ documents, isAdmin = false }: DocumentLis
                     </button>
                     {isAdmin && (
                       <button
-                        onClick={() => handleDelete(doc)}
+                        onClick={() => handleDeleteClick(doc)}
                         className="flex-shrink-0 p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                         title="Eliminar documento"
                         disabled={deleteMutation.isPending}
@@ -131,5 +154,18 @@ export default function DocumentList({ documents, isAdmin = false }: DocumentLis
         ))}
       </div>
     </div>
+
+    <ConfirmModal
+      open={confirmOpen}
+      onOpenChange={setConfirmOpen}
+      title="Eliminar Documento"
+      description={`¿Desea eliminar el documento "${documentToDelete?.title}"?`}
+      confirmLabel="Eliminar"
+      cancelLabel="Cancelar"
+      onConfirm={handleConfirmDelete}
+      isLoading={deleteMutation.isPending}
+      variant="danger"
+    />
+    </>
   );
 }

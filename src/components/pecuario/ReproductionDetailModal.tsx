@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import {
   Calendar,
   Tag,
@@ -12,7 +13,7 @@ import {
   XCircle,
   Clock,
 } from 'lucide-react';
-import { Modal } from '../common/Modals';
+import { Modal, ConfirmModal } from '../common/Modals';
 import { useDeleteReproductionRecord } from '../../hooks/usePecuarioMutations';
 import type { ReproductionRecord } from '../../types/pecuario.types';
 
@@ -66,6 +67,7 @@ export default function ReproductionDetailModal({
   onEdit,
 }: ReproductionDetailModalProps) {
   const deleteMutation = useDeleteReproductionRecord();
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   if (!reproductionRecord) return null;
 
@@ -83,14 +85,13 @@ export default function ReproductionDetailModal({
   };
   const TypeIcon = typeInfo.icon;
 
-  const handleDelete = async () => {
-    if (window.confirm('Esta seguro de que desea eliminar este registro de reproduccion?')) {
-      try {
-        await deleteMutation.mutateAsync(reproductionRecord.id);
-        onOpenChange(false);
-      } catch (error) {
-        console.error('Error deleting reproduction record:', error);
-      }
+  const handleConfirmDelete = async () => {
+    try {
+      await deleteMutation.mutateAsync(reproductionRecord.id);
+      setConfirmOpen(false);
+      onOpenChange(false);
+    } catch (error) {
+      console.error('Error deleting reproduction record:', error);
     }
   };
 
@@ -252,7 +253,7 @@ export default function ReproductionDetailModal({
           <button
             type="button"
             className="btn-danger inline-flex items-center gap-2"
-            onClick={handleDelete}
+            onClick={() => setConfirmOpen(true)}
             disabled={deleteMutation.isPending}
           >
             <Trash2 className="w-4 h-4" />
@@ -282,6 +283,18 @@ export default function ReproductionDetailModal({
           </div>
         </div>
       </div>
+
+      <ConfirmModal
+        open={confirmOpen}
+        onOpenChange={setConfirmOpen}
+        title="Eliminar Registro de Reproduccion"
+        description="¿Esta seguro de que desea eliminar este registro de reproduccion? Esta operacion no se puede deshacer."
+        confirmLabel="Eliminar"
+        cancelLabel="Cancelar"
+        onConfirm={handleConfirmDelete}
+        isLoading={deleteMutation.isPending}
+        variant="danger"
+      />
     </Modal>
   );
 }

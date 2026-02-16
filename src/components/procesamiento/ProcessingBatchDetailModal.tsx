@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import {
   Calendar,
   Clock,
@@ -13,7 +14,7 @@ import {
   AlertTriangle,
   Award,
 } from 'lucide-react';
-import { Modal } from '../common/Modals';
+import { Modal, ConfirmModal } from '../common/Modals';
 import { useDeleteProcessingBatch } from '../../hooks/useProcesamientoMutations';
 import type { ProcessingBatch } from '../../types/procesamiento.types';
 
@@ -49,20 +50,20 @@ export default function ProcessingBatchDetailModal({
   onEdit,
 }: ProcessingBatchDetailModalProps) {
   const deleteMutation = useDeleteProcessingBatch();
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   if (!batch) return null;
 
   const status = statusConfig[batch.status] || statusConfig.en_proceso;
   const StatusIcon = status.icon;
 
-  const handleDelete = async () => {
-    if (window.confirm('Esta seguro de que desea eliminar este lote de procesamiento?')) {
-      try {
-        await deleteMutation.mutateAsync(batch.id);
-        onOpenChange(false);
-      } catch (error) {
-        console.error('Error deleting processing batch:', error);
-      }
+  const handleConfirmDelete = async () => {
+    try {
+      await deleteMutation.mutateAsync(batch.id);
+      setConfirmOpen(false);
+      onOpenChange(false);
+    } catch (error) {
+      console.error('Error deleting processing batch:', error);
     }
   };
 
@@ -278,7 +279,7 @@ export default function ProcessingBatchDetailModal({
           <button
             type="button"
             className="btn-danger inline-flex items-center gap-2"
-            onClick={handleDelete}
+            onClick={() => setConfirmOpen(true)}
             disabled={deleteMutation.isPending}
           >
             <Trash2 className="w-4 h-4" />
@@ -308,6 +309,18 @@ export default function ProcessingBatchDetailModal({
           </div>
         </div>
       </div>
+
+      <ConfirmModal
+        open={confirmOpen}
+        onOpenChange={setConfirmOpen}
+        title="Eliminar Lote de Procesamiento"
+        description="¿Esta seguro de que desea eliminar este lote de procesamiento? Esta operacion no se puede deshacer."
+        confirmLabel="Eliminar"
+        cancelLabel="Cancelar"
+        onConfirm={handleConfirmDelete}
+        isLoading={deleteMutation.isPending}
+        variant="danger"
+      />
     </Modal>
   );
 }

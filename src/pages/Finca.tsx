@@ -46,6 +46,9 @@ export default function Finca() {
   const [planDetailModalOpen, setPlanDetailModalOpen] = useState(false);
   const [preselectedDate, setPreselectedDate] = useState<Date | null>(null);
 
+  // Module filter state
+  const [moduleFilter, setModuleFilter] = useState<string>('all');
+
   // Annual plan state
   const [selectedAnnualPlanId, setSelectedAnnualPlanId] = useState<string | null>(null);
   const [selectedPhase, setSelectedPhase] = useState<PlanPhase>('initial');
@@ -103,6 +106,11 @@ export default function Finca() {
       return selectedAnnualPlan.status === 'active' && isCurrentYear;
     }
   }, [selectedAnnualPlan, selectedPhase, isCurrentYear]);
+
+  const moduleFilteredPlans = useMemo(() => {
+    if (moduleFilter === 'all') return filteredPlans;
+    return filteredPlans.filter(p => p.targetModule === moduleFilter || (!p.targetModule && moduleFilter === 'general'));
+  }, [filteredPlans, moduleFilter]);
 
   // Reset to initial phase when selecting a plan that doesn't support execution
   useEffect(() => {
@@ -323,6 +331,30 @@ export default function Finca() {
           )}
         </div>
 
+        {/* Module Filter */}
+        <div className="flex flex-wrap gap-2">
+          {[
+            { value: 'all', label: 'Todos' },
+            { value: 'general', label: 'General' },
+            { value: 'agro', label: 'Agricola' },
+            { value: 'pecuario', label: 'Pecuario' },
+            { value: 'procesamiento', label: 'Procesamiento' },
+          ].map((mod) => (
+            <button
+              key={mod.value}
+              onClick={() => setModuleFilter(mod.value)}
+              className={cn(
+                'px-3 py-1.5 rounded-lg text-xs font-medium transition-colors',
+                moduleFilter === mod.value
+                  ? 'bg-green-600 text-white'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              )}
+            >
+              {mod.label}
+            </button>
+          ))}
+        </div>
+
         {/* Calendar View */}
         {plansLoading ? (
           <div className="bg-white rounded-xl border border-gray-200 p-8 animate-pulse">
@@ -335,7 +367,7 @@ export default function Finca() {
           </div>
         ) : (
           <CalendarView
-            plans={filteredPlans}
+            plans={moduleFilteredPlans}
             onDayClick={isPlanEditable ? handleDayClick : () => {}}
             onPlanClick={handlePlanClick}
             onPlanEdit={isPlanEditable ? handlePlanEdit : undefined}

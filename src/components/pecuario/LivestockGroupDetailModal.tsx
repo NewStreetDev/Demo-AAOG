@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import {
   MapPin,
   Hash,
@@ -8,7 +9,7 @@ import {
   Users,
   Layers,
 } from 'lucide-react';
-import { Modal } from '../common/Modals';
+import { Modal, ConfirmModal } from '../common/Modals';
 import { useDeleteLivestockGroup } from '../../hooks/usePecuarioMutations';
 import { useGroupHealthActions } from '../../hooks/usePecuario';
 import type { LivestockGroup } from '../../types/pecuario.types';
@@ -41,6 +42,7 @@ export default function LivestockGroupDetailModal({
 }: LivestockGroupDetailModalProps) {
   const deleteMutation = useDeleteLivestockGroup();
   const { data: groupHealthActions } = useGroupHealthActions();
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   if (!livestockGroup) return null;
 
@@ -63,15 +65,14 @@ export default function LivestockGroupDetailModal({
       (action.species === livestockGroup.species && action.category === livestockGroup.category)
   ) || [];
 
-  const handleDelete = async () => {
-    if (window.confirm('Esta seguro de que desea eliminar este grupo?')) {
-      try {
-        await deleteMutation.mutateAsync(livestockGroup.id);
-        onOpenChange(false);
-        onDeleteSuccess?.();
-      } catch (error) {
-        console.error('Error deleting livestock group:', error);
-      }
+  const handleConfirmDelete = async () => {
+    try {
+      await deleteMutation.mutateAsync(livestockGroup.id);
+      setConfirmOpen(false);
+      onOpenChange(false);
+      onDeleteSuccess?.();
+    } catch (error) {
+      console.error('Error deleting livestock group:', error);
     }
   };
 
@@ -206,7 +207,7 @@ export default function LivestockGroupDetailModal({
           <button
             type="button"
             className="btn-danger inline-flex items-center gap-2"
-            onClick={handleDelete}
+            onClick={() => setConfirmOpen(true)}
             disabled={deleteMutation.isPending}
           >
             <Trash2 className="w-4 h-4" />
@@ -236,6 +237,18 @@ export default function LivestockGroupDetailModal({
           </div>
         </div>
       </div>
+
+      <ConfirmModal
+        open={confirmOpen}
+        onOpenChange={setConfirmOpen}
+        title="Eliminar Grupo"
+        description="¿Esta seguro de que desea eliminar este grupo? Esta operacion no se puede deshacer."
+        confirmLabel="Eliminar"
+        cancelLabel="Cancelar"
+        onConfirm={handleConfirmDelete}
+        isLoading={deleteMutation.isPending}
+        variant="danger"
+      />
     </Modal>
   );
 }

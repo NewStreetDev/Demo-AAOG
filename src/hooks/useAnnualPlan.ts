@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import {
   getMockAnnualPlans,
   getMockAnnualPlanById,
@@ -57,9 +58,11 @@ export function useCreateAnnualPlan() {
   return useMutation({
     mutationFn: (data: AnnualPlanFormData) => createMockAnnualPlan(data),
     onSuccess: () => {
+      toast.success('Plan anual creado exitosamente');
       queryClient.invalidateQueries({ queryKey: ['annual-plans'] });
       queryClient.invalidateQueries({ queryKey: ['annual-plan-by-year'] });
     },
+    onError: () => { toast.error('Error al crear plan anual'); },
   });
 }
 
@@ -75,10 +78,12 @@ export function useUpdateAnnualPlan() {
       data: Partial<AnnualPlanFormData> & { status?: AnnualPlan['status'] };
     }) => updateMockAnnualPlan(id, data),
     onSuccess: (_, variables) => {
+      toast.success('Plan anual actualizado');
       queryClient.invalidateQueries({ queryKey: ['annual-plans'] });
       queryClient.invalidateQueries({ queryKey: ['annual-plan', variables.id] });
       queryClient.invalidateQueries({ queryKey: ['annual-plan-by-year'] });
     },
+    onError: () => { toast.error('Error al actualizar plan anual'); },
   });
 }
 
@@ -88,6 +93,7 @@ export function useActivateAnnualPlan() {
   return useMutation({
     mutationFn: (id: string) => activateMockAnnualPlan(id),
     onSuccess: (_, id) => {
+      toast.success('Plan anual activado');
       queryClient.invalidateQueries({ queryKey: ['annual-plans'] });
       queryClient.invalidateQueries({ queryKey: ['annual-plan', id] });
       queryClient.invalidateQueries({ queryKey: ['annual-plan-by-year'] });
@@ -96,6 +102,7 @@ export function useActivateAnnualPlan() {
       queryClient.invalidateQueries({ queryKey: ['aggregated-tasks'] });
       queryClient.invalidateQueries({ queryKey: ['finca-dashboard'] });
     },
+    onError: () => { toast.error('Error al activar plan anual'); },
   });
 }
 
@@ -105,10 +112,12 @@ export function useCompleteAnnualPlan() {
   return useMutation({
     mutationFn: (id: string) => completeMockAnnualPlan(id),
     onSuccess: (_, id) => {
+      toast.success('Plan anual completado');
       queryClient.invalidateQueries({ queryKey: ['annual-plans'] });
       queryClient.invalidateQueries({ queryKey: ['annual-plan', id] });
       queryClient.invalidateQueries({ queryKey: ['annual-plan-by-year'] });
     },
+    onError: () => { toast.error('Error al completar plan anual'); },
   });
 }
 
@@ -118,10 +127,12 @@ export function useDeleteAnnualPlan() {
   return useMutation({
     mutationFn: (id: string) => deleteMockAnnualPlan(id),
     onSuccess: () => {
+      toast.success('Plan anual eliminado');
       queryClient.invalidateQueries({ queryKey: ['annual-plans'] });
       queryClient.invalidateQueries({ queryKey: ['annual-plan-by-year'] });
       queryClient.invalidateQueries({ queryKey: ['annual-plan-plans'] });
       queryClient.invalidateQueries({ queryKey: ['general-plans'] });
     },
+    onError: () => { toast.error('Error al eliminar plan anual'); },
   });
 }

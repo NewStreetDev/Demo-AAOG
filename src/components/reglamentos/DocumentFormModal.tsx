@@ -3,7 +3,7 @@ import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Loader2 } from 'lucide-react';
 import { Modal } from '../common/Modals';
-import { FormInput, FormField, FormSelect, FormTextArea } from '../common/Forms';
+import { FormInput, FormField, FormSelect, FormTextArea, FormFileUpload } from '../common/Forms';
 import {
   documentFormSchema,
   categoryOptions,
@@ -33,6 +33,7 @@ export default function DocumentFormModal({
     control,
     handleSubmit,
     reset,
+    setValue,
     formState: { errors },
   } = useForm<DocumentFormData>({
     resolver: zodResolver(documentFormSchema),
@@ -85,7 +86,7 @@ export default function DocumentFormModal({
           name="title"
           control={control}
           render={({ field }) => (
-            <FormField label="Titulo del documento" error={errors.title?.message}>
+            <FormField label="Titulo del documento" required error={errors.title?.message}>
               <FormInput
                 placeholder="Ej: Reglamento de Agricultura Organica"
                 {...field}
@@ -127,7 +128,7 @@ export default function DocumentFormModal({
           name="folderType"
           control={control}
           render={({ field }) => (
-            <FormField label="Carpeta destino" error={errors.folderType?.message}>
+            <FormField label="Carpeta destino" required error={errors.folderType?.message}>
               <FormSelect
                 options={folderOptions}
                 value={field.value}
@@ -138,44 +139,34 @@ export default function DocumentFormModal({
           )}
         />
 
-        <Controller
-          name="fileName"
-          control={control}
-          render={({ field }) => (
-            <FormField label="Nombre del archivo" error={errors.fileName?.message}>
-              <FormInput
-                placeholder="Ej: reglamento-agricultura.pdf"
-                {...field}
-              />
-            </FormField>
-          )}
-        />
-
-        <Controller
-          name="fileUrl"
-          control={control}
-          render={({ field }) => (
-            <FormField label="URL del archivo" error={errors.fileUrl?.message}>
-              <FormInput
-                placeholder="/documents/nombre-archivo.pdf"
-                {...field}
-              />
-            </FormField>
-          )}
-        />
-
-        <Controller
-          name="fileSize"
-          control={control}
-          render={({ field }) => (
-            <FormField label="Tamano del archivo (opcional)" error={errors.fileSize?.message}>
-              <FormInput
-                placeholder="Ej: 2.4 MB"
-                {...field}
-              />
-            </FormField>
-          )}
-        />
+        <div className="space-y-2">
+          <Controller
+            name="fileUrl"
+            control={control}
+            render={({ field }) => (
+              <FormField label="Adjuntar archivo" required error={errors.fileUrl?.message || errors.fileName?.message}>
+                <FormFileUpload
+                  value={field.value || ''}
+                  onChange={(val: string) => {
+                    field.onChange(val);
+                    // Extract filename from data URL or set a generic name
+                    if (val) {
+                      const match = val.match(/^data:.*?;/);
+                      const ext = match ? match[0].replace('data:', '').replace(';', '').split('/')[1] || 'pdf' : 'pdf';
+                      const timestamp = Date.now();
+                      const autoName = `documento-${timestamp}.${ext}`;
+                      setValue('fileName', autoName);
+                    } else {
+                      setValue('fileName', '');
+                    }
+                  }}
+                  accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.png,.gif"
+                  error={errors.fileUrl?.message}
+                />
+              </FormField>
+            )}
+          />
+        </div>
 
         <div className="flex justify-end gap-3 pt-4 border-t">
           <button

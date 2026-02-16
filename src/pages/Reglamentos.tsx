@@ -16,6 +16,8 @@ export default function Reglamentos() {
   const [activeTab, setActiveTab] = useState<TabType>('asociado');
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('');
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
 
   const isAdmin = user?.role === 'administrador';
 
@@ -46,8 +48,21 @@ export default function Reglamentos() {
       filtered = filtered.filter((doc) => doc.categoryId === categoryFilter);
     }
 
+    if (dateFrom) {
+      filtered = filtered.filter(
+        (doc) => new Date(doc.uploadedAt) >= new Date(dateFrom)
+      );
+    }
+    if (dateTo) {
+      const toDate = new Date(dateTo);
+      toDate.setHours(23, 59, 59, 999);
+      filtered = filtered.filter(
+        (doc) => new Date(doc.uploadedAt) <= toDate
+      );
+    }
+
     return filtered;
-  }, [documents, activeTab, searchQuery, categoryFilter]);
+  }, [documents, activeTab, searchQuery, categoryFilter, dateFrom, dateTo]);
 
   // Determine if "Subir Documento" button should be visible
   const canUpload = isAdmin || activeTab === 'asociado';
@@ -57,6 +72,8 @@ export default function Reglamentos() {
     setActiveTab(tab);
     setSearchQuery('');
     setCategoryFilter('');
+    setDateFrom('');
+    setDateTo('');
   };
 
   const emptyMessages: Record<TabType, { title: string; description: string }> = {
@@ -145,6 +162,32 @@ export default function Reglamentos() {
             </option>
           ))}
         </select>
+        <input
+          type="date"
+          value={dateFrom}
+          onChange={(e) => setDateFrom(e.target.value)}
+          className="px-3 py-2.5 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors"
+          title="Desde"
+        />
+        <input
+          type="date"
+          value={dateTo}
+          onChange={(e) => setDateTo(e.target.value)}
+          className="px-3 py-2.5 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors"
+          title="Hasta"
+        />
+        {(categoryFilter || dateFrom || dateTo) && (
+          <button
+            onClick={() => {
+              setCategoryFilter('');
+              setDateFrom('');
+              setDateTo('');
+            }}
+            className="px-3 py-2.5 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors whitespace-nowrap"
+          >
+            Limpiar filtros
+          </button>
+        )}
       </div>
 
       {/* Tab Content */}
@@ -160,7 +203,7 @@ export default function Reglamentos() {
               {emptyMessages[activeTab].title}
             </h3>
             <p className="text-gray-500 text-sm">
-              {searchQuery || categoryFilter
+              {searchQuery || categoryFilter || dateFrom || dateTo
                 ? 'No se encontraron documentos con los filtros aplicados.'
                 : emptyMessages[activeTab].description}
             </p>

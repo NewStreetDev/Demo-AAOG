@@ -1,6 +1,7 @@
 import { RouterProvider } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+import { Toaster } from 'sonner';
 import { AuthProvider } from './contexts/AuthContext';
 import { FincaProvider } from './contexts/FincaContext';
 import { router } from './router';
@@ -21,6 +22,7 @@ function App() {
         <FincaProvider>
           <RouterProvider router={router} />
           <ReactQueryDevtools initialIsOpen={false} />
+          <Toaster position="top-right" richColors closeButton duration={4000} />
         </FincaProvider>
       </AuthProvider>
     </QueryClientProvider>

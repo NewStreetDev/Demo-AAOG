@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import {
   updateMockFinca,
   createMockDivision,
@@ -18,9 +19,11 @@ export function useUpdateFinca() {
   return useMutation({
     mutationFn: (data: FincaFormData) => updateMockFinca(data),
     onSuccess: () => {
+      toast.success('Finca actualizada exitosamente');
       queryClient.invalidateQueries({ queryKey: ['finca'] });
       queryClient.invalidateQueries({ queryKey: ['finca-dashboard'] });
     },
+    onError: () => { toast.error('Error al actualizar finca'); },
   });
 }
 
@@ -32,9 +35,11 @@ export function useCreateDivision() {
   return useMutation({
     mutationFn: (data: DivisionFormData) => createMockDivision(data),
     onSuccess: () => {
+      toast.success('Division creada exitosamente');
       queryClient.invalidateQueries({ queryKey: ['divisions'] });
       queryClient.invalidateQueries({ queryKey: ['finca-dashboard'] });
     },
+    onError: () => { toast.error('Error al crear division'); },
   });
 }
 
@@ -45,10 +50,12 @@ export function useUpdateDivision() {
     mutationFn: ({ id, data }: { id: string; data: DivisionFormData }) =>
       updateMockDivision(id, data),
     onSuccess: () => {
+      toast.success('Division actualizada');
       queryClient.invalidateQueries({ queryKey: ['divisions'] });
       queryClient.invalidateQueries({ queryKey: ['division'] });
       queryClient.invalidateQueries({ queryKey: ['finca-dashboard'] });
     },
+    onError: () => { toast.error('Error al actualizar division'); },
   });
 }
 
@@ -58,9 +65,11 @@ export function useDeleteDivision() {
   return useMutation({
     mutationFn: (id: string) => deleteMockDivision(id),
     onSuccess: () => {
+      toast.success('Division eliminada');
       queryClient.invalidateQueries({ queryKey: ['divisions'] });
       queryClient.invalidateQueries({ queryKey: ['finca-dashboard'] });
     },
+    onError: () => { toast.error('Error al eliminar division'); },
   });
 }
 
@@ -72,11 +81,13 @@ export function useCreateGeneralPlan() {
   return useMutation({
     mutationFn: (data: GeneralPlanFormData) => createMockGeneralPlan(data),
     onSuccess: () => {
+      toast.success('Plan general creado exitosamente');
       queryClient.invalidateQueries({ queryKey: ['general-plans'] });
       queryClient.invalidateQueries({ queryKey: ['annual-plan-plans'] });
       queryClient.invalidateQueries({ queryKey: ['aggregated-tasks'] });
       queryClient.invalidateQueries({ queryKey: ['finca-dashboard'] });
     },
+    onError: () => { toast.error('Error al crear plan general'); },
   });
 }
 
@@ -87,12 +98,14 @@ export function useUpdateGeneralPlan() {
     mutationFn: ({ id, data }: { id: string; data: GeneralPlanFormData }) =>
       updateMockGeneralPlan(id, data),
     onSuccess: () => {
+      toast.success('Plan general actualizado');
       queryClient.invalidateQueries({ queryKey: ['general-plans'] });
       queryClient.invalidateQueries({ queryKey: ['general-plan'] });
       queryClient.invalidateQueries({ queryKey: ['annual-plan-plans'] });
       queryClient.invalidateQueries({ queryKey: ['aggregated-tasks'] });
       queryClient.invalidateQueries({ queryKey: ['finca-dashboard'] });
     },
+    onError: () => { toast.error('Error al actualizar plan general'); },
   });
 }
 
@@ -102,10 +115,12 @@ export function useDeleteGeneralPlan() {
   return useMutation({
     mutationFn: (id: string) => deleteMockGeneralPlan(id),
     onSuccess: () => {
+      toast.success('Plan general eliminado');
       queryClient.invalidateQueries({ queryKey: ['general-plans'] });
       queryClient.invalidateQueries({ queryKey: ['annual-plan-plans'] });
       queryClient.invalidateQueries({ queryKey: ['aggregated-tasks'] });
       queryClient.invalidateQueries({ queryKey: ['finca-dashboard'] });
     },
+    onError: () => { toast.error('Error al eliminar plan general'); },
   });
 }

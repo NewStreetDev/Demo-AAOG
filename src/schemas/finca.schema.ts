@@ -43,7 +43,7 @@ export const fincaFormSchema = z.object({
     message: 'Seleccione un estado valido',
   }),
   description: z.string().optional(),
-  imageUrl: z.string().url('Ingrese una URL valida').optional().or(z.literal('')),
+  imageUrl: z.string().optional(),
   notes: z.string().optional(),
 });
 
@@ -257,7 +257,8 @@ export const generalPlanFormSchema = z.object({
       (val) => !val || (!isNaN(parseFloat(val)) && parseFloat(val) >= 0),
       'El costo debe ser un numero valido'
     ),
-  assignedTo: z.string().optional(),
+  currency: z.enum(['CRC', 'USD']).optional().default('CRC'),
+  assignedTo: z.array(z.string()).optional(),
   priority: z.enum(planPriorities, {
     message: 'Seleccione una prioridad',
   }),
@@ -324,4 +325,10 @@ export const unidadOptions = [
   { value: 'm', label: 'Metros (m)' },
   { value: 'm2', label: 'Metros cuadrados (m2)' },
   { value: 'ha', label: 'Hectareas (ha)' },
+];
+
+// Currency options
+export const currencyOptions = [
+  { value: 'CRC', label: 'CRC (Colones)' },
+  { value: 'USD', label: 'USD (Dolares)' },
 ];

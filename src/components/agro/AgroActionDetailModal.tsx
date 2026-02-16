@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import {
   Calendar,
   User,
@@ -14,7 +15,7 @@ import {
   Trash2,
   DollarSign,
 } from 'lucide-react';
-import { Modal } from '../common/Modals';
+import { Modal, ConfirmModal } from '../common/Modals';
 import { useDeleteAgroAction } from '../../hooks/useAgroMutations';
 import type { AgroAction } from '../../types/agro.types';
 
@@ -92,6 +93,7 @@ export default function AgroActionDetailModal({
   onEdit,
 }: AgroActionDetailModalProps) {
   const deleteMutation = useDeleteAgroAction();
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   if (!action) return null;
 
@@ -103,14 +105,13 @@ export default function AgroActionDetailModal({
   };
   const TypeIcon = typeInfo.icon;
 
-  const handleDelete = async () => {
-    if (window.confirm('Esta seguro de que desea eliminar esta accion?')) {
-      try {
-        await deleteMutation.mutateAsync(action.id);
-        onOpenChange(false);
-      } catch (error) {
-        console.error('Error deleting action:', error);
-      }
+  const handleConfirmDelete = async () => {
+    try {
+      await deleteMutation.mutateAsync(action.id);
+      setConfirmOpen(false);
+      onOpenChange(false);
+    } catch (error) {
+      console.error('Error deleting action:', error);
     }
   };
 
@@ -257,7 +258,7 @@ export default function AgroActionDetailModal({
           <button
             type="button"
             className="btn-danger inline-flex items-center gap-2"
-            onClick={handleDelete}
+            onClick={() => setConfirmOpen(true)}
             disabled={deleteMutation.isPending}
           >
             <Trash2 className="w-4 h-4" />
@@ -287,6 +288,18 @@ export default function AgroActionDetailModal({
           </div>
         </div>
       </div>
+
+      <ConfirmModal
+        open={confirmOpen}
+        onOpenChange={setConfirmOpen}
+        title="Eliminar Accion Agricola"
+        description="¿Esta seguro de que desea eliminar esta accion? Esta operacion no se puede deshacer."
+        confirmLabel="Eliminar"
+        cancelLabel="Cancelar"
+        onConfirm={handleConfirmDelete}
+        isLoading={deleteMutation.isPending}
+        variant="danger"
+      />
     </Modal>
   );
 }

@@ -5,6 +5,8 @@ export { default as FormSelectWithAdd } from './FormSelectWithAdd';
 export { default as FormDatePicker } from './FormDatePicker';
 export { default as FormTextArea } from './FormTextArea';
 export { default as FormCheckbox } from './FormCheckbox';
+export { default as FormFileUpload } from './FormFileUpload';
+export { default as FormMultiSelect } from './FormMultiSelect';
 
 export type { FormInputProps } from './FormInput';
 export type { SelectOption } from './FormSelect';

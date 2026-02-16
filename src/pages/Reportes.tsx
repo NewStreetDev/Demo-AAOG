@@ -7,6 +7,9 @@ import ListCardSkeleton from '../components/common/Skeletons/ListCardSkeleton';
 import {
   useGeneratedReports,
 } from '../hooks/useReportes';
+import { toast } from 'sonner';
+import { useAuth } from '../contexts/AuthContext';
+import { REPORT_ROLE_PERMISSIONS } from '../types/reportes.types';
 
 type TabType = 'generar' | 'historial';
 
@@ -66,12 +69,22 @@ const historialPeriodLabels: Record<HistorialPeriod, string> = {
 };
 
 export default function Reportes() {
-  const [activeTab, setActiveTab] = useState<TabType>('generar');
+  const { user } = useAuth();
+  const permissions = user?.role
+    ? REPORT_ROLE_PERMISSIONS[user.role]
+    : REPORT_ROLE_PERMISSIONS['asociado'];
+
+  const canGenerate = permissions.canGenerateOwn || permissions.canGenerateOthers;
+
+  const [activeTab, setActiveTab] = useState<TabType>(canGenerate ? 'generar' : 'historial');
   const [selectedCategory, setSelectedCategory] = useState<ReportType['category'] | 'all'>('all');
 
   // Historial filters
   const [historialTypeFilter, setHistorialTypeFilter] = useState<HistorialReportType>('all');
   const [historialPeriodFilter, setHistorialPeriodFilter] = useState<HistorialPeriod>('all');
+  const [roleFilter, setRoleFilter] = useState<string>('all');
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
 
   const { data: reports, isLoading: reportsLoading } = useGeneratedReports();
 
@@ -81,12 +94,26 @@ export default function Reportes() {
     return reports.filter((report) => {
       const matchesType = historialTypeFilter === 'all' || report.reportType === historialTypeFilter;
       const matchesPeriod = historialPeriodFilter === 'all' || report.period === historialPeriodFilter;
-      return matchesType && matchesPeriod;
+      const matchesRole = roleFilter === 'all' || report.generatedBy === roleFilter;
+
+      let matchesDate = true;
+      if (dateFrom) {
+        matchesDate = matchesDate && new Date(report.createdAt) >= new Date(dateFrom);
+      }
+      if (dateTo) {
+        const toDate = new Date(dateTo);
+        toDate.setHours(23, 59, 59, 999);
+        matchesDate = matchesDate && new Date(report.createdAt) <= toDate;
+      }
+
+      return matchesType && matchesPeriod && matchesDate && matchesRole;
     });
-  }, [reports, historialTypeFilter, historialPeriodFilter]);
+  }, [reports, historialTypeFilter, historialPeriodFilter, roleFilter, dateFrom, dateTo]);
 
   const tabs = [
-    { id: 'generar' as TabType, label: 'Generar Reportes', icon: FilePlus },
+    ...(canGenerate
+      ? [{ id: 'generar' as TabType, label: 'Generar Reportes', icon: FilePlus }]
+      : []),
     { id: 'historial' as TabType, label: 'Historial de Reportes', icon: History },
   ];
 
@@ -97,7 +124,7 @@ export default function Reportes() {
   const handleGenerateReport = (reportType: ReportType) => {
     // In a real app, this would trigger report generation
     console.log('Generating report:', reportType.code);
-    alert(`Generando reporte: ${reportType.name}`);
+    toast.success(`Generando reporte: ${reportType.name}`);
   };
 
   const renderTabContent = () => {
@@ -202,11 +229,38 @@ export default function Reportes() {
                     </option>
                   ))}
                 </select>
-                {(historialTypeFilter !== 'all' || historialPeriodFilter !== 'all') && (
+                <select
+                  value={roleFilter}
+                  onChange={(e) => setRoleFilter(e.target.value)}
+                  className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                >
+                  <option value="all">Todos los roles</option>
+                  <option value="asociado">Asociado</option>
+                  <option value="administrador">Administrador</option>
+                  <option value="junta_directiva">Junta Directiva</option>
+                </select>
+                <input
+                  type="date"
+                  value={dateFrom}
+                  onChange={(e) => setDateFrom(e.target.value)}
+                  className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                  title="Desde"
+                />
+                <input
+                  type="date"
+                  value={dateTo}
+                  onChange={(e) => setDateTo(e.target.value)}
+                  className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                  title="Hasta"
+                />
+                {(historialTypeFilter !== 'all' || historialPeriodFilter !== 'all' || roleFilter !== 'all' || dateFrom || dateTo) && (
                   <button
                     onClick={() => {
                       setHistorialTypeFilter('all');
                       setHistorialPeriodFilter('all');
+                      setRoleFilter('all');
+                      setDateFrom('');
+                      setDateTo('');
                     }}
                     className="px-3 py-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
                   >

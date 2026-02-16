@@ -17,6 +17,7 @@ import {
   weatherConditionOptions,
   type AgroActionFormData,
 } from '../../schemas/agro.schema';
+import { unidadOptions } from '../../schemas/finca.schema';
 import { useCreateAgroAction, useUpdateAgroAction } from '../../hooks/useAgroMutations';
 import { useLotes, useCrops } from '../../hooks/useAgro';
 import type { AgroAction, Lote, Crop } from '../../types/agro.types';
@@ -341,8 +342,9 @@ export default function AgroActionFormModal({
           ) : (
             <div className="space-y-3">
               {insumoFields.map((field, index) => (
-                <div key={field.id} className="grid grid-cols-12 gap-2 items-start p-3 bg-gray-50 rounded-lg">
+                <div key={field.id} className="grid grid-cols-12 gap-2 items-end p-3 bg-gray-50 rounded-lg">
                   <div className="col-span-12 md:col-span-4">
+                    <label className="text-xs font-medium text-gray-500 mb-1 block">Nombre</label>
                     <FormInput
                       {...register(`insumos.${index}.nombre`)}
                       placeholder="Nombre del insumo"
@@ -350,6 +352,7 @@ export default function AgroActionFormModal({
                     />
                   </div>
                   <div className="col-span-4 md:col-span-2">
+                    <label className="text-xs font-medium text-gray-500 mb-1 block">Cantidad</label>
                     <FormInput
                       {...register(`insumos.${index}.cantidad`)}
                       type="number"
@@ -359,13 +362,19 @@ export default function AgroActionFormModal({
                     />
                   </div>
                   <div className="col-span-4 md:col-span-2">
-                    <FormInput
+                    <label className="text-xs font-medium text-gray-500 mb-1 block">Unidad</label>
+                    <select
                       {...register(`insumos.${index}.unidad`)}
-                      placeholder="Unidad"
-                      error={errors.insumos?.[index]?.unidad?.message}
-                    />
+                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                    >
+                      <option value="">Seleccionar</option>
+                      {unidadOptions.map(opt => (
+                        <option key={opt.value} value={opt.value}>{opt.label}</option>
+                      ))}
+                    </select>
                   </div>
                   <div className="col-span-3 md:col-span-3">
+                    <label className="text-xs font-medium text-gray-500 mb-1 block">Costo</label>
                     <FormInput
                       {...register(`insumos.${index}.costo`)}
                       type="number"
@@ -411,8 +420,9 @@ export default function AgroActionFormModal({
           ) : (
             <div className="space-y-3">
               {herramientaFields.map((field, index) => (
-                <div key={field.id} className="grid grid-cols-12 gap-2 items-start p-3 bg-gray-50 rounded-lg">
+                <div key={field.id} className="grid grid-cols-12 gap-2 items-end p-3 bg-gray-50 rounded-lg">
                   <div className="col-span-12 md:col-span-5">
+                    <label className="text-xs font-medium text-gray-500 mb-1 block">Nombre</label>
                     <FormInput
                       {...register(`herramientas.${index}.nombre`)}
                       placeholder="Nombre de la herramienta"
@@ -420,6 +430,7 @@ export default function AgroActionFormModal({
                     />
                   </div>
                   <div className="col-span-11 md:col-span-6">
+                    <label className="text-xs font-medium text-gray-500 mb-1 block">Descripcion</label>
                     <FormInput
                       {...register(`herramientas.${index}.descripcion`)}
                       placeholder="Descripcion (opcional)"

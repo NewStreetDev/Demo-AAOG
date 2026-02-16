@@ -31,7 +31,7 @@ export const documentFormSchema = z.object({
   }),
   fileUrl: z
     .string()
-    .min(1, 'La URL del archivo es requerida'),
+    .min(1, 'El archivo es requerido'),
   fileName: z.string().min(1, 'El nombre del archivo es requerido'),
   fileSize: z.string().optional(),
 });

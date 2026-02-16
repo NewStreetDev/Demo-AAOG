@@ -1,9 +1,9 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Loader2 } from 'lucide-react';
 import { Modal } from '../common/Modals';
-import { FormInput, FormField, FormSelect, FormTextArea } from '../common/Forms';
+import { FormInput, FormField, FormSelect, FormTextArea, FormFileUpload } from '../common/Forms';
 import {
   fincaFormSchema,
   fincaStatusOptions,
@@ -11,6 +11,31 @@ import {
 } from '../../schemas/finca.schema';
 import { useUpdateFinca } from '../../hooks/useFincaMutations';
 import type { Finca } from '../../types/finca.types';
+
+const phoneCountryCodeOptions = [
+  { code: '+506', label: '+506 (CR)' },
+  { code: '+502', label: '+502 (GT)' },
+  { code: '+503', label: '+503 (SV)' },
+  { code: '+504', label: '+504 (HN)' },
+  { code: '+505', label: '+505 (NI)' },
+  { code: '+507', label: '+507 (PA)' },
+  { code: '+52', label: '+52 (MX)' },
+  { code: '+57', label: '+57 (CO)' },
+  { code: '+1', label: '+1 (US)' },
+];
+
+function parsePhoneNumber(phone: string): { code: string; number: string } {
+  if (!phone) return { code: '+506', number: '' };
+  for (const opt of phoneCountryCodeOptions) {
+    if (phone.startsWith(opt.code + ' ')) {
+      return { code: opt.code, number: phone.slice(opt.code.length + 1) };
+    }
+    if (phone.startsWith(opt.code)) {
+      return { code: opt.code, number: phone.slice(opt.code.length) };
+    }
+  }
+  return { code: '+506', number: phone };
+}
 
 interface FincaFormModalProps {
   open: boolean;
@@ -27,6 +52,7 @@ export default function FincaFormModal({
 }: FincaFormModalProps) {
   const updateMutation = useUpdateFinca();
   const isLoading = updateMutation.isPending;
+  const [phoneCode, setPhoneCode] = useState('+506');
 
   const {
     register,
@@ -40,6 +66,8 @@ export default function FincaFormModal({
 
   useEffect(() => {
     if (open && finca) {
+      const parsed = parsePhoneNumber(finca.contactPhone || '');
+      setPhoneCode(parsed.code);
       reset({
         name: finca.name,
         totalArea: String(finca.totalArea),
@@ -49,7 +77,7 @@ export default function FincaFormModal({
         department: finca.location.department || '',
         municipality: finca.location.municipality || '',
         owner: finca.ownerName,
-        contactPhone: finca.contactPhone || '',
+        contactPhone: parsed.number,
         contactEmail: finca.contactEmail || '',
         status: finca.status,
         description: finca.description || '',
@@ -61,7 +89,11 @@ export default function FincaFormModal({
 
   const onSubmit = async (data: FincaFormData) => {
     try {
-      await updateMutation.mutateAsync(data);
+      const submitData = {
+        ...data,
+        contactPhone: data.contactPhone ? `${phoneCode} ${data.contactPhone}` : '',
+      };
+      await updateMutation.mutateAsync(submitData);
       onOpenChange(false);
       onSuccess?.();
     } catch (error) {
@@ -178,10 +210,24 @@ export default function FincaFormModal({
           <h4 className="text-sm font-medium text-gray-700 mb-3">Contacto</h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FormField label="Telefono">
-              <FormInput
-                {...register('contactPhone')}
-                placeholder="Ej: 2456-7890"
-              />
+              <div className="flex gap-2">
+                <select
+                  value={phoneCode}
+                  onChange={(e) => setPhoneCode(e.target.value)}
+                  className="flex-shrink-0 w-28 rounded-lg border border-gray-300 bg-white px-2 py-2 text-sm text-gray-700 focus:border-green-500 focus:outline-none focus:ring-1 focus:ring-green-500"
+                >
+                  {phoneCountryCodeOptions.map((opt) => (
+                    <option key={opt.code} value={opt.code}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+                <FormInput
+                  {...register('contactPhone')}
+                  placeholder="Ej: 2456-7890"
+                  className="flex-1"
+                />
+              </div>
             </FormField>
 
             <FormField label="Email" error={errors.contactEmail?.message}>
@@ -203,13 +249,20 @@ export default function FincaFormModal({
           />
         </FormField>
 
-        <FormField label="URL de Imagen" error={errors.imageUrl?.message}>
-          <FormInput
-            {...register('imageUrl')}
-            placeholder="https://ejemplo.com/imagen.jpg"
-            error={errors.imageUrl?.message}
-          />
-        </FormField>
+        <Controller
+          name="imageUrl"
+          control={control}
+          render={({ field }) => (
+            <FormField label="Imagen de la Finca" error={errors.imageUrl?.message}>
+              <FormFileUpload
+                value={field.value || ''}
+                onChange={field.onChange}
+                accept="image/*"
+                error={errors.imageUrl?.message}
+              />
+            </FormField>
+          )}
+        />
 
         <FormField label="Notas">
           <FormTextArea

@@ -1,5 +1,5 @@
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
-import { Home, Sprout, Beef, Factory, DollarSign, ChevronDown, Bell, User, Map, LogOut, BookOpen, BarChart3 } from 'lucide-react';
+import { Home, Sprout, Beef, Factory, DollarSign, ChevronDown, User, Map, LogOut, BookOpen, BarChart3 } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import Breadcrumbs from '../Breadcrumbs';
 import FincaSelector from '../FincaSelector';
@@ -109,19 +109,6 @@ export default function MainLayout() {
             <div className="mr-2">
               <FincaSelector />
             </div>
-
-            {/* Notifications */}
-            <button
-              className="group relative p-2.5 text-gray-600 hover:text-gray-900 hover:bg-gray-100/80 rounded-xl transition-all duration-200 hover:scale-105"
-              aria-label="Notificaciones"
-            >
-              <Bell className="w-5 h-5" strokeWidth={2} />
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full ring-2 ring-white animate-pulse" />
-              {/* Notification badge with animation */}
-              <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center ring-2 ring-white scale-0 group-hover:scale-100 transition-transform">
-                3
-              </span>
-            </button>
 
             {/* Settings */}
             <button

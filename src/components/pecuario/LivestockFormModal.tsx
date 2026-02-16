@@ -21,7 +21,7 @@ import {
   type LivestockFormData,
 } from '../../schemas/pecuario.schema';
 import { useCreateLivestock, useUpdateLivestock } from '../../hooks/usePecuarioMutations';
-import { usePotreros } from '../../hooks/usePecuario';
+import { usePotreros, useLivestock } from '../../hooks/usePecuario';
 import type { Livestock, LivestockSpecies } from '../../types/pecuario.types';
 import { requiresParentTracking } from '../../types/pecuario.types';
 
@@ -48,6 +48,7 @@ export default function LivestockFormModal({
   const createMutation = useCreateLivestock();
   const updateMutation = useUpdateLivestock();
   const { data: potreros } = usePotreros();
+  const { data: allLivestock } = useLivestock();
   const isLoading = createMutation.isPending || updateMutation.isPending;
 
   // Build potrero options for select
@@ -148,6 +149,53 @@ export default function LivestockFormModal({
       setValue('category', '' as LivestockFormData['category']);
     }
   }, [selectedSpecies, setValue, livestock]);
+
+  // Build parent options filtered by species and gender
+  const femaleOptions = (allLivestock || [])
+    .filter(l =>
+      l.status === 'active' &&
+      l.gender === 'female' &&
+      (!selectedSpecies || l.species === selectedSpecies) &&
+      (!livestock || l.id !== livestock.id)
+    )
+    .map(l => ({
+      value: l.id,
+      label: `${l.tag}${l.name ? ` - ${l.name}` : ''} (${l.breed})`,
+    }));
+
+  const maleOptions = (allLivestock || [])
+    .filter(l =>
+      l.status === 'active' &&
+      l.gender === 'male' &&
+      (!selectedSpecies || l.species === selectedSpecies) &&
+      (!livestock || l.id !== livestock.id)
+    )
+    .map(l => ({
+      value: l.id,
+      label: `${l.tag}${l.name ? ` - ${l.name}` : ''} (${l.breed})`,
+    }));
+
+  // Auto-populate motherTag when motherId is selected
+  const selectedMotherId = watch('motherId');
+  const selectedFatherId = watch('fatherId');
+
+  useEffect(() => {
+    if (selectedMotherId && allLivestock) {
+      const selected = allLivestock.find(l => l.id === selectedMotherId);
+      if (selected) {
+        setValue('motherTag', selected.tag);
+      }
+    }
+  }, [selectedMotherId, allLivestock, setValue]);
+
+  useEffect(() => {
+    if (selectedFatherId && allLivestock) {
+      const selected = allLivestock.find(l => l.id === selectedFatherId);
+      if (selected) {
+        setValue('fatherTag', selected.tag);
+      }
+    }
+  }, [selectedFatherId, allLivestock, setValue]);
 
   const onSubmit = async (data: LivestockFormData) => {
     try {
@@ -335,18 +383,34 @@ export default function LivestockFormModal({
         {/* Row 6: Mother, Father - Only for species with parent tracking */}
         {showParentFields && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <FormField label="Arete de la Madre" error={errors.motherTag?.message}>
-              <FormInput
-                {...register('motherTag')}
-                placeholder="Ej: BOV-001"
-                error={errors.motherTag?.message}
+            <FormField label="Madre" error={errors.motherId?.message}>
+              <Controller
+                name="motherId"
+                control={control}
+                render={({ field }) => (
+                  <FormSelect
+                    value={field.value || ''}
+                    onValueChange={field.onChange}
+                    options={femaleOptions}
+                    placeholder="Seleccionar madre..."
+                    error={errors.motherId?.message}
+                  />
+                )}
               />
             </FormField>
-            <FormField label="Arete del Padre" error={errors.fatherTag?.message}>
-              <FormInput
-                {...register('fatherTag')}
-                placeholder="Ej: BOV-002"
-                error={errors.fatherTag?.message}
+            <FormField label="Padre" error={errors.fatherId?.message}>
+              <Controller
+                name="fatherId"
+                control={control}
+                render={({ field }) => (
+                  <FormSelect
+                    value={field.value || ''}
+                    onValueChange={field.onChange}
+                    options={maleOptions}
+                    placeholder="Seleccionar padre..."
+                    error={errors.fatherId?.message}
+                  />
+                )}
               />
             </FormField>
           </div>

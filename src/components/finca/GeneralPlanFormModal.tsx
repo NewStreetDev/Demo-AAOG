@@ -3,18 +3,20 @@ import { useForm, Controller, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Loader2, Plus, Trash2, Package, Wrench } from 'lucide-react';
 import { Modal } from '../common/Modals';
-import { FormInput, FormField, FormSelect, FormSelectWithAdd, FormTextArea, FormDatePicker } from '../common/Forms';
+import { FormInput, FormField, FormSelect, FormSelectWithAdd, FormTextArea, FormDatePicker, FormMultiSelect } from '../common/Forms';
 import {
   generalPlanFormSchema,
   priorityOptions,
   planStatusOptions,
   moduleAssociationOptions,
   unidadOptions,
+  currencyOptions,
   type GeneralPlanFormData,
 } from '../../schemas/finca.schema';
 import { useCreateGeneralPlan, useUpdateGeneralPlan } from '../../hooks/useFincaMutations';
 import { useDivisions } from '../../hooks/useFinca';
 import { useActionTypes, useAddActionType } from '../../hooks/useActionTypes';
+import { useWorkers } from '../../hooks/useWorkers';
 import type { GeneralPlan } from '../../types/finca.types';
 
 interface GeneralPlanFormModalProps {
@@ -48,6 +50,7 @@ export default function GeneralPlanFormModal({
   const isEditing = !!plan;
 
   const { data: divisions } = useDivisions();
+  const { data: workers = [] } = useWorkers();
   const { data: actionTypes = [] } = useActionTypes();
   const addActionTypeMutation = useAddActionType();
   const createMutation = useCreateGeneralPlan();
@@ -83,7 +86,8 @@ export default function GeneralPlanFormModal({
       estimatedDuration: '',
       estimatedCost: '',
       actualCost: '',
-      assignedTo: '',
+      currency: 'CRC',
+      assignedTo: [],
       priority: 'medium',
       status: 'pending',
       notes: '',
@@ -144,7 +148,8 @@ export default function GeneralPlanFormModal({
         estimatedDuration: plan.estimatedDuration ? String(plan.estimatedDuration) : '',
         estimatedCost: plan.estimatedCost ? String(plan.estimatedCost) : '',
         actualCost: plan.actualCost ? String(plan.actualCost) : '',
-        assignedTo: plan.assignedTo || '',
+        currency: plan.currency || 'CRC',
+        assignedTo: plan.assignedTo || [],
         priority: plan.priority,
         status: plan.status,
         notes: plan.notes || '',
@@ -169,7 +174,8 @@ export default function GeneralPlanFormModal({
         estimatedDuration: '',
         estimatedCost: '',
         actualCost: '',
-        assignedTo: '',
+        currency: 'CRC',
+        assignedTo: [],
         priority: 'medium',
         status: 'pending',
         notes: '',
@@ -203,6 +209,9 @@ export default function GeneralPlanFormModal({
       console.error('Error saving plan:', error);
     }
   };
+
+  // Build worker options for multi-select
+  const workerOptions = workers.map(w => ({ value: w.name, label: w.name }));
 
   // Build division options
   const divisionOptions = [
@@ -304,13 +313,28 @@ export default function GeneralPlanFormModal({
           </FormField>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <FormField label="Duracion Estimada (horas)">
             <FormInput
               type="number"
               step="0.5"
               {...register('estimatedDuration')}
               placeholder="Ej: 8"
+            />
+          </FormField>
+
+          <FormField label="Moneda">
+            <Controller
+              name="currency"
+              control={control}
+              render={({ field }) => (
+                <FormSelect
+                  value={field.value || 'CRC'}
+                  onValueChange={field.onChange}
+                  options={currencyOptions}
+                  placeholder="Moneda"
+                />
+              )}
             />
           </FormField>
 
@@ -334,9 +358,17 @@ export default function GeneralPlanFormModal({
         </div>
 
         <FormField label="Asignado a">
-          <FormInput
-            {...register('assignedTo')}
-            placeholder="Nombre del responsable"
+          <Controller
+            name="assignedTo"
+            control={control}
+            render={({ field }) => (
+              <FormMultiSelect
+                value={field.value || []}
+                onValueChange={field.onChange}
+                options={workerOptions}
+                placeholder="Seleccionar responsables..."
+              />
+            )}
           />
         </FormField>
 
@@ -406,8 +438,9 @@ export default function GeneralPlanFormModal({
           )}
 
           {/* Formulario para agregar nuevo insumo */}
-          <div className="grid grid-cols-12 gap-2">
+          <div className="grid grid-cols-12 gap-2 items-end">
             <div className="col-span-4">
+              <label className="text-xs font-medium text-gray-500 mb-1 block">Nombre</label>
               <input
                 type="text"
                 value={newInsumo.nombre}
@@ -417,6 +450,7 @@ export default function GeneralPlanFormModal({
               />
             </div>
             <div className="col-span-2">
+              <label className="text-xs font-medium text-gray-500 mb-1 block">Cantidad</label>
               <input
                 type="number"
                 value={newInsumo.cantidad}
@@ -428,6 +462,7 @@ export default function GeneralPlanFormModal({
               />
             </div>
             <div className="col-span-2">
+              <label className="text-xs font-medium text-gray-500 mb-1 block">Unidad</label>
               <select
                 value={newInsumo.unidad}
                 onChange={(e) => setNewInsumo({ ...newInsumo, unidad: e.target.value })}
@@ -439,6 +474,7 @@ export default function GeneralPlanFormModal({
               </select>
             </div>
             <div className="col-span-2">
+              <label className="text-xs font-medium text-gray-500 mb-1 block">Costo</label>
               <input
                 type="number"
                 value={newInsumo.costo}
@@ -493,8 +529,9 @@ export default function GeneralPlanFormModal({
           )}
 
           {/* Formulario para agregar nueva herramienta */}
-          <div className="grid grid-cols-12 gap-2">
+          <div className="grid grid-cols-12 gap-2 items-end">
             <div className="col-span-5">
+              <label className="text-xs font-medium text-gray-500 mb-1 block">Nombre</label>
               <input
                 type="text"
                 value={newHerramienta.nombre}
@@ -504,6 +541,7 @@ export default function GeneralPlanFormModal({
               />
             </div>
             <div className="col-span-5">
+              <label className="text-xs font-medium text-gray-500 mb-1 block">Descripcion</label>
               <input
                 type="text"
                 value={newHerramienta.descripcion}

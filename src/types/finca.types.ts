@@ -215,7 +215,8 @@ export interface GeneralPlan extends BaseEntity {
   dueDate?: Date;                  // Fecha límite
   estimatedDuration?: number;      // Duración estimada (horas)
   estimatedCost?: number;          // Costo estimado
-  assignedTo?: string;             // Responsable asignado
+  currency?: 'CRC' | 'USD';       // Moneda
+  assignedTo?: string[];           // Responsables asignados
   priority: PlanPriority;
   status: PlanStatus;
 

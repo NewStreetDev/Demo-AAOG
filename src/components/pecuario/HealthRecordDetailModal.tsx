@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import {
   Calendar,
   Syringe,
@@ -13,7 +14,7 @@ import {
   Scissors,
   ClipboardCheck,
 } from 'lucide-react';
-import { Modal } from '../common/Modals';
+import { Modal, ConfirmModal } from '../common/Modals';
 import { useDeleteHealthRecord } from '../../hooks/usePecuarioMutations';
 import type { HealthRecord } from '../../types/pecuario.types';
 
@@ -59,6 +60,7 @@ export default function HealthRecordDetailModal({
   onEdit,
 }: HealthRecordDetailModalProps) {
   const deleteMutation = useDeleteHealthRecord();
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   if (!healthRecord) return null;
 
@@ -69,14 +71,13 @@ export default function HealthRecordDetailModal({
   };
   const TypeIcon = typeInfo.icon;
 
-  const handleDelete = async () => {
-    if (window.confirm('Esta seguro de que desea eliminar este registro de salud?')) {
-      try {
-        await deleteMutation.mutateAsync(healthRecord.id);
-        onOpenChange(false);
-      } catch (error) {
-        console.error('Error deleting health record:', error);
-      }
+  const handleConfirmDelete = async () => {
+    try {
+      await deleteMutation.mutateAsync(healthRecord.id);
+      setConfirmOpen(false);
+      onOpenChange(false);
+    } catch (error) {
+      console.error('Error deleting health record:', error);
     }
   };
 
@@ -217,7 +218,7 @@ export default function HealthRecordDetailModal({
           <button
             type="button"
             className="btn-danger inline-flex items-center gap-2"
-            onClick={handleDelete}
+            onClick={() => setConfirmOpen(true)}
             disabled={deleteMutation.isPending}
           >
             <Trash2 className="w-4 h-4" />
@@ -247,6 +248,18 @@ export default function HealthRecordDetailModal({
           </div>
         </div>
       </div>
+
+      <ConfirmModal
+        open={confirmOpen}
+        onOpenChange={setConfirmOpen}
+        title="Eliminar Registro de Salud"
+        description="¿Esta seguro de que desea eliminar este registro de salud? Esta operacion no se puede deshacer."
+        confirmLabel="Eliminar"
+        cancelLabel="Cancelar"
+        onConfirm={handleConfirmDelete}
+        isLoading={deleteMutation.isPending}
+        variant="danger"
+      />
     </Modal>
   );
 }

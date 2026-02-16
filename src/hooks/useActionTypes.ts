@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import {
   getMockAllActionTypes,
   addMockCustomActionType,
@@ -20,7 +21,9 @@ export function useAddActionType() {
     mutationFn: ({ label, value }: { label: string; value: string }) =>
       addMockCustomActionType(label, value),
     onSuccess: () => {
+      toast.success('Tipo de accion agregado');
       queryClient.invalidateQueries({ queryKey: ['action-types'] });
     },
+    onError: () => { toast.error('Error al agregar tipo de accion'); },
   });
 }

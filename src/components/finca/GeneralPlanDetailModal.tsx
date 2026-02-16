@@ -71,11 +71,11 @@ function formatDate(date: Date | undefined): string {
   });
 }
 
-function formatCurrency(value: number | undefined): string {
+function formatCurrency(value: number | undefined, currency: string = 'CRC'): string {
   if (!value) return '-';
   return new Intl.NumberFormat('es-CR', {
     style: 'currency',
-    currency: 'CRC',
+    currency,
     maximumFractionDigits: 0,
   }).format(value);
 }
@@ -183,11 +183,11 @@ export default function GeneralPlanDetailModal({
             </div>
           )}
 
-          {plan.assignedTo && (
+          {plan.assignedTo && plan.assignedTo.length > 0 && (
             <div className="flex items-center gap-2 text-gray-600">
               <User className="w-4 h-4 text-gray-400" />
               <span className="text-sm">
-                <strong>Asignado:</strong> {plan.assignedTo}
+                <strong>Asignado:</strong> {Array.isArray(plan.assignedTo) ? plan.assignedTo.join(', ') : plan.assignedTo}
               </span>
             </div>
           )}
@@ -221,7 +221,7 @@ export default function GeneralPlanDetailModal({
                   <span className="text-xs uppercase tracking-wider">Costo Estimado</span>
                 </div>
                 <p className="text-lg font-semibold text-gray-900">
-                  {formatCurrency(plan.estimatedCost)}
+                  {formatCurrency(plan.estimatedCost, plan.currency)}
                 </p>
               </div>
             )}
@@ -233,7 +233,7 @@ export default function GeneralPlanDetailModal({
                   <span className="text-xs uppercase tracking-wider">Costo Real</span>
                 </div>
                 <p className="text-lg font-semibold text-green-700">
-                  {formatCurrency(plan.actualCost)}
+                  {formatCurrency(plan.actualCost, plan.currency)}
                 </p>
               </div>
             )}

@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import type { Document } from '../types/reglamentos.types';
 import type { DocumentFormData } from '../schemas/reglamentos.schema';
 
@@ -232,8 +233,10 @@ export function useCreateDocument() {
       return newDocument;
     },
     onSuccess: () => {
+      toast.success('Documento agregado exitosamente');
       queryClient.invalidateQueries({ queryKey: ['documents'] });
     },
+    onError: () => { toast.error('Error al agregar documento'); },
   });
 }
 
@@ -246,7 +249,9 @@ export function useDeleteDocument() {
       mockDocuments = mockDocuments.filter(d => d.id !== id);
     },
     onSuccess: () => {
+      toast.success('Documento eliminado');
       queryClient.invalidateQueries({ queryKey: ['documents'] });
     },
+    onError: () => { toast.error('Error al eliminar documento'); },
   });
 }
