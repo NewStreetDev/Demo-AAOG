@@ -257,7 +257,7 @@ export const generalPlanFormSchema = z.object({
       (val) => !val || (!isNaN(parseFloat(val)) && parseFloat(val) >= 0),
       'El costo debe ser un numero valido'
     ),
-  currency: z.enum(['CRC', 'USD']).optional().default('CRC'),
+  currency: z.enum(['CRC', 'USD']),
   assignedTo: z.array(z.string()).optional(),
   priority: z.enum(planPriorities, {
     message: 'Seleccione una prioridad',
